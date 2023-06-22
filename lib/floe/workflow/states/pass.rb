@@ -20,9 +20,7 @@ module Floe
 
         def run!(*)
           super do |input|
-            output = input
-            output = result_path.set(output, result) if result && result_path
-            output
+            result_path.set(input, result) if result && result_path
           end
         end
       end

@@ -41,7 +41,8 @@ module Floe
             catcher = self.catch.detect { |c| (c.error_equals & [err.to_s, "States.ALL"]).any? }
             raise if catcher.nil?
 
-            [output, workflow.states_by_name[catcher.next]]
+            @next = catcher.next
+            output
           end
         end
 

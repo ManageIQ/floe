@@ -47,8 +47,8 @@ module Floe
 
         input = input_path.value(context, input)
 
-        output, next_state = block_given? ? yield(input) : input
-        next_state ||= workflow.states_by_name[payload["Next"]] unless end?
+        output     = block_given? ? yield(input) : input
+        next_state = workflow.states_by_name[@next] unless end?
 
         output ||= input
         output   = output_path&.value(context, output)

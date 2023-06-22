@@ -18,12 +18,8 @@ module Floe
 
         def run!(*)
           super do |input|
-            next_state_name = choices.detect { |choice| choice.true?(context, input) }&.next || default
-            next_state      = workflow.states_by_name[next_state_name]
-
-            output = input
-
-            [output, next_state]
+            @next = choices.detect { |choice| choice.true?(context, input) }&.next || default
+            input
           end
         end
       end
