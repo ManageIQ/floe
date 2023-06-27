@@ -16,11 +16,9 @@ module Floe
           @output_path = Path.new(payload.fetch("OutputPath", "$"))
         end
 
-        def run!(*)
-          super do |input|
-            @next = choices.detect { |choice| choice.true?(context, input) }&.next || default
-            input
-          end
+        def execute!(input)
+          @next = choices.detect { |choice| choice.true?(context, input) }&.next || default
+          input
         end
       end
     end

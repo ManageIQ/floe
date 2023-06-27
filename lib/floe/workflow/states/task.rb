@@ -25,28 +25,30 @@ module Floe
           @credentials       = PayloadTemplate.new(payload["Credentials"])    if payload["Credentials"]
         end
 
-        def run!(*)
-          super do |input|
-            input = parameters.value(context, input) if parameters
+        def execute!(input)
+          runner = Floe::Workflow::Runner.for_resource(resource)
+          _exit_status, results = runner.run!(resource, input, credentials&.value({}, workflow.credentials))
 
-            runner = Floe::Workflow::Runner.for_resource(resource)
-            _exit_status, results = runner.run!(resource, input, credentials&.value({}, workflow.credentials))
+          output = input
+          process_output!(output, results)
+        rescue => err
+          retrier = self.retry.detect { |r| (r.error_equals & [err.to_s, "States.ALL"]).any? }
+          retry if retry!(retrier)
 
-            output = input
-            process_output!(output, results)
-          rescue => err
-            retrier = self.retry.detect { |r| (r.error_equals & [err.to_s, "States.ALL"]).any? }
-            retry if retry!(retrier)
+          catcher = self.catch.detect { |c| (c.error_equals & [err.to_s, "States.ALL"]).any? }
+          raise if catcher.nil?
 
-            catcher = self.catch.detect { |c| (c.error_equals & [err.to_s, "States.ALL"]).any? }
-            raise if catcher.nil?
-
-            @next = catcher.next
-            output
-          end
+          @next = catcher.next
+          output
         end
 
         private
+
+        def process_input(input)
+          input = super(input)
+          input = parameters.value(context, input) if parameters
+          input
+        end
 
         def retry!(retrier)
           return if retrier.nil?

@@ -16,11 +16,9 @@ module Floe
           @output_path = Path.new(payload.fetch("OutputPath", "$"))
         end
 
-        def run!(*)
-          super do
-            sleep(seconds)
-            nil
-          end
+        def execute!(input)
+          sleep(seconds)
+          input
         end
       end
     end
