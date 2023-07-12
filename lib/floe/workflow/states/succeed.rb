@@ -16,6 +16,13 @@ module Floe
         def end?
           true # TODO: Handle if this is ending a parallel or map state
         end
+
+        private
+
+        def execute!(input)
+          input = input_path.value(context, input)
+          output_path&.value(context, input)
+        end
       end
     end
   end

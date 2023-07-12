@@ -45,27 +45,18 @@ module Floe
       def run!(input)
         logger.info("Running state: [#{name}] with input [#{input}]")
 
-        input = process_input(input)
-
         output     = execute!(input)
         next_state = workflow.states_by_name[@next] unless end?
-
-        output ||= input
-        output   = output_path&.value(context, output)
 
         logger.info("Running state: [#{name}] with input [#{input}]...Complete - next state: [#{next_state&.name}] output: [#{output}]")
 
         [next_state, output]
       end
 
-      def execute!(input)
-        input
-      end
-
       private
 
-      def process_input(input)
-        input_path.value(context, input)
+      def execute!(*)
+        raise NotImplementedError, "Must be implemented in a subclass"
       end
     end
   end

@@ -25,7 +25,12 @@ module Floe
           @credentials       = PayloadTemplate.new(payload["Credentials"])    if payload["Credentials"]
         end
 
+        private
+
         def execute!(input)
+          input = input_path.value(context, input)
+          input = parameters.value(context, input) if parameters
+
           runner = Floe::Workflow::Runner.for_resource(resource)
           _exit_status, results = runner.run!(resource, input, credentials&.value({}, workflow.credentials))
 
@@ -40,14 +45,6 @@ module Floe
 
           @next = catcher.next
           output
-        end
-
-        private
-
-        def process_input(input)
-          input = super(input)
-          input = parameters.value(context, input) if parameters
-          input
         end
 
         def retry!(retrier)
@@ -78,7 +75,9 @@ module Floe
           end
 
           results = result_selector.value(context, results) if result_selector
-          result_path.set(output, results)
+          output = result_path.set(output, results)
+
+          output_path&.value(context, output)
         end
       end
     end

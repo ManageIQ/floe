@@ -18,8 +18,12 @@ module Floe
           @result_path = ReferencePath.new(payload.fetch("ResultPath", "$"))
         end
 
+        private
+
         def execute!(input)
-          result_path.set(input, result) if result && result_path
+          input  = input_path.value(context, input)
+          output = result_path.set(input, result) if result && result_path
+          output_path&.value(context, output)
         end
       end
     end
