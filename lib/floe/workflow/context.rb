@@ -10,7 +10,8 @@ module Floe
           "Execution"    => {
             "Input" => input
           },
-          "State"        => {},
+          "ActiveStates" => {},
+          # completed states
           "States"       => [],
           "StateMachine" => {},
           "Task"         => {}
@@ -21,14 +22,30 @@ module Floe
         @context["Execution"]
       end
 
-      def state
-        @context["State"]
+      # # @returns [Hash] Currently Active State
+      # def state
+      #   @context["State"]
+      # end
+
+      # def state=(val)
+      #   @context["State"] = val
+      # end
+
+      # @returns [Array<Hash>] List of current states
+      def active_states=(val)
+        @context["ActiveStates"] = Array.wrap(val)
       end
 
-      def state=(val)
-        @context["State"] = val
+      # @returns [Array<Hash>] Active States
+      def active_states(val)
+        @context["ActiveStates"]
       end
 
+      def last_activ_state
+        @context["ActiveStates"].last
+      end
+
+      # @returns [Array<Hash>] Completed States
       def states
         @context["States"]
       end
