@@ -44,7 +44,8 @@ module Floe
           runner = Floe::Workflow::Runner.for_resource(resource)
           _exit_status, results = runner.run!(resource, input, credentials&.value({}, workflow.credentials))
 
-          process_output!(input, results)
+          output = process_output!(input, results)
+          output_path.value(context, output)
         end
 
         private
@@ -68,7 +69,6 @@ module Floe
 
         def process_output!(output, results)
           return output if results.nil?
-          return if output_path.nil?
 
           begin
             results = JSON.parse(results)
@@ -77,8 +77,7 @@ module Floe
           end
 
           results = result_selector.value(context, results) if result_selector
-          output  = result_path.set(output, results)
-          output_path.value(context, output)
+          result_path.set(output, results)
         end
       end
     end
