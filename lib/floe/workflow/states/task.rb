@@ -25,14 +25,7 @@ module Floe
         end
 
         def run!(input)
-          input = input_path.value(context, input)
-          input = parameters.value(context, input) if parameters
-
-          runner = Floe::Workflow::Runner.for_resource(resource)
-          _exit_status, results = runner.run!(resource, input, credentials&.value({}, workflow.credentials))
-
-          output = process_output!(input, results)
-          [next_state, output]
+          super
         rescue => err
           retrier = self.retry.detect { |r| (r.error_equals & [err.to_s, "States.ALL"]).any? }
           retry if retry!(retrier)
@@ -40,7 +33,18 @@ module Floe
           catcher = self.catch.detect { |c| (c.error_equals & [err.to_s, "States.ALL"]).any? }
           raise if catcher.nil?
 
-          [catcher.next, output]
+          # TODO: handle output properly
+          [catcher.next, input]
+        end
+
+        def run_input!(input)
+          input = input_path.value(context, input)
+          input = parameters.value(context, input) if parameters
+
+          runner = Floe::Workflow::Runner.for_resource(resource)
+          _exit_status, results = runner.run!(resource, input, credentials&.value({}, workflow.credentials))
+
+          process_output!(input, results)
         end
 
         private
