@@ -27,6 +27,7 @@ module Floe
         @payload  = payload
         # All states must define Next or End except for Choice, Succeed, and Fail
         @end      = !!payload["End"]
+        @next     = payload["Next"]
         # All states must define a Type
         @type     = payload["Type"]
         # All states may define a Comment
@@ -44,7 +45,7 @@ module Floe
       end
 
       def status
-        end? ? "success" : "running"
+        "success"
       end
     end
   end

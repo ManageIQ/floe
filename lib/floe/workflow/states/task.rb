@@ -4,7 +4,7 @@ module Floe
   class Workflow
     module States
       class Task < Floe::Workflow::State
-        attr_reader :credentials, :end, :heartbeat_seconds, :next, :parameters,
+        attr_reader :credentials, :heartbeat_seconds, :parameters,
                     :result_selector, :resource, :timeout_seconds, :retry, :catch,
                     :input_path, :output_path, :result_path
 
@@ -12,7 +12,6 @@ module Floe
           super
 
           @heartbeat_seconds = payload["HeartbeatSeconds"]
-          @next              = payload["Next"]
           @resource          = payload["Resource"]
           @timeout_seconds   = payload["TimeoutSeconds"]
           @retry             = payload["Retry"].to_a.map { |retrier| Retrier.new(retrier) }

@@ -4,12 +4,11 @@ module Floe
   class Workflow
     module States
       class Pass < Floe::Workflow::State
-        attr_reader :next, :result, :parameters, :input_path, :output_path, :result_path
+        attr_reader :result, :parameters, :input_path, :output_path, :result_path
 
         def initialize(workflow, name, payload)
           super
 
-          @next        = payload["Next"]
           @result      = payload["Result"]
 
           @parameters  = PayloadTemplate.new(payload["Parameters"]) if payload["Parameters"]
