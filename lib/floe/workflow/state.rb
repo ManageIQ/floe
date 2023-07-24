@@ -32,6 +32,9 @@ module Floe
         @type     = payload["Type"]
         # All states may define a Comment
         @comment  = payload["Comment"]
+        # All states may define InputPath and OutputPath except for Fail
+        @input_path  = Path.new(payload.fetch("InputPath", "$"))
+        @output_path = Path.new(payload.fetch("OutputPath", "$"))
       end
 
       # https://states-language.net/#terminal-state
@@ -45,7 +48,11 @@ module Floe
       end
 
       def run!(input)
-        [next_state, run_input!(input)]
+        input = @input_path.value(context, input) if @input_path
+        output = run_input!(input)
+        output = @output_path.value(context, output) if @output_path
+
+        [next_state, output]
       end
 
       def context

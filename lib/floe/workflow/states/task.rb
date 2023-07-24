@@ -6,7 +6,7 @@ module Floe
       class Task < Floe::Workflow::State
         attr_reader :credentials, :heartbeat_seconds, :parameters,
                     :result_selector, :resource, :timeout_seconds, :retry, :catch,
-                    :input_path, :output_path, :result_path
+                    :result_path
 
         def initialize(workflow, name, payload)
           super
@@ -16,8 +16,6 @@ module Floe
           @timeout_seconds   = payload["TimeoutSeconds"]
           @retry             = payload["Retry"].to_a.map { |retrier| Retrier.new(retrier) }
           @catch             = payload["Catch"].to_a.map { |catcher| Catcher.new(catcher) }
-          @input_path        = Path.new(payload.fetch("InputPath", "$"))
-          @output_path       = Path.new(payload.fetch("OutputPath", "$"))
           @result_path       = ReferencePath.new(payload.fetch("ResultPath", "$"))
           @parameters        = PayloadTemplate.new(payload["Parameters"])     if payload["Parameters"]
           @result_selector   = PayloadTemplate.new(payload["ResultSelector"]) if payload["ResultSelector"]
@@ -38,14 +36,12 @@ module Floe
         end
 
         def run_input!(input)
-          input = input_path.value(context, input)
           input = parameters.value(context, input) if parameters
 
           runner = Floe::Workflow::Runner.for_resource(resource)
           _exit_status, results = runner.run!(resource, input, credentials&.value({}, workflow.credentials))
 
-          output = process_output!(input, results)
-          output_path.value(context, output)
+          process_output!(input, results)
         end
 
         private
