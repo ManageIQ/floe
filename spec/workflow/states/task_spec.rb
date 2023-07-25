@@ -293,6 +293,18 @@ RSpec.describe Floe::Workflow::States::Task do
     end
   end
 
+  describe "#next_state" do
+    it "with a normal state" do
+      state = workflow.states_by_name["FirstState"]
+      expect(state.next_state).to be
+    end
+
+    it "with an end state" do
+      state = workflow.states_by_name["NextState"]
+      expect(state.next_state).to be_nil
+    end
+  end
+
   describe "#terminal_state?" do
     it "with a normal state" do
       state = workflow.states_by_name["FirstState"]

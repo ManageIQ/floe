@@ -32,7 +32,7 @@ module Floe
           _exit_status, results = runner.run!(resource, input, credentials&.value({}, workflow.credentials))
 
           output = process_output!(input, results)
-          [@next, output]
+          [next_state, output]
         rescue => err
           retrier = self.retry.detect { |r| (r.error_equals & [err.to_s, "States.ALL"]).any? }
           retry if retry!(retrier)

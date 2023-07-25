@@ -10,8 +10,8 @@ module Floe
           super
         end
 
-        def run!(input)
-          [nil, input]
+        def run_input!(input)
+          input
         end
 
         def terminal_state?

@@ -40,6 +40,14 @@ module Floe
         @end
       end
 
+      def next_state
+        terminal_state? ? nil : @next
+      end
+
+      def run!(input)
+        [next_state, run_input!(input)]
+      end
+
       def context
         workflow.context
       end
