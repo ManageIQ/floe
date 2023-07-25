@@ -11,4 +11,9 @@ RSpec.describe Floe::Workflow::States::Succeed do
     next_state, _output = state.run!(inputs)
     expect(next_state).to be nil
   end
+
+  it "has a next of nil" do
+    next_state, _output = state.run!(inputs)
+    expect(next_state).to be nil
+  end
 end
