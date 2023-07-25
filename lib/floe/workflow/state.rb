@@ -25,12 +25,17 @@ module Floe
         @workflow = workflow
         @name     = name
         @payload  = payload
+        # All states must define Next or End except for Choice, Succeed, and Fail
         @end      = !!payload["End"]
+        # All states must define a Type
         @type     = payload["Type"]
+        # All states may define a Comment
         @comment  = payload["Comment"]
       end
 
-      def end?
+      # https://states-language.net/#terminal-state
+      # @return [Boolean] true if there is no transition from this state
+      def terminal_state?
         @end
       end
 

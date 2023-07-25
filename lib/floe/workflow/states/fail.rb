@@ -11,11 +11,14 @@ module Floe
 
           @cause = payload["Cause"]
           @error = payload["Error"]
-          @end   = true
         end
 
         def run!(input)
           [nil, input]
+        end
+
+        def terminal_state?
+          true
         end
 
         def status

@@ -4,7 +4,7 @@ module Floe
   class Workflow
     module States
       class Pass < Floe::Workflow::State
-        attr_reader :end, :next, :result, :parameters, :input_path, :output_path, :result_path
+        attr_reader :next, :result, :parameters, :input_path, :output_path, :result_path
 
         def initialize(workflow, name, payload)
           super

@@ -8,12 +8,14 @@ module Floe
 
         def initialize(workflow, name, payload)
           super
-
-          @end = true
         end
 
         def run!(input)
           [nil, input]
+        end
+
+        def terminal_state?
+          true
         end
       end
     end
