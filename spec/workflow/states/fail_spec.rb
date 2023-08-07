@@ -9,7 +9,7 @@ RSpec.describe Floe::Workflow::States::Fail do
   end
 
   it "#run!" do
-    state.run!(ctx.input)
+    state.run!(ctx)
     ctx.next_state
     ctx.status
     expect(ctx.next_state).to eq(nil)

@@ -14,14 +14,14 @@ RSpec.describe Floe::Workflow::States::Pass do
     it "sleeps for the requested amount of time" do
       expect(state).to receive(:sleep).with(state.seconds)
 
-      state.run!(ctx.input)
+      state.run!(ctx)
     end
 
     it "transitions to the next state" do
       # skip the actual sleep
       expect(state).to receive(:sleep).with(state.seconds)
 
-      state.run!(ctx.input)
+      state.run!(ctx)
 
       expect(ctx.next_state).to eq("NextState")
       expect(ctx.status).to eq("running")

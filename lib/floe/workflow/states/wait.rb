@@ -17,7 +17,7 @@ module Floe
           @output_path = Path.new(payload.fetch("OutputPath", "$"))
         end
 
-        def run!(_input)
+        def run!(context)
           input = input_path.value(context, context.input)
           sleep(seconds)
           output = output_path.value(context, input)

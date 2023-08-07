@@ -20,7 +20,7 @@ RSpec.describe Floe::Workflow::States::Task do
             .with(payload["Resource"], {"foo" => {"bar" => "baz"}, "bar" => {"baz" => "foo"}}, nil)
             .and_return(:exit_code => 0, :output => "hello, world!")
 
-          state.run!(ctx.input)
+          state.run!(ctx)
         end
       end
 
@@ -33,7 +33,7 @@ RSpec.describe Floe::Workflow::States::Task do
             .with(payload["Resource"], {"bar" => "baz"}, nil)
             .and_return(:exit_code => 0, :output => "hello, world!")
 
-          state.run!(ctx.input)
+          state.run!(ctx)
         end
       end
 
@@ -46,7 +46,7 @@ RSpec.describe Floe::Workflow::States::Task do
             .with(payload["Resource"], {"var1" => "baz"}, nil)
             .and_return(:exit_code => 0, :output => "hello, world!")
 
-          state.run!(ctx.input)
+          state.run!(ctx)
         end
       end
     end
@@ -61,7 +61,7 @@ RSpec.describe Floe::Workflow::States::Task do
             .with(payload["Resource"], {"foo" => {"bar" => "baz"}, "bar" => {"baz" => "foo"}}, nil)
             .and_return(:exit_code => 0, :output => "{\"response\":[\"192.168.1.2\"],\"exit_code\":0}")
 
-          state.run!(ctx.input)
+          state.run!(ctx)
 
           expect(ctx.output).to eq("foo" => {"bar" => "baz"}, "bar" => {"baz" => "foo"}, "ip_addrs" => ["192.168.1.2"])
         end
@@ -76,7 +76,7 @@ RSpec.describe Floe::Workflow::States::Task do
             .with(payload["Resource"], input, nil)
             .and_return(:exit_code => 0, :output => "[\"192.168.1.2\"]")
 
-          state.run!(ctx.input)
+          state.run!(ctx)
 
           expect(ctx.output).to eq(
             "foo"      => {"bar" => "baz"},
@@ -98,7 +98,7 @@ RSpec.describe Floe::Workflow::States::Task do
               .with(payload["Resource"], input, nil)
               .and_return(:exit_code => 0, :output => "[\"192.168.1.2\"]")
 
-            state.run!(ctx.input)
+            state.run!(ctx)
 
             expect(ctx.output).to eq(
               "foo"  => {"bar" => "baz"},
@@ -117,7 +117,7 @@ RSpec.describe Floe::Workflow::States::Task do
               .with(payload["Resource"], input, nil)
               .and_return(:exit_code => 0, :output => "[\"192.168.1.2\"]")
 
-            state.run!(ctx.input)
+            state.run!(ctx)
 
             expect(ctx.output).to eq("ip_addrs" => ["192.168.1.2"])
           end
@@ -143,7 +143,7 @@ RSpec.describe Floe::Workflow::States::Task do
             .with(payload["Resource"], input, nil)
             .and_return(:exit_code => 0)
 
-          state.run!(ctx.input)
+          state.run!(ctx)
 
           expect(ctx.output).to eq("bar" => {"baz"=>"foo"}, "foo" => {"bar"=>"baz"})
         end
@@ -166,7 +166,7 @@ RSpec.describe Floe::Workflow::States::Task do
               .to receive(:run!)
               .with(payload["Resource"], input, nil)
               .and_return(:exit_code => 0)
-            state.run!(ctx.input)
+            state.run!(ctx)
 
             expect(ctx.output).to eq("bar" => {"baz"=>"foo"}, "foo" => {"bar"=>"baz"})
           end
@@ -179,7 +179,7 @@ RSpec.describe Floe::Workflow::States::Task do
             .with(payload["Resource"], input, nil)
             .and_raise(RuntimeError, "States.Timeout")
 
-          expect { state.run!(ctx.input) }.to raise_error(RuntimeError, "States.Timeout")
+          expect { state.run!(ctx) }.to raise_error(RuntimeError, "States.Timeout")
         end
 
         it "raises if the exception isn't caught" do
@@ -188,7 +188,7 @@ RSpec.describe Floe::Workflow::States::Task do
             .with(payload["Resource"], input, nil)
             .and_raise(RuntimeError, "Exception")
 
-          expect { state.run!(ctx.input) }.to raise_error(RuntimeError, "Exception")
+          expect { state.run!(ctx) }.to raise_error(RuntimeError, "Exception")
         end
       end
 
@@ -205,7 +205,7 @@ RSpec.describe Floe::Workflow::States::Task do
             .to receive(:run!)
             .with(payload["Resource"], input, nil)
             .and_return(:exit_code => 0)
-          state.run!(ctx.input)
+          state.run!(ctx)
 
           expect(ctx.output).to eq("bar" => {"baz"=>"foo"}, "foo" => {"bar"=>"baz"})
         end
@@ -225,7 +225,7 @@ RSpec.describe Floe::Workflow::States::Task do
             .with(payload["Resource"], input, nil)
             .and_return(:exit_code => 0)
 
-          state.run!(ctx.input)
+          state.run!(ctx)
 
           expect(ctx.output).to eq("bar" => {"baz"=>"foo"}, "foo" => {"bar"=>"baz"})
         end
@@ -236,7 +236,7 @@ RSpec.describe Floe::Workflow::States::Task do
             .with(payload["Resource"], input, nil)
             .and_raise(RuntimeError, "Exception")
 
-          state.run!(ctx.input)
+          state.run!(ctx)
 
           expect(ctx.next_state).to eq("FailState")
         end
@@ -253,7 +253,7 @@ RSpec.describe Floe::Workflow::States::Task do
             .with(payload["Resource"], input, nil)
             .and_raise(RuntimeError, "States.Timeout")
 
-          state.run!(ctx.input)
+          state.run!(ctx)
 
           expect(ctx.next_state).to eq("FirstState")
           expect(ctx.status).to eq("running")
@@ -265,7 +265,7 @@ RSpec.describe Floe::Workflow::States::Task do
             .with(payload["Resource"], input, nil)
             .and_raise(RuntimeError, "Exception")
 
-          expect { state.run!(ctx.input) }.to raise_error(RuntimeError, "Exception")
+          expect { state.run!(ctx) }.to raise_error(RuntimeError, "Exception")
         end
       end
 
@@ -278,7 +278,7 @@ RSpec.describe Floe::Workflow::States::Task do
             .with(payload["Resource"], input, nil)
             .and_raise(RuntimeError, "States.Timeout")
 
-          state.run!(ctx.input)
+          state.run!(ctx)
 
           expect(ctx.next_state).to eq("FirstState")
         end
@@ -289,7 +289,7 @@ RSpec.describe Floe::Workflow::States::Task do
             .with(payload["Resource"], input, nil)
             .and_raise(RuntimeError, "Exception")
 
-          state.run!(ctx.input)
+          state.run!(ctx)
 
           expect(ctx.next_state).to eq("FailState")
         end

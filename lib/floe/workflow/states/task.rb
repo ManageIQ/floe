@@ -26,7 +26,7 @@ module Floe
           @credentials       = PayloadTemplate.new(payload["Credentials"])    if payload["Credentials"]
         end
 
-        def run!(_input)
+        def run!(context)
           input = input_path.value(context, context.input)
           # NOTE: context.input != input
           input = parameters.value(context, input) if parameters
@@ -34,11 +34,11 @@ module Floe
           runner = Floe::Workflow::Runner.for_resource(resource)
           runner_context = runner.run!(resource, input, credentials&.value({}, workflow.credentials))
 
-          output = process_output!(input, runner_context[:output])
+          output = process_output!(input, context, runner_context[:output])
           context.end_state!(output, @next)
         rescue => err
           retrier = self.retry.detect { |r| (r.error_equals & [err.to_s, "States.ALL"]).any? }
-          retry if retry!(retrier)
+          retry if retry!(retrier, context)
 
           catcher = self.catch.detect { |c| (c.error_equals & [err.to_s, "States.ALL"]).any? }
           raise if catcher.nil?
@@ -52,7 +52,7 @@ module Floe
 
         private
 
-        def retry!(retrier)
+        def retry!(retrier, context)
           return if retrier.nil?
 
           # If a different retrier is hit reset the context
@@ -69,7 +69,7 @@ module Floe
           true
         end
 
-        def process_output!(output, results)
+        def process_output!(output, context, results)
           return output if results.nil?
           return if output_path.nil?
 

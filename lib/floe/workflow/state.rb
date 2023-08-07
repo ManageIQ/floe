@@ -28,10 +28,6 @@ module Floe
         @type     = payload["Type"]
         @comment  = payload["Comment"]
       end
-
-      def context
-        workflow.context
-      end
     end
   end
 end

@@ -43,7 +43,7 @@ module Floe
 
       current_state = @states_by_name[context.state_name]
       tick = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-      current_state.run!(context.input)
+      current_state.run!(context)
       tock = Process.clock_gettime(Process::CLOCK_MONOTONIC)
 
       context.state["FinishedTime"] = Time.now.utc

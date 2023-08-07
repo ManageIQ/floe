@@ -16,7 +16,7 @@ module Floe
           @output_path = Path.new(payload.fetch("OutputPath", "$"))
         end
 
-        def run!(_input)
+        def run!(context)
           input      = input_path.value(context, context.input)
           # NOTE: context.input != input
           next_state = choices.detect { |choice| choice.true?(context, input) }&.next || default
