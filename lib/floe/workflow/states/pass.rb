@@ -21,7 +21,7 @@ module Floe
 
         def run!(context)
           output = input_path.value(context, context.input)
-          output = result_path.set(output, result) if result && result_path
+          output = result_path.set(output, result) if result
           output = output_path.value(context, output)
 
           context.end_state!(output, @next)
