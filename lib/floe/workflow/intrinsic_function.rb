@@ -3,10 +3,12 @@
 module Floe
   class Workflow
     class IntrinsicFunction
+      INTRINSIC_FUNCTION_REGEX = /^(?<module>\w+)\.(?<function>\w+)\((?<args>.*)\)$/.freeze
+
       class << self
         def klass(payload)
           function_module_name, function_name =
-            payload.match(/^(?<module>\w+)\.(?<function>\w+)\(.*\)$/)
+            payload.match(INTRINSIC_FUNCTION_REGEX)
                    .named_captures
                    .values_at("module", "function")
 
@@ -36,11 +38,11 @@ module Floe
       attr_reader :args
 
       def initialize(payload)
-        args  = payload.match(/^\w+\.\w+\((.*)\)$/).captures.first
+        args  = payload.match(INTRINSIC_FUNCTION_REGEX).named_captures["args"]
         @args = args.split(", ").map do |arg|
           if arg.start_with?("$.")
             Path.new(arg)
-          elsif arg.match?(/^\w+\.\w+\(.*\)$/)
+          elsif arg.match?(INTRINSIC_FUNCTION_REGEX)
             Floe::Workflow::IntrinsicFunction.new(arg)
           else
             arg
