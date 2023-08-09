@@ -6,7 +6,15 @@ module Floe
       INTRINSIC_FUNCTION_REGEX = /^(?<module>\w+)\.(?<function>\w+)\((?<args>.*)\)$/.freeze
 
       class << self
-        def klass(payload)
+        def new(*args)
+          if self == Floe::Workflow::IntrinsicFunction
+            detect_class(*args).new(*args)
+          else
+            super
+          end
+        end
+
+        private def detect_class(payload)
           function_module_name, function_name =
             payload.match(INTRINSIC_FUNCTION_REGEX)
                    .named_captures
@@ -22,16 +30,6 @@ module Floe
 
         def value(payload, context, input = {})
           new(payload).value(context, input)
-        end
-
-        private alias_method :orig_new, :new
-
-        def new(*args)
-          if self == Floe::Workflow::IntrinsicFunction
-            klass(*args).new(*args)
-          else
-            orig_new(*args)
-          end
         end
       end
 

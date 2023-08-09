@@ -1,21 +1,17 @@
 RSpec.describe Floe::Workflow::IntrinsicFunction do
-  describe ".klass" do
-    it "returns the intrinsic function class" do
-      payload = "States.StringToJson('{\"number\": 20}')"
-      expect(described_class.klass(payload)).to eq(Floe::Workflow::IntrinsicFunctions::States::StringToJson)
-    end
-
-    it "raises an exception for an invalid intrinsic function" do
-      payload = "States.MyFirstFunction()"
-      expect { described_class.klass(payload) }.to raise_error(NotImplementedError)
-    end
-  end
-
   describe "#initialize" do
     let(:payload) { "States.StringToJson()" }
 
     it "returns an instance of the intrinsic function" do
       expect(described_class.new(payload)).to be_kind_of(Floe::Workflow::IntrinsicFunctions::States::StringToJson)
+    end
+
+    context "with an invalid intrinsic function" do
+      let(:payload) { "States.MyFirstFunction()" }
+
+      it "raises an exception for an invalid intrinsic function" do
+        expect { described_class.new(payload) }.to raise_error(NotImplementedError)
+      end
     end
 
     context "with no arguments" do
