@@ -19,6 +19,58 @@ RSpec.describe Floe::Workflow do
     end
   end
 
+  describe ".quick_run" do
+    it "sets execution variables for success" do
+      input = {"input" => "value"}.freeze
+      ctx = Floe::Workflow::Context.new(:input => input)
+      src = make_payload({"FirstState" => {"Type" => "Succeed"}})
+
+      ctx = described_class.quick_step("workflow", src, ctx)
+
+      # state
+      expect(ctx.state_name).to eq("FirstState")
+      expect(ctx.input).to eq(input)
+      expect(ctx.output).to eq(input)
+      expect(ctx.status).to eq("success")
+
+      # execution
+      expect(ctx.started?).to eq(true)
+      expect(ctx.running?).to eq(false)
+      expect(ctx.ended?).to eq(true)
+    end
+
+    it "steps" do
+      input = {"input" => "value"}.freeze
+      ctx = Floe::Workflow::Context.new(:input => input)
+      src = make_payload({
+        "FirstState"  => {"Type" => "Pass", "Next" => "SecondState"},
+        "SecondState" => {"Type" => "Succeed"}
+      }).freeze
+
+      ctx = described_class.quick_step("workflow", src, ctx)
+
+      expect(ctx.state_name).to eq("SecondState")
+      expect(ctx.status).to eq("running")
+
+      # execution
+      expect(ctx.started?).to eq(true)
+      expect(ctx.running?).to eq(true)
+      expect(ctx.ended?).to eq(false)
+
+      # second step
+
+      ctx = described_class.quick_step("workflow", src, ctx)
+
+      expect(ctx.state_name).to eq("SecondState")
+      expect(ctx.status).to eq("success")
+
+      # execution
+      expect(ctx.started?).to eq(true)
+      expect(ctx.running?).to eq(false)
+      expect(ctx.ended?).to eq(true)
+    end
+  end
+
   describe "#run!" do
     let(:input) { {"input" => "value"}.freeze }
 

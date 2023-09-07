@@ -12,6 +12,18 @@ module Floe
         payload = path_or_io.respond_to?(:read) ? path_or_io.read : File.read(path_or_io)
         new(payload, context, credentials)
       end
+
+      # Step through the workflow for a single iteration
+      # If some steps are trivial, it may step through more than one step
+      #
+      # @param name    [String] Name of the workflow
+      # @param payload [Json String|Hash] Description of the workflow
+      # @param context [Json String|Context] Workflow input and output
+      # @param credentials [Json String|Hash] Secrets
+      # @returns updated context
+      def quick_step(_name, payload, context, credentials = {})
+        new(payload, context, credentials).step.context
+      end
     end
 
     attr_reader :context, :credentials, :payload, :states, :states_by_name, :start_at
