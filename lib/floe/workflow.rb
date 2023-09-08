@@ -28,17 +28,17 @@ module Floe
 
       @states         = payload["States"].to_a.map { |name, state| State.build!(self, name, state) }
       @states_by_name = @states.each_with_object({}) { |state, result| result[state.name] = state }
-
-      context.state["Name"] ||= start_at
     rescue JSON::ParserError => err
       raise Floe::InvalidWorkflowError, err.message
     end
 
     def step
-      context.execution["StartTime"] ||= Time.now.utc
-
-      context.state["Guid"]    = SecureRandom.uuid
-      context.state["Input"] ||= context.execution["Input"].dup
+      if context.next_state
+        context.state = {"Name" => context.next_state, "Input" => context.output, "Guid" => SecureRandom.uuid}
+      elsif !context.state_name
+        context.execution["StartTime"] = Time.now.utc
+        context.state = {"Name" => start_at, "Input" => context.execution["Input"].dup, "Guid" => SecureRandom.uuid}
+      end
 
       logger.info("Running state: [#{context.state_name}] with input [#{context.input}]...")
 
@@ -60,8 +60,6 @@ module Floe
       logger.info("Running state: [#{context.state_name}] with input [#{context.input}]...Complete - next state: [#{context.next_state}] output: [#{context.output}]")
 
       context.state_history << context.state
-
-      context.state = {"Name" => next_state, "Input" => output} unless end?
 
       self
     end

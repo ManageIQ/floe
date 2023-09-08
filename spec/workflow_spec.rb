@@ -99,6 +99,42 @@ RSpec.describe Floe::Workflow do
       expect(ctx.running?).to eq(false)
       expect(ctx.ended?).to eq(true)
     end
+
+    it "steps" do
+      input = {"input" => "value"}.freeze
+      workflow, ctx = make_workflow(
+        input, {
+          "FirstState"  => {"Type" => "Pass", "Next" => "SecondState"},
+          "SecondState" => {"Type" => "Succeed"}
+        }
+      )
+
+      expect(ctx.status).to eq("pending")
+      expect(ctx.started?).to eq(false)
+      expect(ctx.running?).to eq(false)
+      expect(ctx.ended?).to eq(false)
+
+      workflow.step
+
+      expect(ctx.status).to eq("running")
+
+      # execution
+      expect(ctx.started?).to eq(true)
+      expect(ctx.running?).to eq(true)
+      expect(ctx.ended?).to eq(false)
+
+      # second step
+
+      workflow.step
+
+      expect(ctx.state_name).to eq("SecondState")
+      expect(ctx.status).to eq("success")
+
+      # execution
+      expect(ctx.started?).to eq(true)
+      expect(ctx.running?).to eq(false)
+      expect(ctx.ended?).to eq(true)
+    end
   end
 
   private
