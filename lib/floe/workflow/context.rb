@@ -65,8 +65,28 @@ module Floe
         end
       end
 
-      def state=(val)
-        @context["State"] = val
+      def start_next_state!(name = state["NextState"], input = state["Output"], init: false)
+        if init == true || state_name.nil?
+          execution["StartTime"] = Time.now.utc
+          input = execution["Input"]
+        end
+        @context["State"] = {
+          "Name"  => name,
+          "Input" => input.dup,
+          "Guid"  => SecureRandom.uuid
+        }
+
+        self
+      end
+
+      def end_state!(output, next_state = nil, cause: nil, error: nil)
+        state["Output"]      = output
+        state["NextState"]   = next_state
+        state["Error"]       = error if error
+        state["Cause"]       = cause if cause
+        execution["EndTime"] = Time.now.utc unless next_state
+
+        self
       end
 
       def state_history
