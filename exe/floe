@@ -18,8 +18,8 @@ Optimist.die(:docker_runner, "must be one of #{Floe::Workflow::Runner::TYPES.joi
 require "logger"
 Floe.logger = Logger.new($stdout)
 
-context = Floe::Workflow::Context.new(input: opts[:input])
-workflow = Floe::Workflow.load(opts[:workflow], context, opts[:credentials])
+context = Floe::Workflow::Context.new(:input => opts[:input])
+workflow = Floe::Workflow.load(opts[:workflow], opts[:credentials])
 
 runner_klass = case opts[:docker_runner]
                when "docker"
@@ -34,6 +34,6 @@ runner_options = opts[:docker_runner_options].to_h { |opt| opt.split("=", 2) }
 
 Floe::Workflow::Runner.docker_runner = runner_klass.new(runner_options)
 
-workflow.run!
+workflow.run!(context)
 
-puts workflow.output.inspect
+puts context.output.inspect

@@ -8,21 +8,19 @@ module Floe
     include Logging
 
     class << self
-      def load(path_or_io, context = nil, credentials = {})
+      def load(path_or_io, credentials = {})
         payload = path_or_io.respond_to?(:read) ? path_or_io.read : File.read(path_or_io)
-        new(payload, context, credentials)
+        new(payload, credentials)
       end
     end
 
     attr_reader :context, :credentials, :payload, :states, :states_by_name, :start_at
 
-    def initialize(payload, context = nil, credentials = {})
+    def initialize(payload, credentials = {})
       payload     = JSON.parse(payload)     if payload.kind_of?(String)
       credentials = JSON.parse(credentials) if credentials.kind_of?(String)
-      context     = Context.new(context)    unless context.kind_of?(Context)
 
       @payload     = payload
-      @context     = context
       @credentials = credentials
       @start_at    = payload["StartAt"]
 
@@ -32,7 +30,7 @@ module Floe
       raise Floe::InvalidWorkflowError, err.message
     end
 
-    def step
+    def step(context)
       if context.next_state
         context.start_next_state!
       elsif !context.state_name
@@ -55,26 +53,15 @@ module Floe
 
       context.state_history << context.state
 
-      self
+      context
     end
 
-    def run!
-      until end?
-        step
+    def run!(context)
+      until context.ended?
+        step(context)
       end
-      self
-    end
 
-    def status
-      context.status
-    end
-
-    def output
-      context.output
-    end
-
-    def end?
-      context.ended?
+      context
     end
   end
 end

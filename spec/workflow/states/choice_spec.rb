@@ -1,5 +1,5 @@
 RSpec.describe Floe::Workflow::States::Choice do
-  let(:workflow) { Floe::Workflow.load(GEM_ROOT.join("examples/workflow.asl"), ctx) }
+  let(:workflow) { Floe::Workflow.load(GEM_ROOT.join("examples/workflow.asl")) }
   let(:ctx)      { Floe::Workflow::Context.new(nil, :input => input).start_next_state!("ChoiceState") }
   let(:state)    { workflow.states_by_name["ChoiceState"] }
   let(:input)    { {} }

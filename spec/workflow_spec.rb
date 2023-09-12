@@ -7,10 +7,7 @@ RSpec.describe Floe::Workflow do
     it "sets initial state" do
       input = {"input" => "value"}.freeze
 
-      workflow, ctx = make_workflow(input, {"FirstState" => {"Type" => "Succeed"}})
-
-      expect(workflow.status).to eq("pending")
-      expect(workflow.end?).to eq(false)
+      _, ctx = make_workflow(input, {"FirstState" => {"Type" => "Succeed"}})
 
       expect(ctx.status).to eq("pending")
       expect(ctx.started?).to eq(false)
@@ -24,7 +21,7 @@ RSpec.describe Floe::Workflow do
 
     it "sets execution variables for success" do
       workflow, ctx = make_workflow(input, {"FirstState" => {"Type" => "Succeed"}})
-      workflow.run!
+      workflow.run!(ctx)
 
       # state
       expect(ctx.state["EnteredTime"]).to be_within(1.second).of(now)
@@ -40,16 +37,11 @@ RSpec.describe Floe::Workflow do
       expect(ctx.started?).to eq(true)
       expect(ctx.running?).to eq(false)
       expect(ctx.ended?).to eq(true)
-
-      # final results
-      expect(workflow.output).to eq(input)
-      expect(workflow.status).to eq("success")
-      expect(workflow.end?).to eq(true)
     end
 
     it "sets execution variables for failure" do
       workflow, ctx = make_workflow(input, {"FirstState" => {"Type" => "Fail", "Cause" => "Bad Stuff", "Error" => "Issue"}})
-      workflow.run!
+      workflow.run!(ctx)
 
       # state
       expect(ctx.state["EnteredTime"]).to be_within(1.second).of(now)
@@ -67,11 +59,6 @@ RSpec.describe Floe::Workflow do
       expect(ctx.started?).to eq(true)
       expect(ctx.running?).to eq(false)
       expect(ctx.ended?).to eq(true)
-
-      # final results
-      expect(workflow.output).to eq(input)
-      expect(workflow.status).to eq("failure")
-      expect(workflow.end?).to eq(true)
     end
   end
 
@@ -81,18 +68,13 @@ RSpec.describe Floe::Workflow do
 
       workflow, ctx = make_workflow(input, {"FirstState" => {"Type" => "Succeed"}})
 
-      expect(workflow.status).to eq("pending")
-      expect(workflow.end?).to eq(false)
       expect(ctx.status).to eq("pending")
       expect(ctx.started?).to eq(false)
       expect(ctx.running?).to eq(false)
       expect(ctx.ended?).to eq(false)
 
-      workflow.step
+      ctx = workflow.step(ctx)
 
-      expect(workflow.output).to eq(input)
-      expect(workflow.status).to eq("success")
-      expect(workflow.end?).to eq(true)
       expect(ctx.output).to eq(input)
       expect(ctx.status).to eq("success")
       expect(ctx.started?).to eq(true)
@@ -114,7 +96,7 @@ RSpec.describe Floe::Workflow do
       expect(ctx.running?).to eq(false)
       expect(ctx.ended?).to eq(false)
 
-      workflow.step
+      ctx = workflow.step(ctx)
 
       expect(ctx.status).to eq("running")
 
@@ -125,7 +107,7 @@ RSpec.describe Floe::Workflow do
 
       # second step
 
-      workflow.step
+      ctx = workflow.step(ctx)
 
       expect(ctx.state_name).to eq("SecondState")
       expect(ctx.status).to eq("success")
@@ -141,7 +123,7 @@ RSpec.describe Floe::Workflow do
 
   def make_workflow(input, payload, creds: {})
     context = Floe::Workflow::Context.new(:input => input)
-    workflow = Floe::Workflow.new(make_payload(payload), context, creds)
+    workflow = Floe::Workflow.new(make_payload(payload), creds)
     [workflow, context]
   end
 

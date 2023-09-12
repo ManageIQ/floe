@@ -1,5 +1,5 @@
 RSpec.describe Floe::Workflow::States::Task do
-  let(:workflow) { Floe::Workflow.load(GEM_ROOT.join("examples/workflow.asl"), ctx) }
+  let(:workflow) { Floe::Workflow.load(GEM_ROOT.join("examples/workflow.asl")) }
   let(:ctx)      { Floe::Workflow::Context.new(nil, :input => input).start_next_state!("Task") }
   let(:input)    { {} }
 
