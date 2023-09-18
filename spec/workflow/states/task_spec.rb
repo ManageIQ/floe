@@ -1,12 +1,13 @@
 RSpec.describe Floe::Workflow::States::Task do
-  let(:workflow) { Floe::Workflow.load(GEM_ROOT.join("examples/workflow.asl")) }
+  let(:workflow) { Floe::Workflow.load(GEM_ROOT.join("examples/workflow.asl"), ctx) }
+  let(:ctx)      { Floe::Workflow::Context.new(nil, :input => input).start_next_state!("Task") }
   let(:input)    { {} }
 
   describe "#run" do
     let(:mock_runner) { double("Floe::Workflow::Runner") }
     let(:input)       { {"foo" => {"bar" => "baz"}, "bar" => {"baz" => "foo"}} }
     let(:state)       { described_class.new(workflow, "Task", payload) }
-    let(:subject)     { state.run!(input) }
+    let(:subject)     { state.run!(ctx.input) }
 
     before { allow(Floe::Workflow::Runner).to receive(:for_resource).and_return(mock_runner) }
 
