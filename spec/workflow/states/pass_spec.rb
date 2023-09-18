@@ -13,9 +13,10 @@ RSpec.describe Floe::Workflow::States::Pass do
 
   describe "#run!" do
     it "sets the result to the result path" do
-      next_state, output = state.run!(ctx.input)
-      expect(output["result"]).to include(state.result)
-      expect(next_state).to eq("WaitState")
+      state.run!(ctx)
+      expect(ctx.output["result"]).to include(state.result)
+      expect(ctx.next_state).to eq("WaitState")
+      expect(ctx.status).to eq("running")
     end
   end
 end

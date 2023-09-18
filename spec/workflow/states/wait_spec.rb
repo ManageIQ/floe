@@ -21,8 +21,10 @@ RSpec.describe Floe::Workflow::States::Pass do
       # skip the actual sleep
       expect(state).to receive(:sleep).with(state.seconds)
 
-      next_state, _output = state.run!(ctx.input)
-      expect(next_state).to eq("NextState")
+      state.run!(ctx.input)
+
+      expect(ctx.next_state).to eq("NextState")
+      expect(ctx.status).to eq("running")
     end
   end
 end

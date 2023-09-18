@@ -45,16 +45,11 @@ module Floe
 
       current_state = @states_by_name[context.state_name]
       tick = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-      next_state, output = current_state.run!(context.input)
+      current_state.run!(context.input)
       tock = Process.clock_gettime(Process::CLOCK_MONOTONIC)
 
       context.state["FinishedTime"] = Time.now.utc
       context.state["Duration"]     = tock - tick
-      if current_state.respond_to?(:error)
-        context.end_state!(output, :error => current_state.error, :cause => current_state.cause)
-      else
-        context.end_state!(output, next_state)
-      end
 
       logger.info("Running state: [#{context.state_name}] with input [#{context.input}]...Complete - next state: [#{context.next_state}] output: [#{context.output}]")
 

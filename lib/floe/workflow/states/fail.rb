@@ -13,8 +13,8 @@ module Floe
           @error = payload["Error"]
         end
 
-        def run!(input)
-          [nil, input]
+        def run!(_input)
+          context.end_state!(context.input, :error => @error, :cause => @cause)
         end
 
         def end?

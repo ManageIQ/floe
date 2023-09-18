@@ -10,8 +10,9 @@ RSpec.describe Floe::Workflow::States::Succeed do
 
   describe "#run!" do
     it "has no next" do
-      next_state, _output = state.run!(ctx.input)
-      expect(next_state).to be_nil
+      state.run!(ctx)
+      expect(ctx.next_state).to be_nil
+      expect(ctx.status).to eq("success")
     end
   end
 end
