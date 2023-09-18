@@ -6,7 +6,7 @@ module Floe
       class Choice < Floe::Workflow::State
         attr_reader :choices, :default, :input_path, :output_path
 
-        def initialize(workflow, name, payload)
+        def initialize(name, payload, _credentials = nil)
           super
 
           @choices = payload["Choices"].map { |choice| ChoiceRule.build(choice) }

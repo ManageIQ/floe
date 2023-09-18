@@ -6,7 +6,7 @@ module Floe
       class Wait < Floe::Workflow::State
         attr_reader :end, :next, :seconds, :input_path, :output_path
 
-        def initialize(workflow, name, payload)
+        def initialize(name, payload, _credentials = nil)
           super
 
           @next    = payload["Next"]

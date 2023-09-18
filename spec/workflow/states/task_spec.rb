@@ -6,7 +6,7 @@ RSpec.describe Floe::Workflow::States::Task do
   describe "#run" do
     let(:mock_runner) { double("Floe::Workflow::Runner") }
     let(:input)       { {"foo" => {"bar" => "baz"}, "bar" => {"baz" => "foo"}} }
-    let(:state)       { described_class.new(workflow, "Task", payload) }
+    let(:state)       { described_class.new("Task", payload, nil) }
 
     before { allow(Floe::Workflow::Runner).to receive(:for_resource).and_return(mock_runner) }
 

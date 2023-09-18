@@ -123,7 +123,7 @@ RSpec.describe Floe::Workflow do
 
   def make_workflow(input, payload, creds: {})
     context = Floe::Workflow::Context.new(:input => input)
-    workflow = Floe::Workflow.new(make_payload(payload), creds)
+    workflow = Floe::Workflow.new("workflow", make_payload(payload), creds)
     [workflow, context]
   end
 

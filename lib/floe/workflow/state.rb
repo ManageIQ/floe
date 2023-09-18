@@ -6,7 +6,7 @@ module Floe
       include Logging
 
       class << self
-        def build!(workflow, name, payload)
+        def build!(name, payload, credentials = nil)
           state_type = payload["Type"]
 
           begin
@@ -15,14 +15,13 @@ module Floe
             raise Floe::InvalidWorkflowError, "Invalid state type: [#{state_type}]"
           end
 
-          klass.new(workflow, name, payload)
+          klass.new(name, payload, credentials)
         end
       end
 
-      attr_reader :workflow, :comment, :name, :type, :payload
+      attr_reader :comment, :name, :type, :payload
 
-      def initialize(workflow, name, payload)
-        @workflow = workflow
+      def initialize(name, payload, _credentials = nil)
         @name     = name
         @payload  = payload
         @type     = payload["Type"]

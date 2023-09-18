@@ -8,7 +8,7 @@ module Floe
                     :result_selector, :resource, :timeout_seconds, :retry, :catch,
                     :input_path, :output_path, :result_path
 
-        def initialize(workflow, name, payload)
+        def initialize(name, payload, credentials = nil)
           super
 
           @heartbeat_seconds = payload["HeartbeatSeconds"]
@@ -23,7 +23,7 @@ module Floe
           @result_path       = ReferencePath.new(payload.fetch("ResultPath", "$"))
           @parameters        = PayloadTemplate.new(payload["Parameters"])     if payload["Parameters"]
           @result_selector   = PayloadTemplate.new(payload["ResultSelector"]) if payload["ResultSelector"]
-          @credentials       = PayloadTemplate.new(payload["Credentials"])    if payload["Credentials"]
+          @credentials       = payload["Credentials"] ? PayloadTemplate.new(payload["Credentials"]) : credentials
         end
 
         def run!(context)

@@ -6,7 +6,7 @@ module Floe
       class Fail < Floe::Workflow::State
         attr_reader :cause, :error
 
-        def initialize(workflow, name, payload)
+        def initialize(name, payload, _credentials = nil)
           super
 
           @cause = payload["Cause"]
