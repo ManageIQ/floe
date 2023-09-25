@@ -2,7 +2,7 @@ RSpec.describe Floe::Workflow::States::Pass do
   let(:input)    { {} }
   let(:ctx)      { Floe::Workflow::Context.new(:input => input) }
   let(:state)    { workflow.current_state }
-  let(:workflow) { make_workflow(ctx, {"WaitState" => {"Type" => "Wait", "Seconds" => 1, "Next" => "SuccessState"}, "SuccessState" => {"Type" => "Succeed"}}) }
+  let(:workflow) { make_workflow(ctx, {"WaitState" => {"Type" => "Wait", "Seconds" => 1, "Next" => "SuccessState"}}) }
 
   describe "#end?" do
     it "is non-terminal" do

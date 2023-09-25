@@ -5,7 +5,7 @@ RSpec.describe Floe::Workflow::States::Choice do
   let(:workflow) do
     make_workflow(
       ctx, {
-        "ChoiceState"      => {
+        "ChoiceState" => {
           "Type"    => "Choice",
           "Choices" => [
             {
@@ -20,10 +20,7 @@ RSpec.describe Floe::Workflow::States::Choice do
             },
           ],
           "Default" => "DefaultState"
-        },
-        "FirstMatchState"  => {"Type" => "Succeed"},
-        "SecondMatchState" => {"Type" => "Succeed"},
-        "DefaultState"     => {"Type" => "Succeed"}
+        }
       }
     )
   end

@@ -5,7 +5,7 @@ RSpec.describe Floe::Workflow::States::Pass do
   let(:workflow) do
     make_workflow(
       ctx, {
-        "PassState"    => {
+        "PassState" => {
           "Type"       => "Pass",
           "Result"     => {
             "foo" => "bar",
@@ -13,8 +13,7 @@ RSpec.describe Floe::Workflow::States::Pass do
           },
           "ResultPath" => "$.result",
           "Next"       => "SuccessState"
-        },
-        "SuccessState" => {"Type" => "Succeed"}
+        }
       }
     )
   end

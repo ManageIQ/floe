@@ -60,6 +60,17 @@ RSpec.configure do |config|
   def make_payload(states)
     start_at ||= states.keys.first
 
+    # add extra states to make sure the payload is complete
+    next_values = []
+    states.each_value do |value|
+      next_values << value["Next"]
+      if value["Type"] == "Choice"
+        next_values << value["Default"]
+        next_values += value["Choices"].map { |choice| choice["Next"] }
+      end
+    end
+    next_values.compact.each { |next_value| states[next_value] = {"Type" => "Succeed"} if !states.key?(next_value) }
+
     {
       "Comment" => "Sample",
       "StartAt" => start_at,
