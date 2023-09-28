@@ -44,6 +44,8 @@ module Floe
         end
 
         def status!(runner_context)
+          return unless runner_context["container_state"].nil? || running?(runner_context)
+
           runner_context["container_state"] = inspect_container(runner_context["container_ref"]).first&.dig("State")
         end
 
@@ -56,8 +58,7 @@ module Floe
         end
 
         def output(runner_context)
-          output = docker!("logs", runner_context["container_ref"], :combined_output => true).output
-          runner_context["output"] = output
+          runner_context["output"] ||= docker!("logs", runner_context["container_ref"], :combined_output => true).output
         end
 
         private

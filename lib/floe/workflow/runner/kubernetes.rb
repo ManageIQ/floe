@@ -65,6 +65,8 @@ module Floe
         end
 
         def status!(runner_context)
+          return unless runner_context["container_state"].nil? || running?(runner_context)
+
           runner_context["container_state"] = pod_info(runner_context["container_ref"]).to_h.deep_stringify_keys["status"]
         end
 
