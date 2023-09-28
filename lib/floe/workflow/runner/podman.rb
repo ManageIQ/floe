@@ -72,6 +72,11 @@ module Floe
           runner_context["output"] ||= podman!("logs", runner_context["container_ref"], :combined_output => true).output
         end
 
+        def mark_status(runner_context, message, error: true)
+          runner_context["output"] = message
+          runner_context["container_state"] = {"Running" => false, "ExitCode" => error ? 300 : 0}
+        end
+
         private
 
         def run_container(image, env, secret)

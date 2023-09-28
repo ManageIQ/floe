@@ -101,6 +101,11 @@ module Floe
           delete_secret(secret) if secret
         end
 
+        def mark_status(runner_context, message, error: true)
+          runner_context["output"] = message
+          runner_context["container_state"] = {"phase" => error ? "Error" : "Succeeded"}
+        end
+
         private
 
         attr_reader :ca_file, :kubeconfig_file, :kubeconfig_context, :namespace, :server, :token, :verify_ssl

@@ -35,6 +35,10 @@ module Floe
         raise NotImplementedError, "Must be implemented in a subclass"
       end
 
+      def mark_status(_ref, error)
+        raise NotImplementedError, "Must be implemented in a subclass"
+      end
+
       # @return [Hash] runner_context
       def run_async!(_image, _env = {}, _secrets = {})
         raise NotImplementedError, "Must be implemented in a subclass"

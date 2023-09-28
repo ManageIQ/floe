@@ -61,6 +61,11 @@ module Floe
           runner_context["output"] ||= docker!("logs", runner_context["container_ref"], :combined_output => true).output
         end
 
+        def mark_status(runner_context, type, error: true)
+          runner_context["container_state"] = {"Running" => false, "ExitCode" => error ? 999 : 0}
+          runner_context["output"] = type
+        end
+
         private
 
         attr_reader :network
