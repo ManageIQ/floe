@@ -96,6 +96,10 @@ module Floe
       context.ended?
     end
 
+    def wait_until
+      context.wait_until
+    end
+
     def current_state
       @states_by_name[context.state_name]
     end

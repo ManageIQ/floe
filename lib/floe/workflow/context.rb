@@ -73,6 +73,10 @@ module Floe
         end
       end
 
+      def wait_until
+        state["WaitUntil"] && Time.parse(state["WaitUntil"])
+      end
+
       def state=(val)
         @context["State"] = val
       end

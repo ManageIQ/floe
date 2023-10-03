@@ -93,6 +93,10 @@ module Floe
         context.state.key?("FinishedTime")
       end
 
+      def wait_until
+        context.wait_until
+      end
+
       private
 
       # Use a payload value or hardcoded path.
@@ -124,7 +128,7 @@ module Floe
       end
 
       def waiting?
-        context.state["WaitUntil"] && Time.now.utc <= Time.parse(context.state["WaitUntil"])
+        context.state["WaitUntil"] && Time.now.utc <= wait_until
       end
     end
   end
