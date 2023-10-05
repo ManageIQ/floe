@@ -13,20 +13,21 @@ module Floe
         def initialize(workflow, name, payload)
           super
 
-          @heartbeat_seconds = payload["HeartbeatSeconds"]
-          @next              = payload["Next"]
-          @end               = !!payload["End"]
-          @resource          = payload["Resource"]
-          @runner            = Floe::Workflow::Runner.for_resource(@resource)
-          @timeout_seconds   = payload["TimeoutSeconds"]
-          @retry             = payload["Retry"].to_a.map { |retrier| Retrier.new(retrier) }
-          @catch             = payload["Catch"].to_a.map { |catcher| Catcher.new(catcher) }
-          @input_path        = Path.new(payload.fetch("InputPath", "$"))
-          @output_path       = Path.new(payload.fetch("OutputPath", "$"))
-          @result_path       = ReferencePath.new(payload.fetch("ResultPath", "$"))
-          @parameters        = PayloadTemplate.new(payload["Parameters"])     if payload["Parameters"]
-          @result_selector   = PayloadTemplate.new(payload["ResultSelector"]) if payload["ResultSelector"]
-          @credentials       = PayloadTemplate.new(payload["Credentials"])    if payload["Credentials"]
+          @heartbeat_seconds    = payload["HeartbeatSeconds"]
+          @next                 = payload["Next"]
+          @end                  = !!payload["End"]
+          @resource             = payload["Resource"]
+          @runner               = Floe::Workflow::Runner.for_resource(@resource)
+          @timeout_seconds      = payload["TimeoutSeconds"]
+          @timeout_seconds_path = Path.new(payload["TimeoutSecondsPath"]) if payload["TimeoutSecondsPath"]
+          @retry                = payload["Retry"].to_a.map { |retrier| Retrier.new(retrier) }
+          @catch                = payload["Catch"].to_a.map { |catcher| Catcher.new(catcher) }
+          @input_path           = Path.new(payload.fetch("InputPath", "$"))
+          @output_path          = Path.new(payload.fetch("OutputPath", "$"))
+          @result_path          = ReferencePath.new(payload.fetch("ResultPath", "$"))
+          @parameters           = PayloadTemplate.new(payload["Parameters"])     if payload["Parameters"]
+          @result_selector      = PayloadTemplate.new(payload["ResultSelector"]) if payload["ResultSelector"]
+          @credentials          = PayloadTemplate.new(payload["Credentials"])    if payload["Credentials"]
 
           validate_state!
         end
@@ -65,7 +66,7 @@ module Floe
           return true if waiting?
 
           runner.status!(context.state["RunnerContext"])
-          runner.running?(context.state["RunnerContext"])
+          runner.running?(context.state["RunnerContext"]) && check_timeout!
         end
 
         def end?
@@ -78,6 +79,21 @@ module Floe
 
         def validate_state!
           validate_state_next!
+        end
+
+        # only call this if it is running, otherwise it overwrites the return status
+        # @returns true if this task is still running
+        def check_timeout!
+          seconds = @timeout_seconds_path ? @timeout_seconds_path.value(context, input) : @timeout_seconds
+          return true unless seconds
+
+          now = Time.now.utc
+          if now > Time.parse(context.state["EnteredTime"]) + seconds
+            runner.mark_status(context.state["RunnerContext"], "States.Timeout")
+            false
+          end
+
+          true
         end
 
         def success?
