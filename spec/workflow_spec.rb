@@ -1,3 +1,4 @@
+require 'active_support'
 require 'active_support/time'
 
 RSpec.describe Floe::Workflow do
