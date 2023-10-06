@@ -31,7 +31,7 @@ runner_options = opts[:docker_runner_options].to_h { |opt| opt.split("=", 2) }
 
 Floe::Workflow::Runner.docker_runner = runner_klass.new(runner_options)
 
-context = Floe::Workflow::Context.new(:input => opts[:input])
+context = Floe::Workflow::Context.new(:input => JSON.parse(opts[:input]))
 workflow = Floe::Workflow.load(opts[:workflow], context, opts[:credentials])
 
 workflow.run!
