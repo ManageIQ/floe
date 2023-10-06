@@ -93,6 +93,26 @@ RSpec.describe Floe::Workflow do
       expect(ctx.running?).to eq(true)
       expect(ctx.ended?).to   eq(false)
     end
+
+    it "detects invalid StartAt" do
+      workflow = Floe::Workflow.new({"StartAt" => "Bogus", "States" => {"FirstState" => {"Type" => "Succeed"}}}, ctx, {})
+
+      workflow.run_nonblock
+
+      expect(ctx.running?).to eq(false)
+      expect(ctx.ended?).to   eq(true)
+      expect(ctx.status).to eq("failure")
+    end
+
+    it "detects invalid Next" do
+      workflow = Floe::Workflow.new({"StartAt" => "FirstState", "States" => {"FirstState" => {"Type" => "Pass", "Next" => "Bogus"}}}, ctx, {})
+
+      workflow.run_nonblock
+
+      expect(ctx.running?).to eq(false)
+      expect(ctx.ended?).to   eq(true)
+      expect(ctx.status).to eq("failure")
+    end
   end
 
   describe "#step" do

@@ -71,8 +71,8 @@ module Floe
 
     def step_nonblock
       return Errno::EPERM if end?
+      return 0 unless step_next
 
-      step_next
       current_state.run_nonblock!
     end
 
@@ -103,7 +103,21 @@ module Floe
     private
 
     def step_next
-      context.state = {"Name" => context.next_state, "Input" => context.output} if context.next_state
+      desired_state = context.next_state || context.state_name
+      if !@states_by_name.key?(desired_state)
+        context.state["Error"] = "States.Runtime"
+        context.state["Cause"] = "State \"#{desired_state}\" does not exist"
+        context.output = {"Error" => context.state["Error"], "Cause" => context.state["Cause"]}
+        context.execution["StartTime"] ||= Time.now.utc
+        context.execution["EndTime"] = Time.now.utc.iso8601
+        return false
+      end
+
+      if context.next_state
+        context.state = {"Name" => context.next_state, "Input" => context.output}
+      end
+
+      true
     end
   end
 end
