@@ -11,12 +11,13 @@ opts = Optimist.options do
   opt :credentials, "JSON payload with credentials",           :default => "{}"
   opt :docker_runner, "Type of runner for docker images",      :default => "docker"
   opt :docker_runner_options, "Options to pass to the runner", :type => :strings
+  opt :log, "Show the log",                                    :type => :boolean, :default => true
 end
 
 Optimist.die(:docker_runner, "must be one of #{Floe::Workflow::Runner::TYPES.join(", ")}") unless Floe::Workflow::Runner::TYPES.include?(opts[:docker_runner])
 
 require "logger"
-Floe.logger = Logger.new($stdout)
+Floe.logger = Logger.new($stdout) if opts[:log]
 
 runner_klass = case opts[:docker_runner]
                when "docker"
