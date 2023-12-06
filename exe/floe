@@ -15,6 +15,10 @@ end
 
 Optimist.die(:docker_runner, "must be one of #{Floe::Workflow::Runner::TYPES.join(", ")}") unless Floe::Workflow::Runner::TYPES.include?(opts[:docker_runner])
 
+# allow quoted keys
+
+opts[:input].gsub!(/([a-z]\w*):/, '"\1":')
+
 require "logger"
 Floe.logger = Logger.new($stdout)
 
