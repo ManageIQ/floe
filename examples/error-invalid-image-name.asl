@@ -1,8 +1,8 @@
 {
   "Comment": "An example of the Amazon States Language using an invalid resource (it must be lower case)",
-  "StartAt": "InvalidImageName",
+  "StartAt": "FirstState",
   "States": {
-    "InvalidImageName": {
+    "FirstState": {
       "Type": "Task",
       "TimeoutSeconds": 20,
       "Resource": "docker://kbrock/HELLO-WORLD:latest",
