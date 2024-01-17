@@ -4,6 +4,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.7.1] - 2024-01-17
+### Fixed
+- Ensure that workflow credentials is not-nil ([#156](https://github.com/ManageIQ/floe/pull/156))
+
 ## [0.7.0] - 2023-12-18
 ### Changed
 - Remove the dependency on more_core_extensions in ReferencePath ([#144](https://github.com/ManageIQ/floe/pull/144))
@@ -114,7 +118,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Initial release
 
-[Unreleased]: https://github.com/ManageIQ/floe/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/ManageIQ/floe/compare/v0.7.1...HEAD
+[0.7.1]: https://github.com/ManageIQ/floe/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/ManageIQ/floe/compare/v0.6.1...v0.7.0
 [0.6.1]: https://github.com/ManageIQ/floe/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/ManageIQ/floe/compare/v0.5.0...v0.6.0
