@@ -23,6 +23,11 @@ RSpec.describe Floe::Workflow do
       expect(ctx.input).to eq(input)
     end
 
+    it "sets credentials to empty hash if nil passed in" do
+      workflow = make_workflow(ctx, {"FirstState" => {"Type" => "Succeed"}}, :creds => nil)
+      expect(workflow.credentials).to eq({})
+    end
+
     it "raises an exception for missing States" do
       payload = {"Comment" => "Test", "StartAt" => "Nothing"}
 
