@@ -74,10 +74,6 @@ module Floe
       current_state.run_nonblock!
     end
 
-    def step_nonblock_wait(timeout: nil)
-      current_state.wait(:timeout => timeout)
-    end
-
     def step_nonblock_ready?
       current_state.ready?
     end
