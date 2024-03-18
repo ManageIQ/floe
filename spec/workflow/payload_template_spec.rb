@@ -38,5 +38,17 @@ RSpec.describe Floe::Workflow::PayloadTemplate do
         expect(subject.value(context, inputs)).to eq({"foo" => ["bar", "baz"], "bar" => {"hello" => "world"}})
       end
     end
+
+    context "with intrinsic functions" do
+      context "States.StringToJson" do
+        let(:context) { {} }
+        let(:payload) { {"foo.$" => "States.StringToJson($.someString)"} }
+        let(:inputs)  { {"someString" => "{\"number\": 20}"} }
+
+        it "sets foo to the parsed JSON from inputs" do
+          expect(subject.value(context, inputs)).to eq({"foo" => {"number" => 20}})
+        end
+      end
+    end
   end
 end
