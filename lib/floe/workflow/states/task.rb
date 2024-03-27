@@ -51,11 +51,11 @@ module Floe
           output = runner.output(context.state["RunnerContext"])
 
           if success?
-            output = parse_output(output)
+            output = parse(output)
             context.state["Output"] = process_output(context.input.dup, output)
           else
             context.next_state = nil
-            error = parse_error(output)
+            error = parse(output, :error => true)
             retry_state!(error) || catch_error!(error) || fail_workflow!(error)
           end
 
@@ -128,22 +128,13 @@ module Floe
           context.state["Error"] = context.output["Error"]
         end
 
-        def parse_error(output)
-          return if output.nil?
-          return output if output.kind_of?(Hash)
-
-          JSON.parse(output.split("\n").last)
-        rescue JSON::ParserError
-          {"Error" => output.chomp}
-        end
-
-        def parse_output(output)
-          return output if output.kind_of?(Hash)
+        def parse(output, error: false)
           return if output.nil? || output.empty?
+          return output if output.kind_of?(Hash)
 
           JSON.parse(output.split("\n").last)
         rescue JSON::ParserError
-          nil
+          error ? {"Error" => output.chomp} : nil
         end
 
         def next_state
