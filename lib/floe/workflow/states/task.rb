@@ -58,7 +58,6 @@ module Floe
             error = parse_error(output)
             retry_state!(error) || catch_error!(error) || fail_workflow!(error)
           end
-
         ensure
           runner.cleanup(context.state["RunnerContext"])
         end

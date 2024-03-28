@@ -164,7 +164,7 @@ module Floe
 
         def failed_container_states(context)
           container_statuses = context.dig("container_state", "containerStatuses") || []
-          container_statuses.map { |status| status["state"]&.values&.first }.compact
+          container_statuses.filter_map { |status| status["state"]&.values&.first }
                             .select { |state| FAILURE_REASONS.include?(state["reason"]) }
         end
 
