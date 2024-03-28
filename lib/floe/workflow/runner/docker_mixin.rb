@@ -6,9 +6,10 @@ module Floe
           image.match(%r{^(?<repository>.+/)?(?<image>.+):(?<tag>.+)$})&.named_captures&.dig("image")
         end
 
-        MAX_CONTAINER_NAME_SIZE = 63 - 5 - 9 # 63 is the max kubernetes pod name length
-                                             # -5 for the "floe-" prefix
-                                             # -9 for the random hex suffix and leading hyphen
+        # 63 is the max kubernetes pod name length
+        # -5 for the "floe-" prefix
+        # -9 for the random hex suffix and leading hyphen
+        MAX_CONTAINER_NAME_SIZE = 63 - 5 - 9
 
         def container_name(image)
           name = image_name(image)

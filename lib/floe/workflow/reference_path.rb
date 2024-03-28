@@ -19,11 +19,11 @@ module Floe
         super
 
         raise Floe::InvalidWorkflowError, "Invalid Reference Path" if payload.match?(/@|,|:|\?/)
+
         @path = JsonPath.new(payload)
                         .path[1..]
                         .map { |v| v.match(/\[(?<name>.+)\]/)["name"] }
-                        .map { |v| v[0] == "'" ? v.delete("'") : v.to_i }
-                        .compact
+                        .filter_map { |v| v[0] == "'" ? v.delete("'") : v.to_i }
       end
 
       def get(context)

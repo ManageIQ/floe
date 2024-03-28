@@ -51,7 +51,7 @@ RSpec.describe Floe::Workflow::Runner::Kubernetes do
         :kind       => "Pod",
         :apiVersion => "v1",
         :metadata   => {
-          :name      => a_string_matching(/^floe-this-is-a-very-long-image-name-way-longer-than-sh\-\h{8}$/).and(is_a_valid_kube_name),
+          :name      => a_string_matching(/^floe-this-is-a-very-long-image-name-way-longer-than-sh-\h{8}$/).and(is_a_valid_kube_name),
           :namespace => "default"
         },
         :spec       => hash_including(
@@ -74,7 +74,7 @@ RSpec.describe Floe::Workflow::Runner::Kubernetes do
         :kind       => "Pod",
         :apiVersion => "v1",
         :metadata   => {
-          :name      => a_string_matching(/^floe-a-b-c-0--1--2\-\h{8}$/).and(is_a_valid_kube_name),
+          :name      => a_string_matching(/^floe-a-b-c-0--1--2-\h{8}$/).and(is_a_valid_kube_name),
           :namespace => "default"
         },
         :spec       => hash_including(
