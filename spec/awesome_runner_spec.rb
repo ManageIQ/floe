@@ -20,12 +20,14 @@ RSpec.describe Floe::AwesomeRunner, :uses_awesome_spawn => true do
       stub_good_run("ls", :params => [], :env => {}, :output => "file\nlisting\n")
 
       subject.run_async!("awesome://ls")
+      subject.queue.pop
     end
 
     it "passes environment variables to command run" do
       stub_good_run("ls", :params => [], :env => {"FOO" => "BAR"}, :output => "file\nlisting\n")
 
       subject.run_async!("awesome://ls", {"FOO" => "BAR"})
+      subject.queue.pop
     end
   end
 
