@@ -1,5 +1,6 @@
 require "floe"
 require "floe/container_runner"
+require "floe/awesome_runner"
 
 module Floe
   class CLI
