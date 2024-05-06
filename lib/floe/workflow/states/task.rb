@@ -66,6 +66,9 @@ module Floe
           return true if waiting?
 
           runner.status!(context.state["RunnerContext"])
+          if (delay = context.state["RunnerContext"].delete("delay"))
+            wait_until!(:seconds => delay)
+          end
           runner.running?(context.state["RunnerContext"])
         end
 
