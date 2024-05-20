@@ -97,7 +97,7 @@ RSpec.describe Floe::Workflow::States::Map do
       }
 
       expect { Floe::Workflow.new(payload, ctx) }
-        .to raise_error(Floe::InvalidWorkflowError, "States.MapState.Validate field \"Next\" value \"PassState\" is not found in \"States\"")
+        .to raise_error(Floe::InvalidWorkflowError, "States.Validate field \"Next\" value \"PassState\" is not found in \"States\"")
     end
   end
 
