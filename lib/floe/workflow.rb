@@ -4,7 +4,7 @@ require "securerandom"
 require "json"
 
 module Floe
-  class Workflow
+  class Workflow < Floe::WorkflowBase
     include Logging
 
     class << self
@@ -85,7 +85,7 @@ module Floe
       end
     end
 
-    attr_reader :context, :payload, :states, :states_by_name, :start_at, :name, :comment
+    attr_reader :comment, :context
 
     def initialize(payload, context = nil, credentials = nil, name = nil)
       payload     = JSON.parse(payload)     if payload.kind_of?(String)
@@ -100,14 +100,10 @@ module Floe
       raise Floe::InvalidWorkflowError, "Missing field \"StartAt\"" if payload["StartAt"].nil?
       raise Floe::InvalidWorkflowError, "\"StartAt\" not in the \"States\" field" unless payload["States"].key?(payload["StartAt"])
 
-      @name        = name
-      @payload     = payload
       @context     = context
       @comment     = payload["Comment"]
-      @start_at    = payload["StartAt"]
 
-      @states         = payload["States"].to_a.map { |state_name, state| State.build!(self, state_name, state) }
-      @states_by_name = @states.each_with_object({}) { |state, result| result[state.name] = state }
+      super(payload, name)
     rescue Floe::Error
       raise
     rescue => err
