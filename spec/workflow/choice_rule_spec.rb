@@ -121,6 +121,24 @@ RSpec.describe Floe::Workflow::ChoiceRule do
         end
       end
 
+      context "with a missing compare key" do
+        let(:payload) { {"Variable" => "$.foo", "Next" => "FirstMatchState"} }
+        let(:input) { {"foo" => "bar"} }
+
+        it "raises an exception" do
+          expect { subject }.to raise_exception(Floe::InvalidWorkflowError, "Data-test Expression Choice Rule must have a compare key")
+        end
+      end
+
+      context "with an invalid compare key" do
+        let(:payload) { {"Variable" => "$.foo", "InvalidCompare" => "$.bar", "Next" => "FirstMatchState"} }
+        let(:input)   { {"foo" => 0, "bar" => 1} }
+
+        it "fails" do
+          expect { subject }.to raise_exception(Floe::InvalidWorkflowError)
+        end
+      end
+
       context "with IsNull" do
         let(:payload) { {"Variable" => "$.foo", "IsNull" => true, "Next" => "FirstMatchState"} }
 
