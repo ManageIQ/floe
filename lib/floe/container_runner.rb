@@ -21,11 +21,17 @@ module Floe
       end
 
       def resolve_cli_options!(opts)
-        # shortcut support
+        resolve_shortcuts(opts)
+        resolve_options(opts)
+      end
+
+      def resolve_shortcuts(opts)
         opts[:container_runner] ||= "docker" if opts[:docker]
         opts[:container_runner] ||= "podman" if opts[:podman]
         opts[:container_runner] ||= "kubernetes" if opts[:kubernetes]
+      end
 
+      def resolve_options(opts)
         runner_options = opts[:container_runner_options].to_h { |opt| opt.split("=", 2) }
 
         begin
