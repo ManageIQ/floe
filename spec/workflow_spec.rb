@@ -256,33 +256,6 @@ RSpec.describe Floe::Workflow do
     end
   end
 
-  describe "#step_nonblock_wait" do
-    context "with a state that hasn't started yet" do
-      it "returns 0" do
-        workflow = make_workflow(ctx, {"FirstState" => {"Type" => "Succeed"}})
-        expect(workflow.step_nonblock_wait).to eq(0)
-      end
-    end
-
-    context "with a state that has finished" do
-      it "return 0" do
-        ctx.state["EnteredTime"] = Time.now.utc.iso8601
-        workflow = make_workflow(ctx, {"FirstState" => {"Type" => "Succeed"}})
-        expect(workflow.current_state).to receive(:running?).and_return(false)
-        expect(workflow.step_nonblock_wait).to eq(0)
-      end
-    end
-
-    context "with a state that is running" do
-      it "returns Try again" do
-        ctx.state["EnteredTime"] = Time.now.utc.iso8601
-        workflow = make_workflow(ctx, {"FirstState" => {"Type" => "Task", "Resource" => "docker://agrare/hello-world:latest", "End" => true}})
-        expect(workflow.current_state).to receive(:running?).and_return(true)
-        expect(workflow.step_nonblock_wait(:timeout => 0)).to eq(Errno::EAGAIN)
-      end
-    end
-  end
-
   describe "#step_nonblock_ready?" do
     context "with a state that hasn't started yet" do
       it "returns true" do
