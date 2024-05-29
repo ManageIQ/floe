@@ -16,7 +16,6 @@ module Floe
         self["Execution"]["Input"] ||= input
         self["State"]              ||= {}
         self["StateHistory"]       ||= []
-        self["Task"]               ||= {}
       end
 
       def execution
@@ -89,10 +88,6 @@ module Floe
 
       def state_history
         @context["StateHistory"]
-      end
-
-      def task
-        @context["Task"]
       end
 
       def [](key)
