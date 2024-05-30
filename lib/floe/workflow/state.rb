@@ -21,10 +21,9 @@ module Floe
         end
       end
 
-      attr_reader :workflow, :comment, :name, :type, :payload
+      attr_reader :comment, :name, :type, :payload
 
       def initialize(workflow, name, payload)
-        @workflow = workflow
         @name     = name
         @payload  = payload
         @type     = payload["Type"]
@@ -73,10 +72,6 @@ module Floe
         logger.public_send(level, "Running state: [#{long_name}] with input [#{context.input}]...Complete #{context.next_state ? "- next state [#{context.next_state}]" : "workflow -"} output: [#{context.output}]")
 
         0
-      end
-
-      def context
-        workflow.context
       end
 
       def ready?(context)
