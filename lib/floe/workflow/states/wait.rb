@@ -10,10 +10,8 @@ module Floe
 
         attr_reader :input_path, :seconds, :seconds_path, :timestamp, :timestamp_path, :output_path
 
-        def initialize(workflow, name, payload)
+        def initialize(validator, name, payload)
           super
-
-          validator = workflow.validator.for_state(name)
 
           @end            = !!payload["End"]
           @next           = validator.validate_state_ref!("Next", payload["Next"], :optional => @end)

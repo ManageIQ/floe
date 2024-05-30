@@ -11,10 +11,8 @@ module Floe
                     :result_selector, :resource, :timeout_seconds, :retry, :catch,
                     :input_path, :output_path, :result_path
 
-        def initialize(workflow, name, payload)
+        def initialize(validator, name, payload)
           super
-
-          validator = workflow.validator.for_state(name)
 
           validator.validate_list!("Retry", payload["Retry"], :optional => true)
           validator.validate_list!("Catch", payload["Catch"], :optional => true)

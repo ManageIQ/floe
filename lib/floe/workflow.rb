@@ -106,7 +106,7 @@ module Floe
       @comment     = payload["Comment"]
       @start_at    = validator.validate_state_ref!("StartAt", payload["StartAt"])
 
-      @states         = states.map { |state_name, state| State.build!(self, state_name, state) }
+      @states         = states.map { |state_name, state| State.build!(validator.for_state(state_name), state_name, state) }
       @states_by_name = @states.each_with_object({}) { |state, result| result[state.name] = state }
     rescue Floe::InvalidWorkflowError
       raise

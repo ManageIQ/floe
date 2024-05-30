@@ -6,8 +6,7 @@ module Floe
       include Logging
 
       class << self
-        def build!(workflow, name, payload)
-          validator = workflow.validator.for_state(name)
+        def build!(validator, name, payload)
           state_type = payload["Type"]
           validator.validate_field!("Type", payload["Type"])
 
@@ -17,20 +16,19 @@ module Floe
             validator.reject!("Type", state_type)
           end
 
-          klass.new(workflow, name, payload)
+          klass.new(validator, name, payload)
         end
       end
 
       attr_reader :comment, :name, :type, :payload
 
-      def initialize(workflow, name, payload)
+      def initialize(validator, name, payload)
         @name     = name
         @payload  = payload
         @type     = payload["Type"]
         @comment  = payload["Comment"]
 
         # We should be using build so this should never get hit
-        validator = workflow.validator.for_state(name)
         validator.validate_field!("Type", @type)
         raise Floe::InvalidWorkflowError, "State name [#{name[..79]}...] must be less than or equal to 80 characters" if name.length > 80
       end
