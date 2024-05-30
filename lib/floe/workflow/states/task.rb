@@ -38,7 +38,7 @@ module Floe
         def start(context)
           super
 
-          input          = process_input(context.input)
+          input          = process_input(context)
           runner_context = runner.run_async!(resource, input, credentials&.value({}, context.credentials), context)
 
           context.state["RunnerContext"] = runner_context
@@ -49,7 +49,7 @@ module Floe
 
           if success?(context)
             output = parse_output(output)
-            context.output = process_output(context.input.dup, output)
+            context.output = process_output(context, output)
           else
             error = parse_error(output)
             retry_state!(context, error) || catch_error!(context, error) || fail_workflow!(context, error)

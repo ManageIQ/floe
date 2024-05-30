@@ -25,7 +25,7 @@ module Floe
         end
 
         def finish(context)
-          context.output = process_output(context.input.dup, result)
+          context.output = process_output(context, result)
           super
         end
 
