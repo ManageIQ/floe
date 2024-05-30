@@ -26,7 +26,7 @@ module Floe
           @output_path = Path.new(payload.fetch("OutputPath", "$"))
         end
 
-        def start(input)
+        def start(context)
           super
 
           input = input_path.value(context, context.input)
@@ -37,7 +37,7 @@ module Floe
           )
         end
 
-        def finish
+        def finish(context)
           input          = input_path.value(context, context.input)
           context.output = output_path.value(context, input)
           super

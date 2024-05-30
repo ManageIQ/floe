@@ -11,13 +11,13 @@ RSpec.describe Floe::Workflow::State do
     end
 
     it "is started" do
-      state.start(ctx.input)
+      state.start(ctx)
       expect(ctx.state_started?).to eq(true)
     end
 
     it "is finished" do
-      state.start(ctx.input)
-      state.finish
+      state.start(ctx)
+      state.finish(ctx)
 
       expect(ctx.state_started?).to eq(true)
     end
@@ -29,13 +29,13 @@ RSpec.describe Floe::Workflow::State do
     end
 
     it "is started" do
-      state.start(ctx.input)
+      state.start(ctx)
       expect(ctx.state_finished?).to eq(false)
     end
 
     it "is finished" do
-      state.start(ctx.input)
-      state.finish
+      state.start(ctx)
+      state.finish(ctx)
 
       expect(ctx.state_finished?).to eq(true)
     end

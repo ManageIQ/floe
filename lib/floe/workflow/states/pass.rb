@@ -24,7 +24,7 @@ module Floe
           @result_path = ReferencePath.new(payload.fetch("ResultPath", "$"))
         end
 
-        def finish
+        def finish(context)
           context.output = process_output(context.input.dup, result)
           super
         end

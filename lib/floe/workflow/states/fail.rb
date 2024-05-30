@@ -15,7 +15,7 @@ module Floe
           @error_path = Path.new(payload["ErrorPath"]) if payload["ErrorPath"]
         end
 
-        def finish
+        def finish(context)
           context.next_state = nil
           # TODO: support intrinsic functions here
           # see https://docs.aws.amazon.com/step-functions/latest/dg/amazon-states-language-fail-state.html

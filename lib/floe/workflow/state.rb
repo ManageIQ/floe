@@ -49,20 +49,20 @@ module Floe
 
       # @return for incomplete Errno::EAGAIN, for completed 0
       def run_nonblock!
-        start(context.input) unless context.state_started?
+        start(context) unless context.state_started?
         return Errno::EAGAIN unless ready?(context)
 
-        finish
+        finish(context)
       end
 
-      def start(_input)
+      def start(context)
         context.state["Guid"]        = SecureRandom.uuid
         context.state["EnteredTime"] = Time.now.utc.iso8601
 
         logger.info("Running state: [#{long_name}] with input [#{context.input}]...")
       end
 
-      def finish
+      def finish(context)
         finished_time     = Time.now.utc
         entered_time      = Time.parse(context.state["EnteredTime"])
 

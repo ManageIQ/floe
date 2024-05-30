@@ -20,7 +20,7 @@ module Floe
           @output_path = Path.new(payload.fetch("OutputPath", "$"))
         end
 
-        def finish
+        def finish(context)
           output     = output_path.value(context, context.input)
           next_state = choices.detect { |choice| choice.true?(context, output) }&.next || default
 
