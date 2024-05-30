@@ -7,39 +7,37 @@ RSpec.describe Floe::Workflow::State do
 
   describe "#started?" do
     it "is not started yet" do
-      expect(state.started?).to eq(false)
+      expect(ctx.state_started?).to eq(false)
     end
 
     it "is started" do
       state.start(ctx.input)
-      expect(state.started?).to eq(true)
+      expect(ctx.state_started?).to eq(true)
     end
 
     it "is finished" do
       state.start(ctx.input)
       state.finish
 
-      state.start(ctx.input)
-      expect(state.started?).to eq(true)
+      expect(ctx.state_started?).to eq(true)
     end
   end
 
   describe "#finished?" do
     it "is not started yet" do
-      expect(state.finished?).to eq(false)
+      expect(ctx.state_finished?).to eq(false)
     end
 
     it "is started" do
       state.start(ctx.input)
-      expect(state.finished?).to eq(false)
+      expect(ctx.state_finished?).to eq(false)
     end
 
     it "is finished" do
       state.start(ctx.input)
       state.finish
 
-      state.start(ctx.input)
-      expect(state.finished?).to eq(true)
+      expect(ctx.state_finished?).to eq(true)
     end
   end
 end

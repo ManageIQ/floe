@@ -49,7 +49,7 @@ module Floe
 
       # @return for incomplete Errno::EAGAIN, for completed 0
       def run_nonblock!
-        start(context.input) unless started?
+        start(context.input) unless context.state_started?
         return Errno::EAGAIN unless ready?
 
         finish
@@ -79,16 +79,8 @@ module Floe
         workflow.context
       end
 
-      def started?
-        context.state_started?
-      end
-
       def ready?
-        !started? || !running?
-      end
-
-      def finished?
-        context.state_finished?
+        !context.state_started? || !running?
       end
 
       def waiting?
