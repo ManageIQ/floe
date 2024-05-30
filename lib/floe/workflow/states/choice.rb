@@ -29,7 +29,7 @@ module Floe
           super
         end
 
-        def running?
+        def running?(_)
           false
         end
 

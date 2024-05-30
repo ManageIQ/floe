@@ -40,7 +40,7 @@ module Floe
         start = Time.now.utc
 
         loop do
-          return 0             if ready?
+          return 0             if ready?(context)
           return Errno::EAGAIN if timeout && (timeout.zero? || Time.now.utc - start > timeout)
 
           sleep(1)
@@ -50,7 +50,7 @@ module Floe
       # @return for incomplete Errno::EAGAIN, for completed 0
       def run_nonblock!
         start(context.input) unless context.state_started?
-        return Errno::EAGAIN unless ready?
+        return Errno::EAGAIN unless ready?(context)
 
         finish
       end
@@ -79,11 +79,15 @@ module Floe
         workflow.context
       end
 
-      def ready?
-        !context.state_started? || !running?
+      def ready?(context)
+        !context.state_started? || !running?(context)
       end
 
-      def waiting?
+      def running?(context)
+        raise NotImplementedError, "Must be implemented in a subclass"
+      end
+
+      def waiting?(context)
         context.state["WaitUntil"] && Time.now.utc <= Time.parse(context.state["WaitUntil"])
       end
 

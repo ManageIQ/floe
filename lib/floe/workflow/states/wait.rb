@@ -43,8 +43,8 @@ module Floe
           super
         end
 
-        def running?
-          waiting?
+        def running?(context)
+          waiting?(context)
         end
 
         def end?

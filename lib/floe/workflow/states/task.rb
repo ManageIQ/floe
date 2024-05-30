@@ -59,8 +59,8 @@ module Floe
           runner.cleanup(context.state["RunnerContext"])
         end
 
-        def running?
-          return true if waiting?
+        def running?(context)
+          return true if waiting?(context)
 
           runner.status!(context.state["RunnerContext"])
           runner.running?(context.state["RunnerContext"])

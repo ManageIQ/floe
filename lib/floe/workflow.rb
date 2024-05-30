@@ -141,11 +141,11 @@ module Floe
 
     # if this hasn't started (and we have no current_state yet), assume it is ready
     def step_nonblock_ready?
-      !context.started? || current_state.ready?
+      !context.started? || current_state.ready?(context)
     end
 
     def waiting?
-      current_state.waiting?
+      current_state.waiting?(context)
     end
 
     def wait_until
