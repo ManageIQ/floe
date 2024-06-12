@@ -7,13 +7,14 @@ module Floe
 
       class << self
         def build!(workflow, name, payload)
+          validator = workflow.validator.for_state(name)
           state_type = payload["Type"]
-          raise Floe::InvalidWorkflowError, "Missing \"Type\" field in state [#{name}]" if payload["Type"].nil?
+          validator.validate_field!("Type", payload["Type"])
 
           begin
             klass = Floe::Workflow::States.const_get(state_type)
           rescue NameError
-            raise Floe::InvalidWorkflowError, "Invalid state type: [#{state_type}]"
+            validator.reject!("Type", state_type)
           end
 
           klass.new(workflow, name, payload)
@@ -29,8 +30,10 @@ module Floe
         @type     = payload["Type"]
         @comment  = payload["Comment"]
 
-        raise Floe::InvalidWorkflowError, "Missing \"Type\" field in state [#{name}]" if payload["Type"].nil?
-        raise Floe::InvalidWorkflowError, "State name [#{name}] must be less than or equal to 80 characters" if name.length > 80
+        # We should be using build so this should never get hit
+        validator = workflow.validator.for_state(name)
+        validator.validate_field!("Type", @type)
+        raise Floe::InvalidWorkflowError, "State name [#{name[..79]}...] must be less than or equal to 80 characters" if name.length > 80
       end
 
       def wait(timeout: nil)

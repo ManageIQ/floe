@@ -85,7 +85,7 @@ module Floe
       end
     end
 
-    attr_reader :context, :payload, :states, :states_by_name, :start_at, :name, :comment
+    attr_reader :context, :payload, :states, :states_by_name, :start_at, :name, :comment, :validator
 
     def initialize(payload, context = nil, credentials = nil, name = nil)
       payload     = JSON.parse(payload)     if payload.kind_of?(String)
@@ -96,17 +96,17 @@ module Floe
       # caller should really put credentials into context and not pass that variable
       context.credentials = credentials if credentials
 
-      raise Floe::InvalidWorkflowError, "Missing field \"States\""  if payload["States"].nil?
-      raise Floe::InvalidWorkflowError, "Missing field \"StartAt\"" if payload["StartAt"].nil?
-      raise Floe::InvalidWorkflowError, "\"StartAt\" not in the \"States\" field" unless payload["States"].key?(payload["StartAt"])
+      @validator  = Validator.new
+      states      = validator.validate_list!("States", payload["States"], :klass => Hash)
+      @validator.state_names = states.keys
 
       @name        = name
       @payload     = payload
       @context     = context
       @comment     = payload["Comment"]
-      @start_at    = payload["StartAt"]
+      @start_at    = validator.validate_state_ref!("StartAt", payload["StartAt"])
 
-      @states         = payload["States"].to_a.map { |state_name, state| State.build!(self, state_name, state) }
+      @states         = states.map { |state_name, state| State.build!(self, state_name, state) }
       @states_by_name = @states.each_with_object({}) { |state, result| result[state.name] = state }
     rescue => err
       raise Floe::InvalidWorkflowError, err.message

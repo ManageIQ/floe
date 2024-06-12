@@ -9,10 +9,12 @@ module Floe
         def initialize(workflow, name, payload)
           super
 
-          validate_state!
+          validator = workflow.validator.for_state(name)
+
+          validator.validate_list!("Choices", payload["Choices"])
 
           @choices = payload["Choices"].map { |choice| ChoiceRule.build(choice) }
-          @default = payload["Default"]
+          @default = validator.validate_state_ref!("Default", payload["Default"])
 
           @input_path  = Path.new(payload.fetch("InputPath", "$"))
           @output_path = Path.new(payload.fetch("OutputPath", "$"))
@@ -33,22 +35,6 @@ module Floe
 
         def end?
           false
-        end
-
-        private
-
-        def validate_state!
-          validate_state_choices!
-          validate_state_default!
-        end
-
-        def validate_state_choices!
-          raise Floe::InvalidWorkflowError, "Choice state must have \"Choices\"" unless payload.key?("Choices")
-          raise Floe::InvalidWorkflowError, "\"Choices\" must be a non-empty array" unless payload["Choices"].kind_of?(Array) && !payload["Choices"].empty?
-        end
-
-        def validate_state_default!
-          raise Floe::InvalidWorkflowError, "\"Default\" not in \"States\"" unless workflow.payload["States"].include?(payload["Default"])
         end
       end
     end
