@@ -9,11 +9,6 @@ module Floe
         super
         @processor_config = payload.fetch("ProcessorConfig", "INLINE")
       end
-
-      def value(_context, input = {})
-        # TODO: Run the states to get the output
-        input
-      end
     end
   end
 end
