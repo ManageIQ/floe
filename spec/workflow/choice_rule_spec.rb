@@ -1,11 +1,24 @@
 RSpec.describe Floe::Workflow::ChoiceRule do
+  let(:name)      { "FirstMatchState" }
+  let(:workflow)  { make_workflow({}, {name => {"Type" => "Choice", "Choices" => [payload], "Default" => name}}) }
+
+  describe ".build" do
+    let(:payload) { {"Variable" => "$.foo", "StringEquals" => "foo", "Next" => name} }
+    let(:subject) { described_class.build(payload) }
+
+    it "works with valid next" do
+      subject
+    end
+  end
+
   describe "#true?" do
     let(:subject) { described_class.build(payload).true?(context, input) }
     let(:context) { {} }
 
-    context "Abstract Interface" do
+    context "with abstract top level class" do
+      let(:payload) { {"Variable" => "$.foo", "StringEquals" => "foo", "Next" => name} }
       let(:input) { {} }
-      let(:subject) { described_class.new({}).true?(context, input) }
+      let(:subject) { described_class.new(payload).true?(context, input) }
       it "is not implemented" do
         expect { subject }.to raise_exception(NotImplementedError)
       end
@@ -84,7 +97,7 @@ RSpec.describe Floe::Workflow::ChoiceRule do
       end
 
       context "with IsNull" do
-        let(:payload) { {"Variable" => "$.foo", "IsNull" => true} }
+        let(:payload) { {"Variable" => "$.foo", "IsNull" => true, "Next" => "FirstMatchState"} }
 
         context "with null" do
           let(:input) { {"foo" => nil} }
@@ -104,7 +117,7 @@ RSpec.describe Floe::Workflow::ChoiceRule do
       end
 
       context "with IsPresent" do
-        let(:payload) { {"Variable" => "$.foo", "IsPresent" => true} }
+        let(:payload) { {"Variable" => "$.foo", "IsPresent" => true, "Next" => "FirstMatchState"} }
 
         context "with null" do
           let(:input) { {"foo" => nil} }
@@ -124,7 +137,7 @@ RSpec.describe Floe::Workflow::ChoiceRule do
       end
 
       context "with IsNumeric" do
-        let(:payload) { {"Variable" => "$.foo", "IsNumeric" => true} }
+        let(:payload) { {"Variable" => "$.foo", "IsNumeric" => true, "Next" => "FirstMatchState"} }
 
         context "with an integer" do
           let(:input) { {"foo" => 1} }
@@ -152,7 +165,7 @@ RSpec.describe Floe::Workflow::ChoiceRule do
       end
 
       context "with IsString" do
-        let(:payload) { {"Variable" => "$.foo", "IsString" => true} }
+        let(:payload) { {"Variable" => "$.foo", "IsString" => true, "Next" => "FirstMatchState"} }
 
         context "with a string" do
           let(:input) { {"foo" => "bar"} }
@@ -172,7 +185,7 @@ RSpec.describe Floe::Workflow::ChoiceRule do
       end
 
       context "with IsBoolean" do
-        let(:payload) { {"Variable" => "$.foo", "IsBoolean" => true} }
+        let(:payload) { {"Variable" => "$.foo", "IsBoolean" => true, "Next" => "FirstMatchState"} }
 
         context "with a boolean" do
           let(:input) { {"foo" => true} }
@@ -192,7 +205,7 @@ RSpec.describe Floe::Workflow::ChoiceRule do
       end
 
       context "with IsTimestamp" do
-        let(:payload) { {"Variable" => "$.foo", "IsTimestamp" => true} }
+        let(:payload) { {"Variable" => "$.foo", "IsTimestamp" => true, "Next" => "FirstMatchState"} }
 
         context "with a timestamp" do
           let(:input) { {"foo" => "2016-03-14T01:59:00Z"} }
