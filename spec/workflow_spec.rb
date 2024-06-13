@@ -61,7 +61,7 @@ RSpec.describe Floe::Workflow do
     end
 
     it "raises an exception for invalid resource scheme in a Task state" do
-      payload = make_payload({"FirstState" => {"Type" => "Task", "Resource" => "invalid://foo"}})
+      payload = make_payload({"FirstState" => {"Type" => "Task", "Resource" => "invalid://foo", "End" => true}})
 
       expect { described_class.new(payload) }.to raise_error(Floe::InvalidWorkflowError, "Invalid resource scheme [invalid]")
     end

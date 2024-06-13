@@ -5,10 +5,10 @@ module Floe
     class Retrier
       attr_reader :error_equals, :interval_seconds, :max_attempts, :backoff_rate
 
-      def initialize(payload)
+      def initialize(validator, payload)
         @payload = payload
 
-        @error_equals     = payload["ErrorEquals"]
+        @error_equals     = validator.validate_list!("ErrorEquals", payload["ErrorEquals"])
         @interval_seconds = payload["IntervalSeconds"] || 1.0
         @max_attempts     = payload["MaxAttempts"] || 3
         @backoff_rate     = payload["BackoffRate"] || 2.0

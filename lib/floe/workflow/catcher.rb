@@ -5,11 +5,11 @@ module Floe
     class Catcher
       attr_reader :error_equals, :next, :result_path
 
-      def initialize(payload)
+      def initialize(validator, payload)
         @payload = payload
 
-        @error_equals = payload["ErrorEquals"]
-        @next         = payload["Next"]
+        @error_equals = validator.validate_list!("ErrorEquals", payload["ErrorEquals"])
+        @next         = validator.validate_state_ref!("Next", payload["Next"])
         @result_path  = ReferencePath.new(payload.fetch("ResultPath", "$"))
       end
     end

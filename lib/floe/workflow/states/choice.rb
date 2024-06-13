@@ -13,7 +13,7 @@ module Floe
 
           validator.validate_list!("Choices", payload["Choices"])
 
-          @choices = payload["Choices"].map { |choice| ChoiceRule.build(choice) }
+          @choices = payload["Choices"].map { |choice| ChoiceRule.build(workflow.validator.for_state(name, :rule => "ChoiceRule"), choice) }
           @default = validator.validate_state_ref!("Default", payload["Default"])
 
           @input_path  = Path.new(payload.fetch("InputPath", "$"))

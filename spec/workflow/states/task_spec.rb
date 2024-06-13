@@ -254,7 +254,7 @@ RSpec.describe Floe::Workflow::States::Task do
         end
 
         context "with multiple retriers" do
-          let(:retriers) { [{"ErrorEquals" => ["States.Timeout"], "MaxAttempts" => 3}, {"ErrorEquals" => ["Exception"], "Next" => "SuccessState"}, "SuccessState" => {"Type" => "Succeed"}] }
+          let(:retriers) { [{"ErrorEquals" => ["States.Timeout"], "MaxAttempts" => 3}, {"ErrorEquals" => ["Exception"], "Next" => "SuccessState"}] }
 
           it "resets the retrier if a different exception is raised" do
             workflow.start_workflow

@@ -14,22 +14,25 @@ module Floe
         def initialize(workflow, name, payload)
           super
 
+          validator = workflow.validator.for_state(name)
+
+          validator.validate_list!("Retry", payload["Retry"], :optional => true)
+          validator.validate_list!("Catch", payload["Catch"], :optional => true)
+
           @heartbeat_seconds = payload["HeartbeatSeconds"]
-          @next              = payload["Next"]
           @end               = !!payload["End"]
+          @next              = validator.validate_state_ref!("Next", payload["Next"], :optional => @end)
           @resource          = payload["Resource"]
           @runner            = Floe::Runner.for_resource(@resource)
           @timeout_seconds   = payload["TimeoutSeconds"]
-          @retry             = payload["Retry"].to_a.map { |retrier| Retrier.new(retrier) }
-          @catch             = payload["Catch"].to_a.map { |catcher| Catcher.new(catcher) }
+          @retry             = payload["Retry"].to_a.map { |retrier| Retrier.new(validator.for_state(name, :rule => "Retry"), retrier) }
+          @catch             = payload["Catch"].to_a.map { |catcher| Catcher.new(validator.for_state(name, :rule => "Catcher"), catcher) }
           @input_path        = Path.new(payload.fetch("InputPath", "$"))
           @output_path       = Path.new(payload.fetch("OutputPath", "$"))
           @result_path       = ReferencePath.new(payload.fetch("ResultPath", "$"))
           @parameters        = PayloadTemplate.new(payload["Parameters"])     if payload["Parameters"]
           @result_selector   = PayloadTemplate.new(payload["ResultSelector"]) if payload["ResultSelector"]
           @credentials       = PayloadTemplate.new(payload["Credentials"])    if payload["Credentials"]
-
-          validate_state!
         end
 
         def start(input)
@@ -70,10 +73,6 @@ module Floe
         private
 
         attr_reader :runner
-
-        def validate_state!
-          validate_state_next!
-        end
 
         def success?
           runner.success?(context.state["RunnerContext"])

@@ -1,24 +1,38 @@
 RSpec.describe Floe::Workflow::ChoiceRule do
+  # these are needed for post validation
   let(:name)      { "FirstMatchState" }
   let(:workflow)  { make_workflow({}, {name => {"Type" => "Choice", "Choices" => [payload], "Default" => name}}) }
+  let(:validator) { workflow.validator }
 
   describe ".build" do
     let(:payload) { {"Variable" => "$.foo", "StringEquals" => "foo", "Next" => name} }
-    let(:subject) { described_class.build(payload) }
+    let(:subject) { described_class.build(validator, payload) }
 
     it "works with valid next" do
       subject
     end
+
+    context "with Next missing" do
+      let(:payload) { {} }
+
+      it { expect { subject }.to raise_exception(Floe::InvalidWorkflowError, /requires.*Next/) }
+    end
+
+    context "with second level Next" do
+      let(:payload) { {"Not" => {"Variable" => "$.foo", "StringEquals" => "bar", "Next" => "FirstMatchState"}, "Next" => "FirstMatchState"} }
+
+      it { expect { subject }.to raise_exception(Floe::InvalidWorkflowError, "State [FirstMatchState] ChoiceRule child does not allow field \"Next\" with value [FirstMatchState]") }
+    end
   end
 
   describe "#true?" do
-    let(:subject) { described_class.build(payload).true?(context, input) }
+    let(:subject) { described_class.build(validator, payload).true?(context, input) }
     let(:context) { {} }
 
     context "with abstract top level class" do
       let(:payload) { {"Variable" => "$.foo", "StringEquals" => "foo", "Next" => name} }
       let(:input) { {} }
-      let(:subject) { described_class.new(payload).true?(context, input) }
+      let(:subject) { described_class.new(validator, payload).true?(context, input) }
       it "is not implemented" do
         expect { subject }.to raise_exception(NotImplementedError)
       end
@@ -27,6 +41,11 @@ RSpec.describe Floe::Workflow::ChoiceRule do
     context "Boolean Expression" do
       context "Not" do
         let(:payload) { {"Not" => {"Variable" => "$.foo", "StringEquals" => "bar"}, "Next" => "FirstMatchState"} }
+
+        context "with a second level next" do
+          let(:payload) { {"Not" => {"Variable" => "$.foo", "StringEquals" => "bar", "Next" => "FirstMatchState"}, "Next" => "FirstMatchState"} }
+          it { expect { subject }.to raise_exception(Floe::InvalidWorkflowError) }
+        end
 
         context "that is not equal to 'bar'" do
           let(:input) { {"foo" => "foo"} }

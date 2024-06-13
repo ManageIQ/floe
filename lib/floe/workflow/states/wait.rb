@@ -8,13 +8,15 @@ module Floe
       class Wait < Floe::Workflow::State
         include NonTerminalMixin
 
-        attr_reader :end, :input_path, :next, :seconds, :seconds_path, :timestamp, :timestamp_path, :output_path
+        attr_reader :input_path, :seconds, :seconds_path, :timestamp, :timestamp_path, :output_path
 
         def initialize(workflow, name, payload)
           super
 
-          @next           = payload["Next"]
+          validator = workflow.validator.for_state(name)
+
           @end            = !!payload["End"]
+          @next           = validator.validate_state_ref!("Next", payload["Next"], :optional => @end)
           @seconds        = payload["Seconds"]&.to_i
           @timestamp      = payload["Timestamp"]
           @timestamp_path = Path.new(payload["TimestampPath"]) if payload.key?("TimestampPath")
@@ -22,8 +24,6 @@ module Floe
 
           @input_path  = Path.new(payload.fetch("InputPath", "$"))
           @output_path = Path.new(payload.fetch("OutputPath", "$"))
-
-          validate_state!
         end
 
         def start(input)
@@ -49,12 +49,6 @@ module Floe
 
         def end?
           @end
-        end
-
-        private
-
-        def validate_state!
-          validate_state_next!
         end
       end
     end

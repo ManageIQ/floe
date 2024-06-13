@@ -10,10 +10,6 @@ module Floe
 
           super
         end
-
-        def validate_state_next!
-          workflow.validator.for_state(name).validate_state_ref!("Next", @next, :optional => @end)
-        end
       end
     end
   end
