@@ -26,7 +26,7 @@ RSpec.describe Floe::Workflow::States::Pass do
 
   describe "#run_nonblock!" do
     it "sets the result to the result path" do
-      state.run_nonblock!
+      state.run_nonblock!(ctx)
       expect(ctx.output["result"]).to include({"foo" => "bar", "bar" => "baz"})
       expect(ctx.next_state).to eq("SuccessState")
     end
@@ -48,7 +48,7 @@ RSpec.describe Floe::Workflow::States::Pass do
       end
 
       it "sets the result in Credentials" do
-        state.run_nonblock!
+        state.run_nonblock!(ctx)
         expect(ctx.credentials).to include({"user" => "luggage", "password" => "1234"})
         expect(ctx.next_state).to eq("SuccessState")
       end

@@ -32,6 +32,7 @@ module Floe
           input = input_path.value(context, context.input)
 
           wait_until!(
+            context,
             :seconds => seconds_path ? seconds_path.value(context, input).to_i : seconds,
             :time    => timestamp_path ? timestamp_path.value(context, input) : timestamp
           )

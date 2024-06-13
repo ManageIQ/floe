@@ -258,8 +258,8 @@ RSpec.describe Floe::Workflow::States::Task do
 
           it "resets the retrier if a different exception is raised" do
             workflow.start_workflow
-            expect(workflow.current_state).to receive(:wait_until!).twice.with(:seconds => 1)
-            expect(workflow.current_state).to receive(:wait_until!).with(:seconds => 2.0)
+            expect(workflow.current_state).to receive(:wait_until!).twice.with(ctx, :seconds => 1)
+            expect(workflow.current_state).to receive(:wait_until!).with(ctx, :seconds => 2.0)
 
             expect_run_async(input, :error => "States.Timeout")
             workflow.step_nonblock
@@ -287,8 +287,8 @@ RSpec.describe Floe::Workflow::States::Task do
         it "fails the workflow if the number of retries is greater than MaxAttempts" do
           workflow.start_workflow
           3.times { expect_run_async(input, :error => "States.Timeout") }
-          expect(workflow.current_state).to receive(:wait_until!).times.with(:seconds => 1)
-          expect(workflow.current_state).to receive(:wait_until!).times.with(:seconds => 2)
+          expect(workflow.current_state).to receive(:wait_until!).with(ctx, :seconds => 1)
+          expect(workflow.current_state).to receive(:wait_until!).with(ctx, :seconds => 2)
 
           3.times { workflow.step_nonblock }
 

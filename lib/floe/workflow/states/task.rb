@@ -100,10 +100,10 @@ module Floe
 
           return if context["State"]["RetryCount"] > retrier.max_attempts
 
-          wait_until!(:seconds => retrier.sleep_duration(context["State"]["RetryCount"]))
+          wait_until!(context, :seconds => retrier.sleep_duration(context["State"]["RetryCount"]))
           context.next_state = context.state_name
           context.output     = error
-          logger.info("Running state: [#{long_name}] with input [#{context.input}] got error[#{context.output}]...Retry - delay: #{wait_until}")
+          logger.info("Running state: [#{long_name}] with input [#{context.input}] got error[#{context.output}]...Retry - delay: #{wait_until(context)}")
           true
         end
 

@@ -259,7 +259,7 @@ RSpec.describe Floe::Workflow do
       it "return 0" do
         workflow = make_workflow(ctx, {"FirstState" => {"Type" => "Succeed"}})
         workflow.start_workflow
-        workflow.current_state.run_nonblock!
+        workflow.current_state.run_nonblock!(ctx)
         expect(workflow.step_nonblock_wait).to eq(0)
       end
     end

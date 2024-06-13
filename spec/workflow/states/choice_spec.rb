@@ -55,7 +55,7 @@ RSpec.describe Floe::Workflow::States::Choice do
   describe "#run_nonblock!" do
     context "with a missing variable" do
       it "raises an exception" do
-        expect { state.run_nonblock! }.to raise_error(RuntimeError, "No such variable [$.foo]")
+        expect { state.run_nonblock!(ctx) }.to raise_error(RuntimeError, "No such variable [$.foo]")
       end
     end
 
@@ -63,7 +63,7 @@ RSpec.describe Floe::Workflow::States::Choice do
       let(:input) { {"foo" => 1} }
 
       it "returns the next state" do
-        state.run_nonblock!
+        state.run_nonblock!(ctx)
         expect(ctx.next_state).to eq("FirstMatchState")
       end
     end
@@ -72,7 +72,7 @@ RSpec.describe Floe::Workflow::States::Choice do
       let(:input) { {"foo" => 4} }
 
       it "returns the default state" do
-        state.run_nonblock!
+        state.run_nonblock!(ctx)
         expect(ctx.next_state).to eq("DefaultState")
       end
     end

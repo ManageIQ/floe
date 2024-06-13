@@ -10,7 +10,7 @@ RSpec.describe Floe::Workflow::States::Succeed do
 
   describe "#run_nonblock!" do
     it "has no next" do
-      state.run_nonblock!
+      state.run_nonblock!(ctx)
       expect(ctx.next_state).to eq(nil)
     end
   end
