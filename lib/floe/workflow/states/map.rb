@@ -49,7 +49,11 @@ module Floe
 
         def finish(context)
           input  = process_input(context)
-          result = item_processor.value(context, input)
+          result = input.map do |item|
+            item_processor_context = Context.new((context.state["ItemProcessorContext"] = {}), :input => item.to_json)
+            item_processor.run(item_processor_context)
+            JSON.parse(item_processor_context.output)
+          end
           context.output = process_output(context, result)
           super
         end

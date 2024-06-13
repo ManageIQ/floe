@@ -176,13 +176,14 @@ module Floe
 
     # NOTE: Expecting the context to be initialized (via start_workflow) before this
     def current_state
-      @states_by_name[context.state_name]
+      states_by_name[context.state_name]
     end
 
     # backwards compatibility. Caller should access directly from context
     def credentials
       @context.credentials
     end
+
     private
 
     def step!

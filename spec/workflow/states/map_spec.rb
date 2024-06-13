@@ -28,9 +28,9 @@ RSpec.describe Floe::Workflow::States::Map do
           "StartAt" => "Validate",
           "States"  => {
             "Validate" => {
-              "Type"       => "Pass",
-              "OutputPath" => "$.Payload",
-              "End"        => true
+              "Type"      => "Pass",
+              "End"       => true,
+              "InputPath" => "$.prod"
             }
           }
         },
@@ -109,6 +109,7 @@ RSpec.describe Floe::Workflow::States::Map do
     it "has no next" do
       state.run_nonblock!(ctx)
       expect(ctx.next_state).to eq(nil)
+      expect(JSON.parse(ctx.output).dig("detail", "result")).to eq(%w[R31 S39 R31 R40 R40])
     end
   end
 end
