@@ -45,6 +45,10 @@ module Floe
       raise Floe::InvalidWorkflowError, "#{src_reference} does not allow field \"#{field_name}\" with value [#{field_value}]" if field_value
     end
 
+    def with_states(state_names)
+      self.class.new(state_names, state_name, :rule => rule)
+    end
+
     def for_state(name, rule: nil)
       self.class.new(state_names, name, :rule => rule)
     end

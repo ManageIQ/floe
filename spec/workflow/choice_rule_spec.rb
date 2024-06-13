@@ -2,11 +2,11 @@ RSpec.describe Floe::Workflow::ChoiceRule do
   # these are needed for post validation
   let(:name)      { "FirstMatchState" }
   let(:workflow)  { make_workflow({}, {name => {"Type" => "Choice", "Choices" => [payload], "Default" => name}}) }
-  let(:validator) { workflow.validator }
+  let(:choice)    { workflow.start_workflow.current_state.choices.first }
 
   describe ".build" do
     let(:payload) { {"Variable" => "$.foo", "StringEquals" => "foo", "Next" => name} }
-    let(:subject) { described_class.build(validator, payload) }
+    let(:subject) { choice }
 
     it "works with valid next" do
       subject
@@ -26,13 +26,14 @@ RSpec.describe Floe::Workflow::ChoiceRule do
   end
 
   describe "#true?" do
-    let(:subject) { described_class.build(validator, payload).true?(context, input) }
+    let(:subject) { choice.true?(context, input) }
     let(:context) { {} }
 
+    # this test is only for code coverage
     context "with abstract top level class" do
       let(:payload) { {"Variable" => "$.foo", "StringEquals" => "foo", "Next" => name} }
       let(:input) { {} }
-      let(:subject) { described_class.new(validator, payload).true?(context, input) }
+      let(:subject) { described_class.new(double(:children => false, :validate_state_ref! => nil), payload).true?(context, input) }
       it "is not implemented" do
         expect { subject }.to raise_exception(NotImplementedError)
       end

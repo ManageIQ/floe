@@ -85,7 +85,7 @@ module Floe
       end
     end
 
-    attr_reader :context, :payload, :states, :states_by_name, :start_at, :name, :comment, :validator
+    attr_reader :context, :payload, :states, :states_by_name, :start_at, :name, :comment
 
     def initialize(payload, context = nil, credentials = nil, name = nil)
       payload     = JSON.parse(payload)     if payload.kind_of?(String)
@@ -96,9 +96,9 @@ module Floe
       # caller should really put credentials into context and not pass that variable
       context.credentials = credentials if credentials
 
-      @validator  = Validator.new
-      states      = validator.validate_list!("States", payload["States"], :klass => Hash)
-      @validator.state_names = states.keys
+      validator    = Validator.new
+      states       = validator.validate_list!("States", payload["States"], :klass => Hash)
+      validator    = validator.with_states(states.keys)
 
       @name        = name
       @payload     = payload
