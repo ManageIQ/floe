@@ -5,13 +5,13 @@ module Floe
     class ChoiceRule
       class Data < Floe::Workflow::ChoiceRule
         TYPES      = {"String" => :is_string?, "Numeric" => :is_numeric?, "Boolean" => :is_boolean?, "Timestamp" => :is_timestamp?, "Present" => :is_present?, "Null" => :is_null?}.freeze
-        COMPARES   = ["Equals", "LessThan", "GreaterThan", "LessThanEquals", "GreaterThanEquals", "Matches"].freeze
+        COMPARES   = {"Equals" => :eq?, "LessThan" => :lt?, "GreaterThan" => :gt?, "LessThanEquals" => :lte?, "GreaterThanEquals" => :gte?, "Matches" => :matches?}.freeze
         # e.g.: (Is)(String), (Is)(Present)
         TYPE_CHECK = /^(Is)(#{TYPES.keys.join("|")})$/.freeze
         # e.g.: (String)(LessThan)(Path), (Numeric)(GreaterThanEquals)()
-        OPERATION  = /^(#{(TYPES.keys - %w[Null Present]).join("|")})(#{COMPARES.join("|")})(Path)?$/.freeze
+        OPERATION  = /^(#{(TYPES.keys - %w[Null Present]).join("|")})(#{COMPARES.keys.join("|")})(Path)?$/.freeze
 
-        attr_reader :variable, :compare_key, :type, :compare_predicate, :path
+        attr_reader :variable, :compare_key, :operation, :type, :compare_predicate, :path
 
         def initialize(_workflow, _name, payload)
           super
@@ -27,38 +27,8 @@ module Floe
           lhs = variable_value(context, input)
           rhs = compare_value(context, input)
 
-          case compare_key
-          when "IsNull" then is_null?(lhs, rhs)
-          when "IsNumeric" then is_numeric?(lhs, rhs)
-          when "IsString" then is_string?(lhs, rhs)
-          when "IsBoolean" then is_boolean?(lhs, rhs)
-          when "IsTimestamp" then is_timestamp?(lhs, rhs)
-          when "StringEquals", "StringEqualsPath",
-               "NumericEquals", "NumericEqualsPath",
-               "BooleanEquals", "BooleanEqualsPath",
-               "TimestampEquals", "TimestampEqualsPath"
-            lhs == rhs
-          when "StringLessThan", "StringLessThanPath",
-               "NumericLessThan", "NumericLessThanPath",
-               "TimestampLessThan", "TimestampLessThanPath"
-            lhs < rhs
-          when "StringGreaterThan", "StringGreaterThanPath",
-               "NumericGreaterThan", "NumericGreaterThanPath",
-               "TimestampGreaterThan", "TimestampGreaterThanPath"
-            lhs > rhs
-          when "StringLessThanEquals", "StringLessThanEqualsPath",
-               "NumericLessThanEquals", "NumericLessThanEqualsPath",
-               "TimestampLessThanEquals", "TimestampLessThanEqualsPath"
-            lhs <= rhs
-          when "StringGreaterThanEquals", "StringGreaterThanEqualsPath",
-               "NumericGreaterThanEquals", "NumericGreaterThanEqualsPath",
-               "TimestampGreaterThanEquals", "TimestampGreaterThanEqualsPath"
-            lhs >= rhs
-          when "StringMatches"
-            lhs.match?(Regexp.escape(rhs).gsub('\*', '.*?'))
-          else
-            raise Floe::InvalidWorkflowError, "Invalid choice [#{compare_key}]"
-          end
+          raise Floe::InvalidWorkflowError, "Invalid choice [#{compare_key}]" if operation.nil?
+          send(operation, lhs, rhs)
         end
 
         private
@@ -113,19 +83,46 @@ module Floe
         # rubocop:enable Naming/PredicateName
         # rubocop:enable Style/OptionalBooleanParameter
 
+        def eq?(lhs, rhs)
+          lhs == rhs
+        end
+
+        def lt?(lhs, rhs)
+          lhs < rhs
+        end
+
+        def gt?(lhs, rhs)
+          lhs > rhs
+        end
+
+        def lte?(lhs, rhs)
+          lhs <= rhs
+        end
+
+        def gte?(lhs, rhs)
+          lhs >= rhs
+        end
+
+        def matches?(lhs, rhs)
+          lhs.match?(Regexp.escape(rhs).gsub('\*', '.*?'))
+        end
+
         # parse the compare key at initialization time
         def parse_compare_key(payload)
           payload.each_key do |key|
             # e.g. (String)(GreaterThan)(Path)
             if (match_values = OPERATION.match(key))
               @compare_key = key
-              @type, _operator, @path = match_values.captures
+              @type, operator, @path = match_values.captures
+              @operation = COMPARES[operator]
               break
             end
             # e.g. (Is)(String)
-            if (_match_value = TYPE_CHECK.match(key))
+            if (match_value = TYPE_CHECK.match(key))
               @compare_key = key
+              _operator, type = match_value.captures
               @type = @path = nil
+              @operation = TYPES[type]
               break
             end
           end
