@@ -30,6 +30,8 @@ module Floe
           @credentials       = PayloadTemplate.new(payload["Credentials"])    if payload["Credentials"]
 
           validate_state!
+        rescue ArgumentError => err
+          raise Floe::InvalidWorkflowError, err.message
         end
 
         def start(input)

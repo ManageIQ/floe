@@ -22,6 +22,8 @@ module Floe
         self["Task"]               ||= {}
 
         @credentials = credentials || {}
+      rescue JSON::ParserError => err
+        raise Floe::InvalidWorkflowError, err.message
       end
 
       def execution
