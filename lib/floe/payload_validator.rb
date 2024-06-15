@@ -12,9 +12,13 @@ module Floe
     attr_reader :children
     # @attr_reader [Hash] data that is currently being parsed.
     attr_reader :payload
+    # @attr_reader [Array<String>] fields that have been accessed at this level
+    #   Fields in the payload that have not been accessed are assumed to be erronious
+    attr_reader :referenced
 
     def initialize(payload, state_names = [], state_name = nil, rule: nil, children: nil)
       @payload     = payload
+      @referenced  = []
       @state_names = state_names
       @state_name  = state_name
       @rule        = rule
@@ -26,6 +30,7 @@ module Floe
     end
 
     def [](key)
+      referenced << key
       payload[key]
     end
 
@@ -115,6 +120,11 @@ module Floe
     def reject!(field_name, comment = nil)
       field_value = self[field_name]
       raise Floe::InvalidWorkflowError, "#{src_reference} does not allow field \"#{field_name}\" with value [#{field_value}]#{" " if comment}#{comment}" if field_value
+    end
+
+    def no_unreferenced_fields!
+      unreferenced = keys - referenced
+      raise Floe::InvalidWorkflowError, "#{src_reference} does not recognize fields #{unreferenced.join(", ")}" unless unreferenced.empty?
     end
 
     def with_states(state_names)

@@ -28,6 +28,8 @@ module Floe
           @parameters        = payload.payload_template!("Parameters", :default => nil)
           @result_selector   = payload.payload_template!("ResultSelector", :default => nil)
           @credentials       = payload.payload_template!("Credentials", :default => nil)
+
+          payload.no_unreferenced_fields!
         rescue ArgumentError => err
           raise Floe::InvalidWorkflowError, err.message
         end

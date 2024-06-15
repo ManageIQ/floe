@@ -11,6 +11,8 @@ module Floe
 
           @input_path = payload.field!("InputPath", :default => nil)
           @output_path = payload.field!("OutputPath", :default => nil)
+
+          payload.no_unreferenced_fields!
         end
 
         def finish

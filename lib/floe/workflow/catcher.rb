@@ -11,6 +11,8 @@ module Floe
         @error_equals = payload.list!("ErrorEquals")
         @next         = payload.state_ref!("Next")
         @result_path  = payload.reference_path!("ResultPath", :default => "$")
+
+        payload.no_unreferenced_fields!
       end
     end
   end

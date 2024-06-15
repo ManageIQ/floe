@@ -20,6 +20,8 @@ module Floe
           @input_path  = payload.path!("InputPath", :default => "$")
           @output_path = payload.path!("OutputPath", :default => "$")
           @result_path = payload.reference_path!("ResultPath", :default => "$")
+
+          payload.no_unreferenced_fields!
         end
 
         def finish
