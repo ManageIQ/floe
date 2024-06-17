@@ -12,16 +12,14 @@ module Floe
         def initialize(workflow, name, payload)
           super
 
-          @next        = payload["Next"]
-          @end         = !!payload["End"]
+          @end         = payload.boolean!("End", :default => false)
+          @next        = payload.state_ref!("Next", :optional => @end)
           @result      = payload["Result"]
 
-          @parameters  = PayloadTemplate.new(payload["Parameters"]) if payload["Parameters"]
-          @input_path  = Path.new(payload.fetch("InputPath", "$"))
-          @output_path = Path.new(payload.fetch("OutputPath", "$"))
-          @result_path = ReferencePath.new(payload.fetch("ResultPath", "$"))
-
-          validate_state!
+          @parameters  = payload.payload_template!("Parameters", :default => nil)
+          @input_path  = payload.path!("InputPath", :default => "$")
+          @output_path = payload.path!("OutputPath", :default => "$")
+          @result_path = payload.reference_path!("ResultPath", :default => "$")
         end
 
         def finish
@@ -35,12 +33,6 @@ module Floe
 
         def end?
           @end
-        end
-
-        private
-
-        def validate_state!
-          validate_state_next!
         end
       end
     end

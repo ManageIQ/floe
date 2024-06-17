@@ -13,17 +13,15 @@ module Floe
         def initialize(workflow, name, payload)
           super
 
-          @next           = payload["Next"]
-          @end            = !!payload["End"]
+          @end            = payload.boolean!("End", :default => false)
+          @next           = payload.state_ref!("Next", :optional => @end)
           @seconds        = payload["Seconds"]&.to_i
           @timestamp      = payload["Timestamp"]
-          @timestamp_path = Path.new(payload["TimestampPath"]) if payload.key?("TimestampPath")
-          @seconds_path   = Path.new(payload["SecondsPath"]) if payload.key?("SecondsPath")
+          @timestamp_path = payload.path!("TimestampPath", :default => nil)
+          @seconds_path   = payload.path!("SecondsPath", :default => nil)
 
-          @input_path  = Path.new(payload.fetch("InputPath", "$"))
-          @output_path = Path.new(payload.fetch("OutputPath", "$"))
-
-          validate_state!
+          @input_path  = payload.path!("InputPath", :default => "$")
+          @output_path = payload.path!("OutputPath", :default => "$")
         end
 
         def start(input)
@@ -49,12 +47,6 @@ module Floe
 
         def end?
           @end
-        end
-
-        private
-
-        def validate_state!
-          validate_state_next!
         end
       end
     end

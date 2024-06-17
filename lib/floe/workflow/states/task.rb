@@ -15,21 +15,19 @@ module Floe
           super
 
           @heartbeat_seconds = payload["HeartbeatSeconds"]
-          @next              = payload["Next"]
-          @end               = !!payload["End"]
-          @resource          = payload["Resource"]
+          @end               = payload.boolean!("End", :default => false)
+          @next              = payload.state_ref!("Next", :optional => @end)
+          @resource          = payload.field!("Resource")
           @runner            = Floe::Runner.for_resource(@resource)
           @timeout_seconds   = payload["TimeoutSeconds"]
-          @retry             = payload["Retry"].to_a.map { |retrier| Retrier.new(retrier) }
-          @catch             = payload["Catch"].to_a.map { |catcher| Catcher.new(catcher) }
-          @input_path        = Path.new(payload.fetch("InputPath", "$"))
-          @output_path       = Path.new(payload.fetch("OutputPath", "$"))
-          @result_path       = ReferencePath.new(payload.fetch("ResultPath", "$"))
-          @parameters        = PayloadTemplate.new(payload["Parameters"])     if payload["Parameters"]
-          @result_selector   = PayloadTemplate.new(payload["ResultSelector"]) if payload["ResultSelector"]
-          @credentials       = PayloadTemplate.new(payload["Credentials"])    if payload["Credentials"]
-
-          validate_state!
+          @retry             = payload.list!("Retry", :default => []).map { |retrier| Retrier.new(payload.for_rule("Retry", retrier)) }
+          @catch             = payload.list!("Catch", :default => []).map { |catcher| Catcher.new(payload.for_rule("Catch", catcher)) }
+          @input_path        = payload.path!("InputPath", :default => "$")
+          @output_path       = payload.path!("OutputPath", :default => "$")
+          @result_path       = payload.reference_path!("ResultPath", :default => "$")
+          @parameters        = payload.payload_template!("Parameters", :default => nil)
+          @result_selector   = payload.payload_template!("ResultSelector", :default => nil)
+          @credentials       = payload.payload_template!("Credentials", :default => nil)
         rescue ArgumentError => err
           raise Floe::InvalidWorkflowError, err.message
         end
@@ -72,10 +70,6 @@ module Floe
         private
 
         attr_reader :runner
-
-        def validate_state!
-          validate_state_next!
-        end
 
         def success?
           runner.success?(context.state["RunnerContext"])

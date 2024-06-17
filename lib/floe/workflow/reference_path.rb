@@ -8,7 +8,7 @@ module Floe
       def initialize(*)
         super
 
-        raise Floe::InvalidWorkflowError, "Invalid Reference Path" if payload.match?(/@|,|:|\?/)
+        raise Floe::InvalidWorkflowError, "Reference Path [#{payload}] is invalid" if payload.match?(/@|,|:|\?/)
 
         @path = JsonPath.new(payload)
                         .path[1..]

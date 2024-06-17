@@ -11,8 +11,8 @@ module Floe
 
           @cause      = payload["Cause"]
           @error      = payload["Error"]
-          @cause_path = Path.new(payload["CausePath"]) if payload["CausePath"]
-          @error_path = Path.new(payload["ErrorPath"]) if payload["ErrorPath"]
+          @cause_path = payload.path!("CausePath", :default => nil)
+          @error_path = payload.path!("ErrorPath", :default => nil)
         end
 
         def finish
