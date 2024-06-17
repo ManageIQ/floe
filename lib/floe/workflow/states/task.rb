@@ -7,22 +7,19 @@ module Floe
         include InputOutputMixin
         include NonTerminalMixin
 
-        attr_reader :credentials, :end, :heartbeat_seconds, :next,
+        attr_reader :credentials, :heartbeat_seconds,
                     :resource, :timeout_seconds, :retry, :catch
 
         def initialize(workflow, name, payload)
           super
 
           @heartbeat_seconds = payload["HeartbeatSeconds"]
-          @next              = payload["Next"]
-          @end               = !!payload["End"]
           @resource          = payload["Resource"]
           @runner            = Floe::Runner.for_resource(@resource)
           @timeout_seconds   = payload["TimeoutSeconds"]
           @retry             = payload["Retry"].to_a.map { |retrier| Retrier.new(retrier) }
           @catch             = payload["Catch"].to_a.map { |catcher| Catcher.new(catcher) }
           @credentials       = PayloadTemplate.new(payload["Credentials"]) if payload["Credentials"]
-          validate_state!(workflow)
         rescue ArgumentError => err
           raise Floe::InvalidWorkflowError, err.message
         end
@@ -58,17 +55,9 @@ module Floe
           runner.running?(context.state["RunnerContext"])
         end
 
-        def end?
-          @end
-        end
-
         private
 
         attr_reader :runner
-
-        def validate_state!(workflow)
-          validate_state_next!(workflow)
-        end
 
         def success?(context)
           runner.success?(context.state["RunnerContext"])

@@ -7,16 +7,12 @@ module Floe
         include InputOutputMixin
         include NonTerminalMixin
 
-        attr_reader :end, :next, :result
+        attr_reader :result
 
         def initialize(workflow, name, payload)
           super
 
-          @next        = payload["Next"]
-          @end         = !!payload["End"]
-          @result      = payload["Result"]
-
-          validate_state!(workflow)
+          @result = payload["Result"]
         end
 
         def finish(context)
@@ -27,16 +23,6 @@ module Floe
 
         def running?(_)
           false
-        end
-
-        def end?
-          @end
-        end
-
-        private
-
-        def validate_state!(workflow)
-          validate_state_next!(workflow)
         end
       end
     end

@@ -13,8 +13,6 @@ module Floe
         def initialize(workflow, name, payload)
           super
 
-          @next           = payload["Next"]
-          @end            = !!payload["End"]
           @seconds        = payload["Seconds"]&.to_i
           @timestamp      = payload["Timestamp"]
           @timestamp_path = Path.new(payload["TimestampPath"]) if payload.key?("TimestampPath")
@@ -22,8 +20,6 @@ module Floe
 
           @input_path  = Path.new(payload.fetch("InputPath", "$"))
           @output_path = Path.new(payload.fetch("OutputPath", "$"))
-
-          validate_state!(workflow)
         end
 
         def start(context)
@@ -46,16 +42,6 @@ module Floe
 
         def running?(context)
           waiting?(context)
-        end
-
-        def end?
-          @end
-        end
-
-        private
-
-        def validate_state!(workflow)
-          validate_state_next!(workflow)
         end
       end
     end
