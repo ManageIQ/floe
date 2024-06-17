@@ -7,6 +7,7 @@ require_relative "floe/logging"
 
 require_relative "floe/runner"
 
+require_relative "floe/payload_validator"
 require_relative "floe/workflow"
 require_relative "floe/workflow/catcher"
 require_relative "floe/workflow/choice_rule"
