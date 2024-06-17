@@ -7,7 +7,7 @@ module Floe
         include InputOutputMixin
         include NonTerminalMixin
 
-        attr_reader :end, :next, :result, :parameters, :input_path, :output_path, :result_path
+        attr_reader :end, :next, :result
 
         def initialize(workflow, name, payload)
           super
@@ -15,11 +15,6 @@ module Floe
           @next        = payload["Next"]
           @end         = !!payload["End"]
           @result      = payload["Result"]
-
-          @parameters  = PayloadTemplate.new(payload["Parameters"]) if payload["Parameters"]
-          @input_path  = Path.new(payload.fetch("InputPath", "$"))
-          @output_path = Path.new(payload.fetch("OutputPath", "$"))
-          @result_path = ReferencePath.new(payload.fetch("ResultPath", "$"))
 
           validate_state!(workflow)
         end

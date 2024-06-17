@@ -7,9 +7,8 @@ module Floe
         include InputOutputMixin
         include NonTerminalMixin
 
-        attr_reader :credentials, :end, :heartbeat_seconds, :next, :parameters,
-                    :result_selector, :resource, :timeout_seconds, :retry, :catch,
-                    :input_path, :output_path, :result_path
+        attr_reader :credentials, :end, :heartbeat_seconds, :next,
+                    :resource, :timeout_seconds, :retry, :catch
 
         def initialize(workflow, name, payload)
           super
@@ -22,13 +21,7 @@ module Floe
           @timeout_seconds   = payload["TimeoutSeconds"]
           @retry             = payload["Retry"].to_a.map { |retrier| Retrier.new(retrier) }
           @catch             = payload["Catch"].to_a.map { |catcher| Catcher.new(catcher) }
-          @input_path        = Path.new(payload.fetch("InputPath", "$"))
-          @output_path       = Path.new(payload.fetch("OutputPath", "$"))
-          @result_path       = ReferencePath.new(payload.fetch("ResultPath", "$"))
-          @parameters        = PayloadTemplate.new(payload["Parameters"])     if payload["Parameters"]
-          @result_selector   = PayloadTemplate.new(payload["ResultSelector"]) if payload["ResultSelector"]
-          @credentials       = PayloadTemplate.new(payload["Credentials"])    if payload["Credentials"]
-
+          @credentials       = PayloadTemplate.new(payload["Credentials"]) if payload["Credentials"]
           validate_state!(workflow)
         rescue ArgumentError => err
           raise Floe::InvalidWorkflowError, err.message
