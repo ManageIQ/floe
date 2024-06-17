@@ -96,17 +96,17 @@ module Floe
       # caller should really put credentials into context and not pass that variable
       context.credentials = credentials if credentials
 
-      raise Floe::InvalidWorkflowError, "Missing field \"States\""  if payload["States"].nil?
-      raise Floe::InvalidWorkflowError, "Missing field \"StartAt\"" if payload["StartAt"].nil?
-      raise Floe::InvalidWorkflowError, "\"StartAt\" not in the \"States\" field" unless payload["States"].key?(payload["StartAt"])
+      pv          = PayloadValidator.new(payload)
+      states      = pv.list!("States", :klass => Hash)
+      pv          = pv.with_states(states.keys)
 
       @name        = name
       @payload     = payload
       @context     = context
-      @comment     = payload["Comment"]
-      @start_at    = payload["StartAt"]
+      @comment     = pv.field!("Comment", :default => nil)
+      @start_at    = pv.state_ref!("StartAt")
 
-      @states         = payload["States"].to_a.map { |state_name, state| State.build!(self, state_name, state) }
+      @states         = states.map { |state_name, state_payload| State.build!(self, state_name, pv.for_state(state_name, state_payload)) }
       @states_by_name = @states.each_with_object({}) { |state, result| result[state.name] = state }
     rescue Floe::InvalidWorkflowError
       raise
