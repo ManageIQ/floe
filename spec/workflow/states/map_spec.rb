@@ -107,9 +107,42 @@ RSpec.describe Floe::Workflow::States::Map do
 
   describe "#run_nonblock!" do
     it "has no next" do
-      state.run_nonblock!(ctx)
+      loop while state.run_nonblock!(ctx) != 0
       expect(ctx.next_state).to eq(nil)
-      expect(JSON.parse(ctx.output).dig("detail", "result")).to eq(%w[R31 S39 R31 R40 R40])
+    end
+
+    it "sets the context output" do
+      loop while state.run_nonblock!(ctx) != 0
+      expect(ctx.output.dig("detail", "result")).to eq(%w[R31 S39 R31 R40 R40])
+    end
+
+    context "with simple string inputs" do
+      let(:input) { {"foo" => "bar", "colors" => ["red", "green", "blue"]} }
+      let(:workflow) do
+        payload = {
+          "Validate-All" => {
+            "Type"           => "Map",
+            "ItemsPath"      => "$.colors",
+            "MaxConcurrency" => 0,
+            "ItemProcessor"  => {
+              "StartAt" => "Validate",
+              "States"  => {
+                "Validate" => {
+                  "Type" => "Pass",
+                  "End"  => true
+                }
+              }
+            },
+            "End"            => true,
+          }
+        }
+        make_workflow(ctx, payload)
+      end
+
+      it "sets the context output" do
+        loop while state.run_nonblock!(ctx) != 0
+        expect(ctx.output).to eq(["red", "green", "blue"])
+      end
     end
   end
 end

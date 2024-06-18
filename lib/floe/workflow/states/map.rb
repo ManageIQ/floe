@@ -47,13 +47,18 @@ module Floe
           items_path.value(context, input)
         end
 
+        def start(context)
+          super
+
+          context.state["Iteration"] = 0
+          context.state["MaxIterations"] = process_input(context).count
+          context.state["Result"] = []
+          context.state["ItemProcessorContext"] = {}
+          step(context)
+        end
+
         def finish(context)
-          input  = process_input(context)
-          result = input.map do |item|
-            item_processor_context = Context.new((context.state["ItemProcessorContext"] = {}), :input => item.to_json)
-            item_processor.run(item_processor_context)
-            JSON.parse(item_processor_context.output)
-          end
+          result = context.state["Result"]
           context.output = process_output(context, result)
           super
         end
@@ -62,11 +67,35 @@ module Floe
           @end
         end
 
-        def running?(_)
+        def ready?(context)
+          return true unless context.state_started?
+          return true unless running?(context)
+
+          step(context)
           false
         end
 
+        def running?(context)
+          # TODO: this only works with MaxConcurrency=1
+          context.state["Iteration"] < context.state["MaxIterations"]
+        end
+
         private
+
+        def step(context)
+          input = process_input(context)
+          item  = input[context.state["Iteration"]]
+
+          item_processor_context = Context.new(context.state["ItemProcessorContext"], :input => item.to_json)
+          item_processor.run_nonblock(item_processor_context) if item_processor.step_nonblock_ready?(item_processor_context)
+          if item_processor_context.ended?
+            result = item_processor.output(item_processor_context)
+
+            context.state["Result"] << JSON.parse(result)
+            context.state["Iteration"] += 1
+            context.state["ItemProcessorContext"] = {}
+          end
+        end
 
         def validate_state!(workflow)
           validate_state_next!(workflow)

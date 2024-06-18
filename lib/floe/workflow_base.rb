@@ -61,6 +61,14 @@ module Floe
       states_by_name[context.state_name]
     end
 
+    def end?(context)
+      context.ended?
+    end
+
+    def output(context)
+      context.output.to_json if end?(context)
+    end
+
     private
 
     def step!(context)
