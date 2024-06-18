@@ -3,7 +3,6 @@
 module Floe
   class Workflow
     class State
-      include Logging
       include ValidationMixin
 
       class << self

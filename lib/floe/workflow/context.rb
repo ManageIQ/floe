@@ -3,6 +3,8 @@
 module Floe
   class Workflow
     class Context
+      include Logging
+
       attr_accessor :credentials
 
       # @param context [Json|Hash] (default, create another with input and execution params)
