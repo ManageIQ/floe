@@ -5,6 +5,7 @@ module Floe
       require "floe"
       require "floe/container_runner"
       require "logger"
+      require "stringio"
 
       Floe.logger = Logger.new($stdout)
       Floe.logger.level = 0 if ENV["DEBUG"]
@@ -18,6 +19,8 @@ module Floe
           opts[:credentials] == "-" ? $stdin.read : opts[:credentials]
         elsif opts[:credentials_file_given]
           File.read(opts[:credentials_file])
+        else
+          {}
         end
 
       workflows =
@@ -26,6 +29,8 @@ module Floe
           Floe::Workflow.load(workflow, context)
         end
 
+      output_streams = create_loggers(workflows, opts[:segment_output])
+
       puts "Checking #{workflows.count} workflows..."
       ready = Floe::Workflow.wait(workflows, &:run_nonblock)
       puts "Checking #{workflows.count} workflows...Complete - #{ready.count} ready"
@@ -33,6 +38,7 @@ module Floe
       # Display status
       workflows.each do |workflow|
         puts "", "#{workflow.name}#{" (#{workflow.status})" unless workflow.context.success?}", "===" if workflows.size > 1
+        puts output_streams[workflow].string if output_streams[workflow]
         puts workflow.output
       end
 
@@ -57,6 +63,7 @@ module Floe
         opt :context, "JSON payload of the Context",              :type => :string
         opt :credentials, "JSON payload with Credentials",        :type => :string
         opt :credentials_file, "Path to a file with Credentials", :type => :string
+        opt :segment_output, "Segment output by each worker",     :default => false
 
         Floe::ContainerRunner.cli_options(self)
 
@@ -83,6 +90,18 @@ module Floe
       Floe::ContainerRunner.resolve_cli_options!(opts)
 
       return workflows_inputs, opts
+    end
+
+    def create_loggers(workflows, segment_output)
+      if workflows.size == 1 || !segment_output
+        # no extra work necessary
+        {}
+      else
+        workflows.each_with_object({}) do |workflow, h|
+          workflow.context.logger = Logger.new(output = StringIO.new)
+          h[workflow] = output
+        end
+      end
     end
   end
 end
