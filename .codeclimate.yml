@@ -14,3 +14,13 @@ plugins:
     config: ".rubocop_cc.yml"
     channel: rubocop-1-56-3
 version: '2'
+checks:
+  complexity-logic:
+    config:
+      threshold: 10
+  method-count:
+    enabled: false
+  method-lines:
+    enabled: false
+  file-lines:
+    enabled: false
