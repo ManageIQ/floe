@@ -4,88 +4,106 @@ module Floe
   class Workflow
     class ChoiceRule
       class Data < Floe::Workflow::ChoiceRule
+        TYPES       = {"String" => :is_string?, "Numeric" => :is_numeric?, "Boolean" => :is_boolean?, "Timestamp" => :is_timestamp?, "Present" => :is_present?, "Null" => :is_null?}.freeze
+        OPERATIONS  = {"Equals" => :eq?, "LessThan" => :lt?, "GreaterThan" => :gt?, "LessThanEquals" => :lte?, "GreaterThanEquals" => :gte?, "Matches" => :matches?}.freeze
+        UNARY_RULE  = /^(Is)(#{TYPES.keys.join("|")})$/.freeze
+        BINARY_RULE = /^(#{(TYPES.keys - %w[Null Present]).join("|")})(#{OPERATIONS.keys.join("|")})(Path)?$/.freeze
+
+        attr_reader :compare_key, :operation, :type, :value, :path, :type_check
+
+        def initialize(payload)
+          super
+
+          @compare_key = payload.keys.detect { |key| key.match?(UNARY_RULE) || key.match?(BINARY_RULE) }
+          payload.error!("requires compare_key field") if @compare_key.nil?
+
+          operator, @type = UNARY_RULE.match(compare_key)&.captures
+          if operator
+            @path = false
+            @value = payload.boolean!(compare_key)
+            @operation = TYPES[@type]
+          else
+            @type, operator, @path = BINARY_RULE.match(compare_key)&.captures
+            @operation = OPERATIONS[operator]
+            @type_check = TYPES[@type]
+
+            if path
+              @value = payload.path!(compare_key)
+            else
+              @value = payload[compare_key]
+              payload.error!("requires #{type} field \"#{compare_key}\" but got [#{value}]") unless send(type_check, value)
+            end
+          end
+        end
+
         def true?(context, input)
           lhs = variable_value(context, input)
           rhs = compare_value(context, input)
 
-          validate!(lhs)
-
-          case compare_key
-          when "IsNull" then is_null?(lhs)
-          when "IsPresent" then is_present?(lhs)
-          when "IsNumeric" then is_numeric?(lhs)
-          when "IsString" then is_string?(lhs)
-          when "IsBoolean" then is_boolean?(lhs)
-          when "IsTimestamp" then is_timestamp?(lhs)
-          when "StringEquals", "StringEqualsPath",
-               "NumericEquals", "NumericEqualsPath",
-               "BooleanEquals", "BooleanEqualsPath",
-               "TimestampEquals", "TimestampEqualsPath"
-            lhs == rhs
-          when "StringLessThan", "StringLessThanPath",
-               "NumericLessThan", "NumericLessThanPath",
-               "TimestampLessThan", "TimestampLessThanPath"
-            lhs < rhs
-          when "StringGreaterThan", "StringGreaterThanPath",
-               "NumericGreaterThan", "NumericGreaterThanPath",
-               "TimestampGreaterThan", "TimestampGreaterThanPath"
-            lhs > rhs
-          when "StringLessThanEquals", "StringLessThanEqualsPath",
-               "NumericLessThanEquals", "NumericLessThanEqualsPath",
-               "TimestampLessThanEquals", "TimestampLessThanEqualsPath"
-            lhs <= rhs
-          when "StringGreaterThanEquals", "StringGreaterThanEqualsPath",
-               "NumericGreaterThanEquals", "NumericGreaterThanEqualsPath",
-               "TimestampGreaterThanEquals", "TimestampGreaterThanEqualsPath"
-            lhs >= rhs
-          when "StringMatches"
-            lhs.match?(Regexp.escape(rhs).gsub('\*', '.*?'))
-          else
-            raise Floe::InvalidWorkflowError, "Invalid choice [#{compare_key}]"
-          end
+          send(operation, lhs, rhs)
         end
 
         private
 
-        def validate!(value)
-          raise "No such variable [#{variable}]" if value.nil? && !%w[IsNull IsPresent].include?(compare_key)
+        def is_null?(value, expected = true) # rubocop:disable Naming/PredicateName
+          value.nil? == expected
         end
 
-        def is_null?(value) # rubocop:disable Naming/PredicateName
-          value.nil?
+        def is_present?(value, expected = true) # rubocop:disable Naming/PredicateName
+          !value.nil? == expected
         end
 
-        def is_present?(value) # rubocop:disable Naming/PredicateName
-          !value.nil?
+        def is_numeric?(value, expected = true) # rubocop:disable Naming/PredicateName
+          (value.kind_of?(Integer) || value.kind_of?(Float)) == expected
         end
 
-        def is_numeric?(value) # rubocop:disable Naming/PredicateName
-          value.kind_of?(Integer) || value.kind_of?(Float)
+        def is_string?(value, expected = true) # rubocop:disable Naming/PredicateName
+          value.kind_of?(String) == expected
+        end
+        alias is_path? is_string?
+
+        def is_boolean?(value, expected = true) # rubocop:disable Naming/PredicateName
+          [true, false].include?(value) == expected
         end
 
-        def is_string?(value) # rubocop:disable Naming/PredicateName
-          value.kind_of?(String)
-        end
+        def is_timestamp?(value, expected = true) # rubocop:disable Naming/PredicateName
+          return !expected if value.nil? 
 
-        def is_boolean?(value) # rubocop:disable Naming/PredicateName
-          [true, false].include?(value)
-        end
-
-        def is_timestamp?(value) # rubocop:disable Naming/PredicateName
           require "date"
 
           DateTime.rfc3339(value)
-          true
+          expected
         rescue TypeError, Date::Error
-          false
+          !expected
         end
 
-        def compare_key
-          @compare_key ||= payload.keys.detect { |key| key.match?(/^(IsNull|IsPresent|IsNumeric|IsString|IsBoolean|IsTimestamp|String|Numeric|Boolean|Timestamp)/) }
+        def eq?(lhs, rhs)
+          send(type_check, lhs) && send(type_check, rhs) && lhs == rhs
+        end
+
+        def lt?(lhs, rhs)
+          send(type_check, lhs) && send(type_check, rhs) && lhs < rhs
+        end
+
+        def gt?(lhs, rhs)
+          send(type_check, lhs) && send(type_check, rhs) && lhs > rhs
+        end
+
+        def lte?(lhs, rhs)
+          send(type_check, lhs) && send(type_check, rhs) && lhs <= rhs
+        end
+
+        def gte?(lhs, rhs)
+          send(type_check, lhs) && send(type_check, rhs) && lhs >= rhs
+        end
+
+        def matches?(lhs, rhs)
+          send(type_check, lhs) && send(type_check, rhs) &&
+            lhs.match?(Regexp.escape(rhs).gsub('\*', '.*?'))
         end
 
         def compare_value(context, input)
-          compare_key.end_with?("Path") ? Path.value(payload[compare_key], context, input) : payload[compare_key]
+          path ? value.value(context, input) : value
         end
       end
     end

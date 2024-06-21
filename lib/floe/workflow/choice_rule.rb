@@ -6,18 +6,18 @@ module Floe
       class << self
         def build(payload)
           if (sub_payloads = payload["Not"])
-            Floe::Workflow::ChoiceRule::Not.new(payload, build_children([sub_payloads]))
+            Floe::Workflow::ChoiceRule::Not.new(payload, build_children(payload, [sub_payloads]))
           elsif (sub_payloads = payload["And"])
-            Floe::Workflow::ChoiceRule::And.new(payload, build_children(sub_payloads))
+            Floe::Workflow::ChoiceRule::And.new(payload, build_children(payload, sub_payloads))
           elsif (sub_payloads = payload["Or"])
-            Floe::Workflow::ChoiceRule::Or.new(payload, build_children(sub_payloads))
+            Floe::Workflow::ChoiceRule::Or.new(payload, build_children(payload, sub_payloads))
           else
             Floe::Workflow::ChoiceRule::Data.new(payload)
-          end
+          end.tap { payload.no_unreferenced_fields! }
         end
 
-        def build_children(sub_payloads)
-          sub_payloads.map { |payload| build(payload) }
+        def build_children(parent_payload, sub_payloads)
+          sub_payloads.map { |payload| build(parent_payload.for_children(payload)) }
         end
       end
 
@@ -26,9 +26,8 @@ module Floe
       def initialize(payload, children = nil)
         @payload   = payload
         @children  = children
-
-        @next     = payload["Next"]
-        @variable = payload["Variable"]
+        @next      = payload.state_ref!("Next") unless payload.children
+        @variable  = payload.path!("Variable") unless children
       end
 
       def true?(*)
@@ -38,7 +37,7 @@ module Floe
       private
 
       def variable_value(context, input)
-        Path.value(variable, context, input)
+        variable.value(context, input)
       end
     end
   end

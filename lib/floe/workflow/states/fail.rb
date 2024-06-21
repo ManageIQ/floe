@@ -9,10 +9,12 @@ module Floe
         def initialize(workflow, name, payload)
           super
 
-          @cause      = payload["Cause"]
-          @error      = payload["Error"]
-          @cause_path = Path.new(payload["CausePath"]) if payload["CausePath"]
-          @error_path = Path.new(payload["ErrorPath"]) if payload["ErrorPath"]
+          @cause      = payload.string!("Cause", :required => false)
+          @error      = payload.string!("Error", :required => false)
+          @cause_path = payload.path!("CausePath", :default => nil)
+          @error_path = payload.path!("ErrorPath", :default => nil)
+
+          payload.no_unreferenced_fields!
         end
 
         def finish(context)

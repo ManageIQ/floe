@@ -13,17 +13,21 @@ module Floe
         def initialize(workflow, name, payload)
           super
 
-          @next           = payload["Next"]
-          @end            = !!payload["End"]
-          @seconds        = payload["Seconds"]&.to_i
-          @timestamp      = payload["Timestamp"]
-          @timestamp_path = Path.new(payload["TimestampPath"]) if payload.key?("TimestampPath")
-          @seconds_path   = Path.new(payload["SecondsPath"]) if payload.key?("SecondsPath")
+          @end            = payload.boolean!("End")
+          @next           = payload.state_ref!("Next", :required => !@end)
+          @seconds        = payload.number!("Seconds")
+          @timestamp      = payload.timestamp!("Timestamp")
+          @timestamp_path = payload.path!("TimestampPath", :default => nil)
+          @seconds_path   = payload.path!("SecondsPath", :default => nil)
 
-          @input_path  = Path.new(payload.fetch("InputPath", "$"))
-          @output_path = Path.new(payload.fetch("OutputPath", "$"))
+          if [seconds, timestamp, timestamp_path, seconds_path].compact.size != 1
+            payload.error!("requires one field: \"Seconds\", \"Timestamp\", \"TimestampPath\", or \"SecondsPath\"")
+          end
 
-          validate_state!(workflow)
+          @input_path  = payload.path!("InputPath", :default => "$")
+          @output_path = payload.path!("OutputPath", :default => "$")
+
+          payload.no_unreferenced_fields!
         end
 
         def start(context)
@@ -31,6 +35,7 @@ module Floe
 
           input = input_path.value(context, context.input)
 
+          # TODO: typecheck seconds_path.value and timestamp_path.value
           wait_until!(
             context,
             :seconds => seconds_path ? seconds_path.value(context, input).to_i : seconds,
@@ -50,12 +55,6 @@ module Floe
 
         def end?
           @end
-        end
-
-        private
-
-        def validate_state!(workflow)
-          validate_state_next!(workflow)
         end
       end
     end

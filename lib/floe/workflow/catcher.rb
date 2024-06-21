@@ -8,9 +8,11 @@ module Floe
       def initialize(payload)
         @payload = payload
 
-        @error_equals = payload["ErrorEquals"]
-        @next         = payload["Next"]
-        @result_path  = ReferencePath.new(payload.fetch("ResultPath", "$"))
+        @error_equals = payload.list!("ErrorEquals")
+        @next         = payload.state_ref!("Next")
+        @result_path  = payload.reference_path!("ResultPath", :default => "$")
+
+        payload.no_unreferenced_fields!
       end
     end
   end

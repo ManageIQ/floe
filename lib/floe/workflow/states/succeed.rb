@@ -6,6 +6,16 @@ module Floe
       class Succeed < Floe::Workflow::State
         attr_reader :input_path, :output_path
 
+        def initialize(workflow, name, payload)
+          super
+
+          # TODO: use succeed input/output parameters
+          @input_path = payload.path!("InputPath", :default => nil)
+          @output_path = payload.path!("OutputPath", :default => nil)
+
+          payload.no_unreferenced_fields!
+        end
+
         def finish(context)
           context.next_state = nil
           context.output     = context.input

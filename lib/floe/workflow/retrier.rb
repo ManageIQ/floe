@@ -8,10 +8,10 @@ module Floe
       def initialize(payload)
         @payload = payload
 
-        @error_equals     = payload["ErrorEquals"]
-        @interval_seconds = payload["IntervalSeconds"] || 1.0
-        @max_attempts     = payload["MaxAttempts"] || 3
-        @backoff_rate     = payload["BackoffRate"] || 2.0
+        @error_equals     = payload.list!("ErrorEquals")
+        @interval_seconds = payload.number!("IntervalSeconds") || 1.0
+        @max_attempts     = payload.number!("MaxAttempts") || 3
+        @backoff_rate     = payload.number!("BackoffRate") || 2.0
       end
 
       # @param [Integer] attempt 1 for the first attempt
