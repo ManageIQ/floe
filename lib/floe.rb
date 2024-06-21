@@ -38,6 +38,7 @@ require "time"
 module Floe
   class Error < StandardError; end
   class InvalidWorkflowError < Error; end
+  class InvalidExecutionInput < Error; end
 
   def self.logger
     @logger ||= NullLogger.new

@@ -1,6 +1,6 @@
 RSpec.describe Floe::Workflow::ErrorMatcherMixin do
   let(:input) { {} }
-  let(:ctx) { Floe::Workflow::Context.new(:input => input) }
+  let(:ctx) { Floe::Workflow::Context.new(:input => input.to_json) }
   let(:resource) { "docker://hello-world:latest" }
   # we could have used catchers
   let(:retriers) { {"ErrorEquals" => ["States.ALL"]} }
