@@ -32,6 +32,10 @@ module Floe
         results = JsonPath.on(obj, path)
         results.count < 2 ? results.first : results
       end
+
+      def to_s
+        @payload
+      end
     end
   end
 end

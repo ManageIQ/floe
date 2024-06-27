@@ -20,14 +20,14 @@ module Floe
           @resource          = payload["Resource"]
           @runner            = Floe::Runner.for_resource(@resource)
           @timeout_seconds   = payload["TimeoutSeconds"]
-          @retry             = payload["Retry"].to_a.map.with_index { |retrier, i| Retrier.new(full_name + ["Retry", i.to_s], retrier) }
-          @catch             = payload["Catch"].to_a.map.with_index { |catcher, i| Catcher.new(full_name + ["Catch", i.to_s], catcher) }
-          @input_path        = Path.new(payload.fetch("InputPath", "$"))
-          @output_path       = Path.new(payload.fetch("OutputPath", "$"))
-          @result_path       = ReferencePath.new(payload.fetch("ResultPath", "$"))
-          @parameters        = PayloadTemplate.new(payload["Parameters"])     if payload["Parameters"]
-          @result_selector   = PayloadTemplate.new(payload["ResultSelector"]) if payload["ResultSelector"]
-          @credentials       = PayloadTemplate.new(payload["Credentials"])    if payload["Credentials"]
+          @retry             = payload["Retry"].to_a.map.with_index { |retrier, i| Retrier.new(workflow, full_name + ["Retry", i.to_s], retrier) }
+          @catch             = payload["Catch"].to_a.map.with_index { |catcher, i| Catcher.new(workflow, full_name + ["Catch", i.to_s], catcher) }
+          @input_path        = path!("InputPath", payload.fetch("InputPath", "$"))
+          @output_path       = path!("OutputPath", payload.fetch("OutputPath", "$"))
+          @result_path       = reference_path!("ResultPath", payload.fetch("ResultPath", "$"))
+          @parameters        = payload_template!("Parameters", payload["Parameters"])
+          @result_selector   = payload_template!("ResultSelector", payload["ResultSelector"])
+          @credentials       = payload_template!("Credentials", payload["Credentials"])
 
           validate_state!(workflow)
         rescue ArgumentError => err

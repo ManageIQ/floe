@@ -3,11 +3,12 @@
 module Floe
   class Workflow
     class Retrier
-      include Floe::Workflow::ErrorMatcherMixin
+      include ErrorMatcherMixin
+      include ValidationMixin
 
       attr_reader :error_equals, :interval_seconds, :max_attempts, :backoff_rate, :full_name
 
-      def initialize(full_name, payload)
+      def initialize(_workflow, full_name, payload)
         @full_name        = full_name
         @payload          = payload
 
