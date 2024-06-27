@@ -3,6 +3,8 @@
 module Floe
   class Workflow
     class Catcher
+      include ValidationMixin
+
       attr_reader :error_equals, :next, :result_path, :full_name
 
       def initialize(full_name, payload)
@@ -11,7 +13,7 @@ module Floe
 
         @error_equals = payload["ErrorEquals"]
         @next         = payload["Next"]
-        @result_path  = ReferencePath.new(payload.fetch("ResultPath", "$"))
+        @result_path  = reference_path!("ResultPath", payload.fetch("ResultPath", "$"))
       end
     end
   end

@@ -10,7 +10,7 @@ module Floe
           super
 
           require_field!("Choices", payload["Choices"], type: Array)
-          @choices = payload["Choices"].each_with_index.map { |choice, i| ChoiceRule.build(full_name + ["Choices", i.to_s], choice) }
+          @choices = payload["Choices"].each_with_index.map { |choice, i| ChoiceRule.build(workflow, full_name + ["Choices", i.to_s], choice) }
           @default = state_ref!("Default", payload["Default"], workflow)
 
           @input_path  = path!("InputPath", payload.fetch("InputPath", "$"))

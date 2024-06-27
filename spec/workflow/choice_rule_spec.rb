@@ -1,24 +1,42 @@
 RSpec.describe Floe::Workflow::ChoiceRule do
   let(:name)      { "FirstMatchState" }
+  let(:full_name) { ["States", name, "Choice", 1] }
   let(:workflow)  { make_workflow({}, {name => {"Type" => "Choice", "Choices" => [payload], "Default" => name}}) }
 
   describe ".build" do
     let(:payload) { {"Variable" => "$.foo", "StringEquals" => "foo", "Next" => name} }
-    let(:subject) { described_class.build([name, "Choices", 1], payload) }
+    let(:subject) { described_class.build(workflow, full_name, payload) }
 
     it "works with valid next" do
       subject
     end
+
+    context "with Variable missing" do
+      let(:payload) { {"Next" => name} }
+
+      it { expect { subject }.to raise_exception(Floe::InvalidWorkflowError, "States.FirstMatchState.Choices.0.Data requires Path field \"Variable\"") }
+    end
+
+    context "with non-path Variable missing" do
+      let(:payload) { {"Variable" => "wrong", "Next" => name} }
+      it { expect { subject }.to raise_exception(Floe::InvalidWorkflowError, "States.FirstMatchState.Choices.0.Data requires Path field \"Variable\" Path [wrong] must start with \"$\"") }
+    end
+
+    context "with second level Next" do
+      let(:payload) { {"Not" => {"Variable" => "$.foo", "StringEquals" => "bar", "Next" => "FirstMatchState"}, "Next" => "FirstMatchState"} }
+
+      it { expect { subject }.to raise_exception(Floe::InvalidWorkflowError, "States.FirstMatchState.Choices.0.Not.0.Data does not recognize field \"Next\"") }
+    end
   end
 
   describe "#true?" do
-    let(:subject) { described_class.build([name, "Choices", 1], payload).true?(context, input) }
+    let(:subject) { described_class.build(workflow, full_name, payload).true?(context, input) }
     let(:context) { {} }
 
     context "with abstract top level class" do
       let(:payload) { {"Variable" => "$.foo", "StringEquals" => "foo", "Next" => name} }
       let(:input) { {} }
-      let(:subject) { described_class.new([name, "Choices", 1], payload).true?(context, input) }
+      let(:subject) { described_class.new(workflow, full_name + ["Data"], payload).true?(context, input) }
 
       it "is not implemented" do
         expect { subject }.to raise_exception(NotImplementedError)
@@ -28,6 +46,12 @@ RSpec.describe Floe::Workflow::ChoiceRule do
     context "Boolean Expression" do
       context "Not" do
         let(:payload) { {"Not" => {"Variable" => "$.foo", "StringEquals" => "bar"}, "Next" => "FirstMatchState"} }
+
+        context "with a second level next" do
+          let(:input) { {"foo" => "foo"} }
+          let(:payload) { {"Not" => {"Variable" => "$.foo", "StringEquals" => "bar", "Next" => "FirstMatchState"}, "Next" => "FirstMatchState"} }
+          it { expect { subject }.to raise_exception(Floe::InvalidWorkflowError, "States.FirstMatchState.Choices.0.Not.0.Data does not recognize field \"Next\"") }
+        end
 
         context "that is not equal to 'bar'" do
           let(:input) { {"foo" => "foo"} }
