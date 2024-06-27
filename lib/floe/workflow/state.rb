@@ -6,9 +6,9 @@ module Floe
       include Logging
 
       class << self
-        def build!(workflow, name, payload)
+        def build!(workflow, full_name, payload)
           state_type = payload["Type"]
-          raise Floe::InvalidWorkflowError, "Missing \"Type\" field in state [#{name}]" if payload["Type"].nil?
+          raise Floe::InvalidWorkflowError, "Missing \"Type\" field in state [#{full_name.last}]" if payload["Type"].nil?
 
           begin
             klass = Floe::Workflow::States.const_get(state_type)
@@ -16,14 +16,14 @@ module Floe
             raise Floe::InvalidWorkflowError, "Invalid state type: [#{state_type}]"
           end
 
-          klass.new(workflow, name, payload)
+          klass.new(workflow, full_name, payload)
         end
       end
 
-      attr_reader :comment, :name, :type, :payload
+      attr_reader :comment, :full_name, :type, :payload
 
-      def initialize(workflow, name, payload)
-        @name     = name
+      def initialize(_workflow, full_name, payload)
+        @full_name = full_name
         @payload  = payload
         @type     = payload["Type"]
         @comment  = payload["Comment"]
@@ -86,8 +86,12 @@ module Floe
         context.state["WaitUntil"] && Time.parse(context.state["WaitUntil"])
       end
 
+      def name
+        full_name.last
+      end
+
       def long_name
-        "#{@type}:#{name}"
+        "#{type}:#{name}"
       end
 
       private

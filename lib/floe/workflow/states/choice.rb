@@ -6,12 +6,12 @@ module Floe
       class Choice < Floe::Workflow::State
         attr_reader :choices, :default, :input_path, :output_path
 
-        def initialize(workflow, name, payload)
+        def initialize(workflow, full_name, payload)
           super
 
           validate_state!(workflow)
 
-          @choices = payload["Choices"].map { |choice| ChoiceRule.build(choice) }
+          @choices = payload["Choices"].each_with_index.map { |choice, i| ChoiceRule.build(full_name + ["Choices", i.to_s], choice) }
           @default = payload["Default"]
 
           @input_path  = Path.new(payload.fetch("InputPath", "$"))

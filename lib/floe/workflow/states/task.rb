@@ -11,7 +11,7 @@ module Floe
                     :result_selector, :resource, :timeout_seconds, :retry, :catch,
                     :input_path, :output_path, :result_path
 
-        def initialize(workflow, name, payload)
+        def initialize(workflow, full_name, payload)
           super
 
           @heartbeat_seconds = payload["HeartbeatSeconds"]
@@ -20,8 +20,8 @@ module Floe
           @resource          = payload["Resource"]
           @runner            = Floe::Runner.for_resource(@resource)
           @timeout_seconds   = payload["TimeoutSeconds"]
-          @retry             = payload["Retry"].to_a.map { |retrier| Retrier.new(retrier) }
-          @catch             = payload["Catch"].to_a.map { |catcher| Catcher.new(catcher) }
+          @retry             = payload["Retry"].to_a.each_with_index.map { |retrier, i| Retrier.new(full_name + ["Retry", i.to_s], retrier) }
+          @catch             = payload["Catch"].to_a.each_with_index.map { |catcher, i| Catcher.new(full_name + ["Catch", i.to_s], catcher) }
           @input_path        = Path.new(payload.fetch("InputPath", "$"))
           @output_path       = Path.new(payload.fetch("OutputPath", "$"))
           @result_path       = ReferencePath.new(payload.fetch("ResultPath", "$"))
