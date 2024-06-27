@@ -33,12 +33,15 @@ module Floe
       # NOTE: intentionally using field_value and not field_value.nil?
       #       false will act like it is not defined
       present_fields = field_values.filter_map do |name, value|
-        name if value && !(value.respond_to?(:empty?) && value.empty?)
+        name unless !value || (value.respond_to?(:empty?) && value.empty?)
       end
 
-      if present_fields.empty?
+      case present_fields.count
+      when 0
         error!("requires #{"one " if field_values.size > 1}field \"#{field_values.keys.join(", ")}\"")
-      elsif present_fields.size > 1
+      when 1
+        nil
+      else
         error!("requires only one field: #{present_fields.join(", ")}")
       end
     end

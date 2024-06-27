@@ -10,7 +10,7 @@ module Floe
           super
 
           validate_state!(workflow)
-          @choices = payload["Choices"].each_with_index.map { |choice, i| ChoiceRule.build(full_name + ["Choices", i.to_s], choice) }
+          @choices = payload["Choices"].each_with_index.map { |choice, i| ChoiceRule.build(workflow, full_name + ["Choices", i.to_s], choice) }
           @default = payload["Default"]
 
           @input_path  = path!("InputPath", payload.fetch("InputPath", "$"))
