@@ -6,6 +6,7 @@ require "json"
 module Floe
   class Workflow
     include Logging
+    include ValidationMixin
 
     class << self
       def load(path_or_io, context = nil, credentials = {}, name = nil)
@@ -96,15 +97,14 @@ module Floe
       # caller should really put credentials into context and not pass that variable
       context.credentials = credentials if credentials
 
-      raise Floe::InvalidWorkflowError, "Missing field \"States\""  if payload["States"].nil?
-      raise Floe::InvalidWorkflowError, "Missing field \"StartAt\"" if payload["StartAt"].nil?
-      raise Floe::InvalidWorkflowError, "\"StartAt\" not in the \"States\" field" unless payload["States"].key?(payload["StartAt"])
 
       @name        = name
       @payload     = payload
       @context     = context
       @comment     = payload["Comment"]
       @start_at    = payload["StartAt"]
+
+      validate_workflow!
 
       @states         = payload["States"].to_a.map { |state_name, state| State.build!(self, ["States", state_name], state) }
       @states_by_name = @states.each_with_object({}) { |state, result| result[state.name] = state }
@@ -187,6 +187,7 @@ module Floe
     def credentials
       @context.credentials
     end
+
     private
 
     def step!
@@ -204,6 +205,19 @@ module Floe
 
     def end_workflow!
       context.execution["EndTime"] = context.state["FinishedTime"]
+    end
+
+    def full_name
+      %w[Workflow]
+    end
+
+    def validate_workflow!
+      error!("requires non-empty Hash field \"States\"") if payload["States"].nil? || !payload["States"].kind_of?(Hash)
+      error!("requires field \"Comment\"") unless @comment.nil? || @comment.kind_of?(String)
+      state_ref!("StartAt", @start_at, self)
+      require_field!("StartAt", @start_at)
+      # error!("requires field \"StartAt\"") if @start_at.nil?
+      # error!("requires field \"StartAt\" to be in \"States\" list but got [#{@start_at}]") unless payload["States"].key?(@start_at)
     end
   end
 end
