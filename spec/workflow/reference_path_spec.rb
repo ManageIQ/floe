@@ -6,7 +6,7 @@ RSpec.describe Floe::Workflow::ReferencePath do
       let(:payload) { "$.foo@.bar" }
 
       it "raises an exception" do
-        expect { subject }.to raise_error(Floe::InvalidWorkflowError, "Invalid Reference Path")
+        expect { subject }.to raise_error(Floe::InvalidWorkflowError, "Reference Path [$.foo@.bar] is invalid")
       end
     end
   end

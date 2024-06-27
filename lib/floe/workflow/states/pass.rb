@@ -12,16 +12,16 @@ module Floe
         def initialize(workflow, name, payload)
           super
 
-          @next        = payload["Next"]
+          @next        = state_ref!("Next", payload["Next"], workflow)
           @end         = !!payload["End"]
           @result      = payload["Result"]
 
-          @parameters  = PayloadTemplate.new(payload["Parameters"]) if payload["Parameters"]
-          @input_path  = Path.new(payload.fetch("InputPath", "$"))
-          @output_path = Path.new(payload.fetch("OutputPath", "$"))
-          @result_path = ReferencePath.new(payload.fetch("ResultPath", "$"))
+          @parameters  = payload_template!("Parameters", payload["Parameters"])
+          @input_path  = path!("InputPath", payload.fetch("InputPath", "$"))
+          @output_path = path!("OutputPath", payload.fetch("OutputPath", "$"))
+          @result_path = reference_path!("ResultPath", payload.fetch("ResultPath", "$"))
 
-          validate_state!(workflow)
+          validate_state!
         end
 
         def finish(context)
@@ -40,8 +40,8 @@ module Floe
 
         private
 
-        def validate_state!(workflow)
-          validate_state_next!(workflow)
+        def validate_state!
+          require_field!("Next", @next) unless @end
         end
       end
     end

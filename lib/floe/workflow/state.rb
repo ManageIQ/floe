@@ -4,16 +4,18 @@ module Floe
   class Workflow
     class State
       include Logging
+      include ValidationMixin
 
       class << self
         def build!(workflow, full_name, payload)
           state_type = payload["Type"]
-          raise Floe::InvalidWorkflowError, "Missing \"Type\" field in state [#{full_name.last}]" if payload["Type"].nil?
+          error!(full_name, "requires String field \"Type\"") if state_type.nil? || state_type.empty?
+          error!(full_name, "requires String field \"Type\" but got [#{state_type}]") unless state_type.kind_of?(String)
 
           begin
             klass = Floe::Workflow::States.const_get(state_type)
           rescue NameError
-            raise Floe::InvalidWorkflowError, "Invalid state type: [#{state_type}]"
+            error!(full_name, "requires String field \"Type\" but got invalid value [#{state_type}]")
           end
 
           klass.new(workflow, full_name, payload)
@@ -28,7 +30,6 @@ module Floe
         @type     = payload["Type"]
         @comment  = payload["Comment"]
 
-        raise Floe::InvalidWorkflowError, "Missing \"Type\" field in state [#{name}]" if payload["Type"].nil?
         raise Floe::InvalidWorkflowError, "State name [#{name[..79]}...] must be less than or equal to 80 characters" if name.length > 80
       end
 

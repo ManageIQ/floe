@@ -25,7 +25,7 @@ RSpec.describe Floe::Workflow do
     it "raises an exception for invalid States" do
       payload = make_payload({"FirstState" => {"Type" => "Invalid"}})
 
-      expect { described_class.new(payload) }.to raise_error(Floe::InvalidWorkflowError, "Invalid state type: [Invalid]")
+      expect { described_class.new(payload) }.to raise_error(Floe::InvalidWorkflowError, "States.FirstState requires String field \"Type\" but got invalid value [Invalid]")
     end
 
     it "raises an exception for missing StartAt" do
@@ -43,7 +43,7 @@ RSpec.describe Floe::Workflow do
     it "raises an exception for a State missing a Type field" do
       payload = make_payload({"FirstState" => {}})
 
-      expect { described_class.new(payload) }.to raise_error(Floe::InvalidWorkflowError, "Missing \"Type\" field in state [FirstState]")
+      expect { described_class.new(payload) }.to raise_error(Floe::InvalidWorkflowError, "States.FirstState requires String field \"Type\"")
     end
 
     it "raises an exception for an invalid State name" do

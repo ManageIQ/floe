@@ -30,22 +30,22 @@ RSpec.describe Floe::Workflow::States::Choice do
 
   it "raises an exception if Choices is missing" do
     payload = {"Choice1" => {"Type" => "Choice", "Default" => "DefaultState"}, "DefaultState" => {"type" => "Succeed"}}
-    expect { make_workflow(ctx, payload) }.to raise_error(Floe::InvalidWorkflowError, "Choice state must have \"Choices\"")
+    expect { make_workflow(ctx, payload) }.to raise_error(Floe::InvalidWorkflowError, "States.Choice1 requires Array field \"Choices\"")
   end
 
   it "raises an exception if Choices is not an array" do
     payload = {"Choice1" => {"Type" => "Choice", "Choices" => {}, "Default" => "DefaultState"}, "DefaultState" => {"type" => "Succeed"}}
-    expect { make_workflow(ctx, payload) }.to raise_error(Floe::InvalidWorkflowError, "\"Choices\" must be a non-empty array")
+    expect { make_workflow(ctx, payload) }.to raise_error(Floe::InvalidWorkflowError, "States.Choice1 requires Array field \"Choices\"")
   end
 
   it "raises an exception if Choices is an empty array" do
     payload = {"Choice1" => {"Type" => "Choice", "Choices" => [], "Default" => "DefaultState"}, "DefaultState" => {"type" => "Succeed"}}
-    expect { make_workflow(ctx, payload) }.to raise_error(Floe::InvalidWorkflowError, "\"Choices\" must be a non-empty array")
+    expect { make_workflow(ctx, payload) }.to raise_error(Floe::InvalidWorkflowError, "States.Choice1 requires Array field \"Choices\"")
   end
 
   it "raises an exception if Default isn't a valid state" do
     payload = {"Choice1" => {"Type" => "Choice", "Choices" => [{"Variable" => "$.foo", "NumericEquals" => 1, "Next" => "FirstMatchState"}], "Default" => "MissingState"}, "FirstMatchState" => {"Type" => "Success"}}
-    expect { make_workflow(ctx, payload) }.to raise_error(Floe::InvalidWorkflowError, "\"Default\" not in \"States\"")
+    expect { make_workflow(ctx, payload) }.to raise_error(Floe::InvalidWorkflowError, "States.Choice1 requires field \"Default\" to be in \"States\" list but got [MissingState]")
   end
 
   it "#end?" do
