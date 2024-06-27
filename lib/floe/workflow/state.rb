@@ -3,8 +3,6 @@
 module Floe
   class Workflow
     class State
-      include Logging
-
       class << self
         def build!(workflow, name, payload)
           state_type = payload["Type"]
@@ -54,7 +52,7 @@ module Floe
       def start(context)
         context.state["EnteredTime"] = Time.now.utc.iso8601
 
-        logger.info("Running state: [#{long_name}] with input [#{context.input}]...")
+        context.logger.info("Running state: [#{long_name}] with input [#{context.input}]...")
       end
 
       def finish(context)
@@ -64,8 +62,8 @@ module Floe
         context.state["FinishedTime"] ||= finished_time.iso8601
         context.state["Duration"]       = finished_time - entered_time
 
-        level = context.failed? ? :error : :info
-        logger.public_send(level, "Running state: [#{long_name}] with input [#{context.input}]...Complete #{context.next_state ? "- next state [#{context.next_state}]" : "workflow -"} output: [#{context.output}]")
+        level = context.output&.[]("Error") ? :error : :info
+        context.logger.public_send(level, "Running state: [#{long_name}] with input [#{context.input}]...Complete #{context.next_state ? "- next state [#{context.next_state}]" : "workflow -"} output: [#{context.output}]")
 
         0
       end

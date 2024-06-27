@@ -45,7 +45,7 @@ module Floe
         super
       end
 
-      def run_async!(resource, env = {}, secrets = {}, _context = {})
+      def run_async!(resource, env, secrets, _context)
         raise ArgumentError, "Invalid resource" unless resource&.start_with?("docker://")
 
         image  = resource.sub("docker://", "")
@@ -284,7 +284,8 @@ module Floe
         code    = notice.object&.code
         reason  = notice.object&.reason
 
-        logger.warn("Received [#{code} #{reason}], [#{message}]")
+        # This feels like a global concern and not an end user's concern
+        Floe.logger.warn("Received [#{code} #{reason}], [#{message}]")
 
         true
       end

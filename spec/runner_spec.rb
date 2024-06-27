@@ -36,7 +36,7 @@ RSpec.describe Floe::Runner do
 
   describe "#run_async!" do
     it "is not implemented" do
-      expect { runner.run_async!("local://resource") }.to raise_error(NotImplementedError)
+      expect { runner.run_async!("local://resource", {}, {}, {}) }.to raise_error(NotImplementedError)
     end
   end
 

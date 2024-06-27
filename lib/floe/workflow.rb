@@ -5,8 +5,6 @@ require "json"
 
 module Floe
   class Workflow
-    include Logging
-
     class << self
       def load(path_or_io, context = nil, credentials = {}, name = nil)
         payload = path_or_io.respond_to?(:read) ? path_or_io.read : File.read(path_or_io)
@@ -18,7 +16,6 @@ module Floe
 
       def wait(workflows, timeout: nil, &block)
         workflows = [workflows] if workflows.kind_of?(self)
-        logger.info("checking #{workflows.count} workflows...")
 
         run_until   = Time.now.utc + timeout if timeout.to_i > 0
         ready       = []
@@ -78,7 +75,6 @@ module Floe
           sleep_thread&.kill
         end
 
-        logger.info("checking #{workflows.count} workflows...Complete - #{ready.count} ready")
         ready
       ensure
         wait_thread&.kill

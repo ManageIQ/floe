@@ -106,7 +106,7 @@ module Floe
           wait_until!(context, :seconds => retrier.sleep_duration(context["State"]["RetryCount"]))
           context.next_state = context.state_name
           context.output     = error
-          logger.info("Running state: [#{long_name}] with input [#{context.input}] got error[#{context.output}]...Retry - delay: #{wait_until(context)}")
+          context.logger.info("Running state: [#{long_name}] with input [#{context.input}] got error[#{context.output}]...Retry - delay: #{wait_until(context)}")
           true
         end
 
@@ -116,7 +116,7 @@ module Floe
 
           context.next_state = catcher.next
           context.output     = catcher.result_path.set(context.input, error)
-          logger.info("Running state: [#{long_name}] with input [#{context.input}]...CatchError - next state: [#{context.next_state}] output: [#{context.output}]")
+          context.logger.info("Running state: [#{long_name}] with input [#{context.input}]...CatchError - next state: [#{context.next_state}] output: [#{context.output}]")
 
           true
         end
@@ -126,7 +126,7 @@ module Floe
           # keeping in here for completeness
           context.next_state = nil
           context.output = error
-          logger.error("Running state: [#{long_name}] with input [#{context.input}]...Complete workflow - output: [#{context.output}]")
+          context.logger.error("Running state: [#{long_name}] with input [#{context.input}]...Complete workflow - output: [#{context.output}]")
         end
 
         def parse_error(output)
