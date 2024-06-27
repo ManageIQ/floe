@@ -3,10 +3,11 @@
 module Floe
   class Workflow
     class Retrier
-      attr_reader :error_equals, :interval_seconds, :max_attempts, :backoff_rate
+      attr_reader :error_equals, :interval_seconds, :max_attempts, :backoff_rate, :full_name
 
-      def initialize(payload)
-        @payload = payload
+      def initialize(full_name, payload)
+        @full_name        = full_name
+        @payload          = payload
 
         @error_equals     = payload["ErrorEquals"]
         @interval_seconds = payload["IntervalSeconds"] || 1.0

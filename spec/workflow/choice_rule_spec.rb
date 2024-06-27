@@ -4,7 +4,7 @@ RSpec.describe Floe::Workflow::ChoiceRule do
 
   describe ".build" do
     let(:payload) { {"Variable" => "$.foo", "StringEquals" => "foo", "Next" => name} }
-    let(:subject) { described_class.build(payload) }
+    let(:subject) { described_class.build([name, "Choices", 1], payload) }
 
     it "works with valid next" do
       subject
@@ -12,13 +12,14 @@ RSpec.describe Floe::Workflow::ChoiceRule do
   end
 
   describe "#true?" do
-    let(:subject) { described_class.build(payload).true?(context, input) }
+    let(:subject) { described_class.build([name, "Choices", 1], payload).true?(context, input) }
     let(:context) { {} }
 
     context "with abstract top level class" do
       let(:payload) { {"Variable" => "$.foo", "StringEquals" => "foo", "Next" => name} }
       let(:input) { {} }
-      let(:subject) { described_class.new(payload).true?(context, input) }
+      let(:subject) { described_class.new([name, "Choices", 1], payload).true?(context, input) }
+
       it "is not implemented" do
         expect { subject }.to raise_exception(NotImplementedError)
       end
