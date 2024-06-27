@@ -27,6 +27,14 @@ RSpec.describe Floe::Workflow::States::Pass do
     end
   end
 
+  describe "#initialize" do
+    it "requires a duration" do
+      expect do
+        make_workflow(ctx, {"WaitState" => {"Type" => "Wait", "Next" => "SuccessState"}, "SuccessState" => {"Type" => "Succeed"}})
+      end.to raise_error(Floe::InvalidWorkflowError)
+    end
+  end
+
   describe "#running?" do
     context "with seconds" do
       let(:workflow) { make_workflow(ctx, {"WaitState" => {"Type" => "Wait", "Seconds" => 1, "Next" => "SuccessState"}, "SuccessState" => {"Type" => "Succeed"}}) }

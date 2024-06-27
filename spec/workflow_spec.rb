@@ -25,7 +25,7 @@ RSpec.describe Floe::Workflow do
     it "raises an exception for invalid States" do
       payload = make_payload({"FirstState" => {"Type" => "Invalid"}})
 
-      expect { described_class.new(payload) }.to raise_error(Floe::InvalidWorkflowError, "Invalid state type: [Invalid]")
+      expect { described_class.new(payload) }.to raise_error(Floe::InvalidWorkflowError, "States.FirstState requires field \"Type\" but got invalid value [Invalid]")
     end
 
     it "raises an exception for missing StartAt" do
@@ -43,7 +43,7 @@ RSpec.describe Floe::Workflow do
     it "raises an exception for a State missing a Type field" do
       payload = make_payload({"FirstState" => {}})
 
-      expect { described_class.new(payload) }.to raise_error(Floe::InvalidWorkflowError, "Missing \"Type\" field in state [FirstState]")
+      expect { described_class.new(payload) }.to raise_error(Floe::InvalidWorkflowError, "States.FirstState requires field \"Type\"")
     end
 
     it "raises an exception for an invalid State name" do
@@ -302,7 +302,7 @@ RSpec.describe Floe::Workflow do
 
   describe "#wait_until" do
     it "reads when the workflow will be ready to continue" do
-      workflow = make_workflow(ctx, {"FirstState" => {"Type" => "Wait", "Seconds" => 10, "End" => true, "Next" => "SuccessState"}, "SuccessState" => {"Type" => "Succeed"}})
+      workflow = make_workflow(ctx, {"FirstState" => {"Type" => "Wait", "Seconds" => 10, "Next" => "SuccessState"}, "SuccessState" => {"Type" => "Succeed"}})
       workflow.run_nonblock
 
       expect(workflow.wait_until).to be_within(1).of(Time.now.utc + 10)
@@ -318,7 +318,7 @@ RSpec.describe Floe::Workflow do
 
   describe "#waiting?" do
     it "reads when the workflow will be ready to continue" do
-      workflow = make_workflow(ctx, {"FirstState" => {"Type" => "Wait", "Seconds" => 10, "End" => true, "Next" => "SuccessState"}, "SuccessState" => {"Type" => "Succeed"}})
+      workflow = make_workflow(ctx, {"FirstState" => {"Type" => "Wait", "Seconds" => 10, "Next" => "SuccessState"}, "SuccessState" => {"Type" => "Succeed"}})
       workflow.run_nonblock
 
       expect(workflow.waiting?).to be_truthy
