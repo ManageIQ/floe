@@ -12,8 +12,8 @@ module Floe
         def initialize(workflow, name, payload)
           super
 
-          @next        = payload["Next"]
-          @end         = !!payload["End"]
+          @next        = state_ref!("Next", payload["Next"], workflow)
+          @end         = boolean!("End", payload["End"])
           @result      = payload["Result"]
 
           @parameters  = payload_template!("Parameters", payload["Parameters"])
@@ -21,7 +21,7 @@ module Floe
           @output_path = path!("OutputPath", payload.fetch("OutputPath", "$"))
           @result_path = reference_path!("ResultPath", payload.fetch("ResultPath", "$"))
 
-          validate_state!(workflow)
+          require_fields!("Next" => @next, "End" => @end)
         end
 
         def finish(context)
@@ -36,12 +36,6 @@ module Floe
 
         def end?
           @end
-        end
-
-        private
-
-        def validate_state!(workflow)
-          validate_state_next!(workflow)
         end
       end
     end

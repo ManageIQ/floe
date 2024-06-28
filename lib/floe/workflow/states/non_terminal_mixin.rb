@@ -10,11 +10,6 @@ module Floe
 
           super
         end
-
-        def validate_state_next!(workflow)
-          state_ref!("Next", @next, workflow)
-          require_fields!("Next" => @next, "End" => @end)
-        end
       end
     end
   end

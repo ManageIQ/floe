@@ -13,8 +13,8 @@ module Floe
         def initialize(workflow, name, payload)
           super
 
-          @next           = payload["Next"]
-          @end            = !!payload["End"]
+          @next           = state_ref!("Next", payload["Next"], workflow)
+          @end            = boolean!("End", payload["End"])
           @seconds        = payload["Seconds"]&.to_i
           @timestamp      = payload["Timestamp"]
           @timestamp_path = path!("TimestampPath", payload["TimestampPath"])
@@ -23,7 +23,8 @@ module Floe
           @input_path     = path!("InputPath", payload.fetch("InputPath", "$"))
           @output_path    = path!("OutputPath", payload.fetch("OutputPath", "$"))
 
-          validate_state!(workflow)
+          require_fields!("Next" => @next, "End" => @end)
+          require_fields!("Seconds" => @seconds, "Timestamp" => @timestamp, "TimestampPath" => @timestamp_path, "SecondsPath" => @seconds_path)
         end
 
         def start(context)
@@ -50,16 +51,6 @@ module Floe
 
         def end?
           @end
-        end
-
-        private
-
-        def validate_state!(workflow)
-          validate_state_next!(workflow)
-
-          if [seconds, timestamp, timestamp_path, seconds_path].compact.size != 1
-            error!("requires one field: \"Seconds\", \"Timestamp\", \"TimestampPath\", or \"SecondsPath\"")
-          end
         end
       end
     end

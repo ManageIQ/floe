@@ -14,14 +14,14 @@ module Floe
         def initialize(workflow, full_name, payload)
           super
 
-          @heartbeat_seconds = payload["HeartbeatSeconds"]
-          @next              = payload["Next"]
-          @end               = !!payload["End"]
-          @resource          = payload["Resource"]
+          @heartbeat_seconds = number!("HeartbeatSeconds", payload["HeartbeatSeconds"])
+          @next              = state_ref!("Next", payload["Next"], workflow)
+          @end               = boolean!("End", payload["End"])
+          @resource          = string!("Resource", payload["Resource"])
           @runner            = Floe::Runner.for_resource(@resource)
-          @timeout_seconds   = payload["TimeoutSeconds"]
-          @retry             = payload["Retry"].to_a.map.with_index { |retrier, i| Retrier.new(workflow, full_name + ["Retry", i.to_s], retrier) }
-          @catch             = payload["Catch"].to_a.map.with_index { |catcher, i| Catcher.new(workflow, full_name + ["Catch", i.to_s], catcher) }
+          @timeout_seconds   = number!("TimeoutSeconds", payload["TimeoutSeconds"])
+          @retry             = list!("Retry", payload["Retry"], workflow) { |wf, retry_name, retry_payload| Retrier.new(wf, retry_name, retry_payload) }
+          @catch             = list!("Catch", payload["Catch"], workflow) { |wf, catch_name, catch_payload| Catcher.new(wf, catch_name, catch_payload) }
           @input_path        = path!("InputPath", payload.fetch("InputPath", "$"))
           @output_path       = path!("OutputPath", payload.fetch("OutputPath", "$"))
           @result_path       = reference_path!("ResultPath", payload.fetch("ResultPath", "$"))
@@ -29,7 +29,7 @@ module Floe
           @result_selector   = payload_template!("ResultSelector", payload["ResultSelector"])
           @credentials       = payload_template!("Credentials", payload["Credentials"])
 
-          validate_state!(workflow)
+          require_fields!("Next" => @next, "End" => @end)
         rescue ArgumentError => err
           raise Floe::InvalidWorkflowError, err.message
         end
@@ -72,10 +72,6 @@ module Floe
         private
 
         attr_reader :runner
-
-        def validate_state!(workflow)
-          validate_state_next!(workflow)
-        end
 
         def success?(context)
           runner.success?(context.state["RunnerContext"])

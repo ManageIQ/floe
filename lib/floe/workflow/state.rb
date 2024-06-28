@@ -34,8 +34,8 @@ module Floe
       def initialize(_workflow, full_name, payload)
         @full_name = full_name
         @payload  = payload
-        @type     = payload["Type"]
-        @comment  = payload["Comment"]
+        @type     = string!("Type", payload["Type"])
+        @comment  = string!("Comment", payload["Comment"])
 
         raise Floe::InvalidWorkflowError, "State name [#{name[..79]}...] must be less than or equal to 80 characters" if name.length > 80
       end

@@ -100,12 +100,13 @@ module Floe
       @name        = name
       @payload     = payload
       @context     = context
-      @comment     = payload["Comment"]
-      @start_at    = payload["StartAt"]
+      @comment     = string!("Comment", payload["Comment"])
+      @start_at    = state_ref!("StartAt", payload["StartAt"], self)
+      @states      = hash!("States", payload["States"], self) { |workflow, state_name, state_payload| State.build!(workflow, state_name, state_payload) }
 
-      validate_workflow!
+      require_fields!("States" => payload["States"])
+      require_fields!("StartAt" => @start_at)
 
-      @states         = payload["States"].to_a.map { |state_name, state| State.build!(self, ["States", state_name], state) }
       @states_by_name = @states.each_with_object({}) { |state, result| result[state.name] = state }
     rescue Floe::InvalidWorkflowError
       raise
@@ -208,12 +209,6 @@ module Floe
 
     def full_name
       %w[]
-    end
-
-    def validate_workflow!
-      require_fields!("States" => payload["States"])
-      state_ref!("StartAt", @start_at, self)
-      require_fields!("StartAt" => @start_at)
     end
   end
 end
