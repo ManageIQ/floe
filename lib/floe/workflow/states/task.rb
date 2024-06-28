@@ -18,7 +18,14 @@ module Floe
           @next              = payload["Next"]
           @end               = !!payload["End"]
           @resource          = payload["Resource"]
-          @runner            = Floe::Runner.for_resource(@resource)
+
+          parser_missing_field!("Resource") unless @resource.kind_of?(String)
+          begin
+            @runner = Floe::Runner.for_resource(@resource)
+          rescue ArgumentError => err
+            parser_invalid_field!("Resource", @resource, err.message)
+          end
+
           @timeout_seconds   = payload["TimeoutSeconds"]
           @retry             = payload["Retry"].to_a.map.with_index { |retrier, i| Retrier.new(full_name + ["Retry", i.to_s], retrier) }
           @catch             = payload["Catch"].to_a.map.with_index { |catcher, i| Catcher.new(full_name + ["Catch", i.to_s], catcher) }
@@ -30,8 +37,6 @@ module Floe
           @credentials       = PayloadTemplate.new(payload["Credentials"])    if payload["Credentials"]
 
           validate_state!(workflow)
-        rescue ArgumentError => err
-          raise Floe::InvalidWorkflowError, err.message
         end
 
         def start(context)

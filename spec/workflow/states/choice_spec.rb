@@ -30,22 +30,22 @@ RSpec.describe Floe::Workflow::States::Choice do
 
   it "raises an exception if Choices is missing" do
     payload = {"Choice1" => {"Type" => "Choice", "Default" => "DefaultState"}, "DefaultState" => {"type" => "Succeed"}}
-    expect { make_workflow(ctx, payload) }.to raise_error(Floe::InvalidWorkflowError, "Choice state must have \"Choices\"")
+    expect { make_workflow(ctx, payload) }.to raise_error(Floe::InvalidWorkflowError, "States.Choice1 does not have required field \"Choices\"")
   end
 
   it "raises an exception if Choices is not an array" do
     payload = {"Choice1" => {"Type" => "Choice", "Choices" => {}, "Default" => "DefaultState"}, "DefaultState" => {"type" => "Succeed"}}
-    expect { make_workflow(ctx, payload) }.to raise_error(Floe::InvalidWorkflowError, "\"Choices\" must be a non-empty array")
+    expect { make_workflow(ctx, payload) }.to raise_error(Floe::InvalidWorkflowError, "States.Choice1 field \"Choices\" must be a non-empty array")
   end
 
   it "raises an exception if Choices is an empty array" do
     payload = {"Choice1" => {"Type" => "Choice", "Choices" => [], "Default" => "DefaultState"}, "DefaultState" => {"type" => "Succeed"}}
-    expect { make_workflow(ctx, payload) }.to raise_error(Floe::InvalidWorkflowError, "\"Choices\" must be a non-empty array")
+    expect { make_workflow(ctx, payload) }.to raise_error(Floe::InvalidWorkflowError, "States.Choice1 field \"Choices\" must be a non-empty array")
   end
 
   it "raises an exception if Default isn't a valid state" do
-    payload = {"Choice1" => {"Type" => "Choice", "Choices" => [{"Variable" => "$.foo", "NumericEquals" => 1, "Next" => "FirstMatchState"}], "Default" => "MissingState"}, "FirstMatchState" => {"Type" => "Success"}}
-    expect { make_workflow(ctx, payload) }.to raise_error(Floe::InvalidWorkflowError, "\"Default\" not in \"States\"")
+    payload = {"Choice1" => {"Type" => "Choice", "Choices" => [{"Variable" => "$.foo", "NumericEquals" => 1, "Next" => "FirstMatchState"}], "Default" => "MissingState"}, "FirstMatchState" => {"Type" => "Succeed"}}
+    expect { make_workflow(ctx, payload) }.to raise_error(Floe::InvalidWorkflowError, "States.Choice1 field \"Default\" value \"MissingState\" is not found in \"States\"")
   end
 
   it "#end?" do

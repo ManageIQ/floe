@@ -27,12 +27,12 @@ RSpec.describe Floe::Workflow::ErrorMatcherMixin do
   describe "#match_error?" do
     context "with no ErrorEquals" do
       let(:retriers) { [{}] }
-      it { expect { subject }.to raise_error(Floe::InvalidWorkflowError, /requires.*ErrorEquals/) }
+      it { expect { subject }.to raise_error(Floe::InvalidWorkflowError, "States.State.Retry.0 does not have required field \"ErrorEquals\"") }
     end
 
     context "with empty ErrorEquals" do
       let(:retriers) { [{"ErrorEquals" => []}] }
-      it { expect { subject }.to raise_error(Floe::InvalidWorkflowError, /requires.*ErrorEquals/) }
+      it { expect { subject }.to raise_error(Floe::InvalidWorkflowError, "States.State.Retry.0 does not have required field \"ErrorEquals\"") }
     end
 
     context "when matching an error" do

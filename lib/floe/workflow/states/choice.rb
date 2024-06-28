@@ -44,12 +44,12 @@ module Floe
         end
 
         def validate_state_choices!
-          raise Floe::InvalidWorkflowError, "Choice state must have \"Choices\"" unless payload.key?("Choices")
-          raise Floe::InvalidWorkflowError, "\"Choices\" must be a non-empty array" unless payload["Choices"].kind_of?(Array) && !payload["Choices"].empty?
+          parser_missing_field!("Choices") unless payload.key?("Choices")
+          parser_invalid_field!("Choices", nil, "must be a non-empty array") unless payload["Choices"].kind_of?(Array) && !payload["Choices"].empty?
         end
 
         def validate_state_default!(workflow)
-          raise Floe::InvalidWorkflowError, "\"Default\" not in \"States\"" unless workflow.payload["States"].include?(payload["Default"])
+          parser_invalid_field!("Default", payload["Default"], "is not found in \"States\"") if payload["Default"] && !workflow_state?(payload["Default"], workflow)
         end
       end
     end

@@ -12,8 +12,8 @@ module Floe
         end
 
         def validate_state_next!(workflow)
-          raise Floe::InvalidWorkflowError, "Missing \"Next\" field in state [#{name}]" if @next.nil? && !@end
-          raise Floe::InvalidWorkflowError, "\"Next\" [#{@next}] not in \"States\" for state [#{name}]" if @next && !workflow.payload["States"].key?(@next)
+          parser_missing_field!("Next") if @next.nil? && !@end
+          parser_invalid_field!("Next", @next, "is not found in \"States\"") if @next && !workflow_state?(@next, workflow)
         end
       end
     end
