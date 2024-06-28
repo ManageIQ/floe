@@ -17,13 +17,20 @@ module Floe
           opts[:credentials] == "-" ? $stdin.read : opts[:credentials]
         elsif opts[:credentials_file_given]
           File.read(opts[:credentials_file])
+        else
+          {}
         end
 
       workflows =
         workflows_inputs.each_slice(2).map do |workflow, input|
-          context = Floe::Workflow::Context.new(opts[:context], :input => input, :credentials => credentials)
+          context_hash = from_json(workflow, "context", opts[:context])
+          input        = from_json(workflow, "input", input)
+          break unless !context_hash.nil? && !input.nil?
+
+          context = Floe::Workflow::Context.new(context_hash, :input => input, :credentials => credentials)
           Floe::Workflow.load(workflow, context)
         end
+      return if workflows.nil?
 
       Floe::Workflow.wait(workflows, &:run_nonblock)
 
@@ -78,6 +85,14 @@ module Floe
       Floe::ContainerRunner.resolve_cli_options!(opts)
 
       return workflows_inputs, opts
+    end
+
+    def from_json(workflow, name, value)
+      value ? JSON.parse(value) : {}
+    rescue JSON::ParserError => err
+      warn "invalid #{name} for #{workflow} -- #{err.message}"
+      warn "#{name}: #{value}"
+      nil
     end
   end
 end

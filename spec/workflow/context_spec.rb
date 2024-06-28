@@ -19,7 +19,7 @@ RSpec.describe Floe::Workflow::Context do
     end
 
     context "with a simple string input" do
-      let(:input) { "\"foo\"" }
+      let(:input) { "foo" }
 
       it "sets the input" do
         expect(ctx.execution["Input"]).to eq("foo")

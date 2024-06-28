@@ -5,25 +5,18 @@ module Floe
     class Context
       attr_accessor :credentials
 
-      # @param context [Json|Hash] (default, create another with input and execution params)
+      # @param context [String|Array|Hash] (default, create another with input and execution params)
       # @param input [Hash] (default: {})
       def initialize(context = nil, input: nil, credentials: {})
-        context = JSON.parse(context) if context.kind_of?(String)
-
-        input ||= {}
-        input = JSON.parse(input) if input.kind_of?(String)
-
         @context = context || {}
         self["Execution"]          ||= {}
-        self["Execution"]["Input"] ||= input
+        self["Execution"]["Input"] ||= input || {}
         self["State"]              ||= {}
         self["StateHistory"]       ||= []
         self["StateMachine"]       ||= {}
         self["Task"]               ||= {}
 
         @credentials = credentials || {}
-      rescue JSON::ParserError => err
-        raise Floe::InvalidWorkflowError, err.message
       end
 
       def execution

@@ -54,12 +54,6 @@ RSpec.describe Floe::Workflow do
       expect { described_class.new(payload) }.to raise_error(Floe::InvalidWorkflowError, "State name [#{truncated_state_name}] must be less than or equal to 80 characters")
     end
 
-    it "raises an exception for invalid context" do
-      payload = make_payload({"FirstState" => {"Type" => "Success"}})
-
-      expect { described_class.new(payload, "invalid context") }.to raise_error(Floe::InvalidWorkflowError, "unexpected token at 'invalid context'")
-    end
-
     it "raises an exception for invalid resource scheme in a Task state" do
       payload = make_payload({"FirstState" => {"Type" => "Task", "Resource" => "invalid://foo", "End" => true}})
 

@@ -8,8 +8,21 @@ module Floe
     include Logging
 
     class << self
+      # used by providers-workflow
+      def from_json(payload_str, context_str, credentials_str, name = nil)
+        payload = JSON.parse(payload_str)
+        context_hash = JSON.parse(context_str)
+        credentials = JSON.parse(credentials_str)
+        context = Context.new(context_hash, :credentials => credentials)
+
+        new(payload, context, nil, name)
+      end
+
+      # used by exe/floe
       def load(path_or_io, context = nil, credentials = {}, name = nil)
         payload = path_or_io.respond_to?(:read) ? path_or_io.read : File.read(path_or_io)
+        payload = JSON.parse(payload)
+
         # default the name if it is a filename and none was passed in
         name ||= path_or_io.respond_to?(:read) ? "stream" : path_or_io.split("/").last.split(".").first
 
@@ -87,10 +100,8 @@ module Floe
 
     attr_reader :context, :payload, :states, :states_by_name, :start_at, :name, :comment
 
-    def initialize(payload, context = nil, credentials = nil, name = nil)
-      payload     = JSON.parse(payload)     if payload.kind_of?(String)
-      credentials = JSON.parse(credentials) if credentials.kind_of?(String)
-      context     = Context.new(context)    unless context.kind_of?(Context)
+    def initialize(payload, context = {}, credentials = nil, name = nil)
+      context = Context.new(context) unless context.kind_of?(Context)
 
       # backwards compatibility
       # caller should really put credentials into context and not pass that variable
