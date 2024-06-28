@@ -35,7 +35,7 @@ RSpec.describe Floe::Workflow::States::Choice do
 
   it "raises an exception if Choices is not an array" do
     payload = {"Choice1" => {"Type" => "Choice", "Choices" => {}, "Default" => "DefaultState"}, "DefaultState" => {"type" => "Succeed"}}
-    expect { make_workflow(ctx, payload) }.to raise_error(Floe::InvalidWorkflowError, "States.Choice1 requires field \"Choices\"")
+    expect { make_workflow(ctx, payload) }.to raise_error(Floe::InvalidWorkflowError, "States.Choice1 requires Array field \"Choices\" but got Hash")
   end
 
   it "raises an exception if Choices is an empty array" do

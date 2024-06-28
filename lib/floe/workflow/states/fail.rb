@@ -9,8 +9,8 @@ module Floe
         def initialize(workflow, name, payload)
           super
 
-          @cause      = payload["Cause"]
-          @error      = payload["Error"]
+          @cause      = string!("Cause", payload["Cause"])
+          @error      = string!("Error", payload["Error"])
           @cause_path = path!("CausePath", payload["CausePath"])
           @error_path = path!("ErrorPath", payload["ErrorPath"])
         end

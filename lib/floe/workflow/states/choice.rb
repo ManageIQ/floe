@@ -9,12 +9,13 @@ module Floe
         def initialize(workflow, full_name, payload)
           super
 
-          validate_state!(workflow)
-          @choices = payload["Choices"].each_with_index.map { |choice, i| ChoiceRule.build(workflow, full_name + ["Choices", i.to_s], choice) }
-          @default = payload["Default"]
+          @choices     = list!("Choices", payload["Choices"], workflow) { |wf, choice_name, choice_payload| ChoiceRule.build(wf, choice_name, choice_payload) }
+          @default     = state_ref!("Default", payload["Default"], workflow)
 
           @input_path  = path!("InputPath", payload.fetch("InputPath", "$"))
           @output_path = path!("OutputPath", payload.fetch("OutputPath", "$"))
+
+          require_fields!("Choices" => payload["Choices"])
         end
 
         def finish(context)
@@ -33,21 +34,6 @@ module Floe
 
         def end?
           false
-        end
-
-        private
-
-        def validate_state!(workflow)
-          validate_state_choices!
-          validate_state_default!(workflow)
-        end
-
-        def validate_state_choices!
-          require_fields!("Choices" => payload["Choices"])
-        end
-
-        def validate_state_default!(workflow)
-          state_ref!("Default", payload["Default"], workflow)
         end
       end
     end
