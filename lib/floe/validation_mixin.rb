@@ -108,7 +108,7 @@ module Floe
       end
 
       self.class.validation_set.each do |field_name_list|
-        require_one_alt!(field_name_list)
+        require_field!(field_name_list)
       end
     end
 
@@ -178,33 +178,19 @@ module Floe
     end
 
     # this ensures one and only 1 of the listed fields are present
-    def require_fields!(field_values)
-      # NOTE: intentionally using field_value and not field_value.nil?
-      #       false will act like it is not defined
-      present_fields = field_values.filter_map do |name, value|
-        name unless !value || (value.respond_to?(:empty?) && value.empty?)
-      end
-
-      case present_fields.count
-      when 0
-        error!("requires #{"one " if field_values.size > 1}field \"#{field_values.keys.join(", ")}\"")
-      when 1
-        nil
-      else
-        error!("requires only one field: #{present_fields.join(", ")}")
-      end
-    end
-
-    def require_one_alt!(field_list)
+    def require_field!(field_list)
       # NOTE: intentionally using field_value and not field_value.nil?
       #       false will act like it is not defined
       present_fields = field_list.select do |field_name|
         self.class.validation_fields[field_name].value?(self)
       end
 
-      if present_fields.empty?
+      case present_fields.count
+      when 0
         error!("requires #{"one " if field_list.size > 1}field \"#{field_list.join(", ")}\"")
-      elsif present_fields.size > 1
+      when 1
+        nil
+      else
         error!("requires only one field: #{present_fields.join(", ")}")
       end
     end

@@ -52,13 +52,13 @@ module Floe
         if children
           reject_field!("Variable", @variable)
         else
-          require_fields!("Variable" => @variable)
+          require_field!(["Variable"])
         end
 
         if is_child?
           reject_field!("Next", @next)
         else
-          require_fields!("Next" => @next)
+          require_field!(["Next"])
         end
       end
 
