@@ -22,6 +22,11 @@ module Floe
         private
 
         def build_validate_type!(full_name, state_type)
+          if full_name.last.length > 80
+            full_name[-1] = "#{full_name.last[0..79]}..."
+            error!(full_name, "State name must be less than or equal to 80 characters")
+          end
+
           error!(full_name, "requires field \"Type\"") if state_type.nil? || state_type.empty?
           error!(full_name, "requires String field \"Type\" but got #{state_type.class}") unless state_type.kind_of?(String)
 
@@ -29,15 +34,18 @@ module Floe
         end
       end
 
-      attr_reader :comment, :full_name, :type, :payload
+      attr_reader :full_name, :payload
+
+      fields do
+        string "Type"
+        string "Comment"
+      end
 
       def initialize(_workflow, full_name, payload)
         @full_name = full_name
-        @payload  = payload
-        @type     = string!("Type", payload["Type"])
-        @comment  = string!("Comment", payload["Comment"])
+        @payload   = payload
 
-        raise Floe::InvalidWorkflowError, "State name [#{name[..79]}...] must be less than or equal to 80 characters" if name.length > 80
+        # NOTE: requires child class to call: load_fields(payload, workflow)
       end
 
       def wait(context, timeout: nil)

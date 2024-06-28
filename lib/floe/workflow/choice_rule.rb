@@ -27,16 +27,19 @@ module Floe
         end
       end
 
-      attr_reader :next, :payload, :variable, :children, :full_name
+      attr_reader :payload, :children, :full_name
+
+      fields do
+        state_ref "Next"
+        path      "Variable"
+      end
 
       def initialize(workflow, full_name, payload, children = nil)
         @full_name = full_name
         @payload   = payload
         @children  = children
 
-        @next      = state_ref!("Next", payload["Next"], workflow)
-        @variable  = path!("Variable", payload["Variable"])
-
+        load_fields(payload, workflow)
         validate_rule!(children)
       end
 

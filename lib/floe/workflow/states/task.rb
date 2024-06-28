@@ -7,29 +7,30 @@ module Floe
         include InputOutputMixin
         include NonTerminalMixin
 
-        attr_reader :credentials, :end, :heartbeat_seconds, :next, :parameters,
-                    :result_selector, :resource, :timeout_seconds, :retry, :catch,
-                    :input_path, :output_path, :result_path
+        fields do
+          number "HeartbeatSeconds"
+          state_ref "Next"
+          boolean "End"
+          string "Resource", :required => true
+          number "TimeoutSeconds"
+          list("Retry") { |wf, retry_name, retry_payload| Retrier.new(wf, retry_name, retry_payload) }
+          list("Catch") { |wf, catch_name, catch_payload| Catcher.new(wf, catch_name, catch_payload) }
+
+          path "InputPath", :default => "$"
+          path "OutputPath", :default => "$"
+          reference_path "ResultPath", :default => "$"
+          payload_template "Parameters"
+          payload_template "ResultSelector"
+          payload_template "Credentials"
+
+          require_set "Next", "End"
+        end
 
         def initialize(workflow, full_name, payload)
           super
 
-          @heartbeat_seconds = number!("HeartbeatSeconds", payload["HeartbeatSeconds"])
-          @next              = state_ref!("Next", payload["Next"], workflow)
-          @end               = boolean!("End", payload["End"])
-          @resource          = string!("Resource", payload["Resource"])
-          @runner            = Floe::Runner.for_resource(@resource)
-          @timeout_seconds   = number!("TimeoutSeconds", payload["TimeoutSeconds"])
-          @retry             = list!("Retry", payload["Retry"], workflow) { |wf, retry_name, retry_payload| Retrier.new(wf, retry_name, retry_payload) }
-          @catch             = list!("Catch", payload["Catch"], workflow) { |wf, catch_name, catch_payload| Catcher.new(wf, catch_name, catch_payload) }
-          @input_path        = path!("InputPath", payload.fetch("InputPath", "$"))
-          @output_path       = path!("OutputPath", payload.fetch("OutputPath", "$"))
-          @result_path       = reference_path!("ResultPath", payload.fetch("ResultPath", "$"))
-          @parameters        = payload_template!("Parameters", payload["Parameters"])
-          @result_selector   = payload_template!("ResultSelector", payload["ResultSelector"])
-          @credentials       = payload_template!("Credentials", payload["Credentials"])
-
-          require_fields!("Next" => @next, "End" => @end)
+          load_fields(payload, workflow)
+          @runner = Floe::Runner.for_resource(@resource)
         rescue ArgumentError => err
           raise Floe::InvalidWorkflowError, err.message
         end

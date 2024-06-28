@@ -4,13 +4,15 @@ module Floe
   class Workflow
     module States
       class Succeed < Floe::Workflow::State
-        attr_reader :input_path, :output_path
+        fields do
+          path "InputPath", :default => "$"
+          path "OutputPath", :default => "$"
+        end
 
         def initialize(workflow, name, payload)
           super
 
-          @input_path  = path!("InputPath", payload.fetch("InputPath", "$"))
-          @output_path = path!("OutputPath", payload.fetch("OutputPath", "$"))
+          load_fields(payload, workflow)
         end
 
         def finish(context)

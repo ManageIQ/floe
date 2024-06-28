@@ -86,7 +86,13 @@ module Floe
       end
     end
 
-    attr_reader :context, :payload, :states, :states_by_name, :start_at, :name, :comment
+    attr_reader :context, :payload, :states_by_name, :name
+
+    fields do
+      string "Comment"
+      state_ref "StartAt", :required => true
+      hash_list("States", :required => true) { |workflow, state_name, state_payload| State.build!(workflow, state_name, state_payload) }
+    end
 
     def initialize(payload, context = nil, credentials = nil, name = nil)
       payload     = JSON.parse(payload)     if payload.kind_of?(String)
@@ -97,16 +103,11 @@ module Floe
       # caller should really put credentials into context and not pass that variable
       context.credentials = credentials if credentials
 
-      @name        = name
-      @payload     = payload
-      @context     = context
-      @comment     = string!("Comment", payload["Comment"])
-      @start_at    = state_ref!("StartAt", payload["StartAt"], self)
-      @states      = hash!("States", payload["States"], self) { |workflow, state_name, state_payload| State.build!(workflow, state_name, state_payload) }
+      @name    = name
+      @payload = payload
+      @context = context
 
-      require_fields!("States" => payload["States"])
-      require_fields!("StartAt" => @start_at)
-
+      load_fields(payload, self)
       @states_by_name = @states.each_with_object({}) { |state, result| result[state.name] = state }
     rescue Floe::InvalidWorkflowError
       raise

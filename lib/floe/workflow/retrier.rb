@@ -5,18 +5,20 @@ module Floe
     class Retrier
       include ValidationMixin
 
-      attr_reader :error_equals, :interval_seconds, :max_attempts, :backoff_rate, :full_name
+      attr_reader :full_name
+
+      fields do
+        list   "ErrorEquals", :required => true
+        number "IntervalSeconds", :default => 1.0
+        number "MaxAttempts", :default => 3
+        number "BackoffRate", :default => 2.0
+      end
 
       def initialize(workflow, full_name, payload)
-        @full_name        = full_name
-        @payload          = payload
+        @full_name = full_name
+        @payload   = payload
 
-        @error_equals     = list!("ErrorEquals", payload["ErrorEquals"], workflow)
-        @interval_seconds = number!("IntervalSeconds", payload.fetch("IntervalSeconds", 1.0))
-        @max_attempts     = number!("MaxAttempts", payload.fetch("MaxAttempts", 3))
-        @backoff_rate     = number!("BackoffRate", payload.fetch("BackoffRate", 2.0))
-
-        require_fields!("ErrorEquals" => @error_equals)
+        load_fields(payload, workflow)
       end
 
       # @param [Integer] attempt 1 for the first attempt

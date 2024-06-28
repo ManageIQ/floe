@@ -5,17 +5,17 @@ module Floe
     class Catcher
       include ValidationMixin
 
-      attr_reader :error_equals, :next, :result_path, :full_name
+      fields do
+        list           "ErrorEquals", :required => true
+        state_ref      "Next"
+        reference_path "ResultPath", :default => "$"
+      end
 
       def initialize(workflow, full_name, payload)
-        @full_name    = full_name
-        @payload      = payload
+        @full_name = full_name
+        @payload   = payload
 
-        @error_equals = list!("ErrorEquals", payload["ErrorEquals"], workflow)
-        @next         = state_ref!("Next", payload["Next"], workflow)
-        @result_path  = reference_path!("ResultPath", payload.fetch("ResultPath", "$"))
-
-        require_fields!("ErrorEquals" => @error_equals)
+        load_fields(payload, workflow)
       end
     end
   end

@@ -4,15 +4,19 @@ module Floe
   class Workflow
     module States
       class Fail < Floe::Workflow::State
-        attr_reader :cause, :error
+        fields do
+          string "Cause"
+          string "Error"
+          path "CausePath"
+          path "ErrorPath"
+
+          require_set "Error", "ErrorPath"
+        end
 
         def initialize(workflow, name, payload)
           super
 
-          @cause      = string!("Cause", payload["Cause"])
-          @error      = string!("Error", payload["Error"])
-          @cause_path = path!("CausePath", payload["CausePath"])
-          @error_path = path!("ErrorPath", payload["ErrorPath"])
+          load_fields(payload, workflow)
         end
 
         def finish(context)
