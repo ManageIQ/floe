@@ -3,6 +3,8 @@
 module Floe
   module ValidationMixin
     class ValidationField
+      TYPES = %i[boolean string number list hash timestamp state_ref path reference_path payload_template raw].freeze
+
       # NOTE: default only used for number, path, reference_path, payload_template
       attr_accessor :attribute_name, :field_name, :type, :default, :block
 
@@ -23,22 +25,7 @@ module Floe
       def set_value(record, payload, workflow)
         field_value = payload[field_name] || default
         # could go with string! or field! -- generic seems to work for now
-        converted_value =
-          case type
-          when :boolean          then record.boolean!(field_name, field_value)
-          when :string           then record.string!(field_name, field_value)
-          when :number           then record.number!(field_name, field_value)
-          when :list             then record.list!(field_name, field_value, workflow, &block)
-          when :hash             then record.hash!(field_name, field_value, workflow, &block)
-          when :timestamp        then record.timestamp!(field_name, field_value || default)
-          when :state_ref        then record.state_ref!(field_name, field_value, workflow)
-          when :path             then record.path!(field_name, field_value)
-          when :reference_path   then record.reference_path!(field_name, field_value)
-          when :payload_template then record.payload_template!(field_name, field_value)
-          when :raw              then field_value
-          else
-            raise "what is a #{type}"
-          end
+        converted_value = record.send(:"#{type}!", field_name, field_value, workflow, &block)
         record.instance_variable_set(:"@#{attribute_name}", converted_value)
       end
 
@@ -66,6 +53,8 @@ module Floe
 
         klass.attr_accessor attribute_name
 
+        raise "bad type: #{type}" unless ValidationMixin::ValidationField::TYPES.include?(type)
+
         klass.validation_fields = klass.validation_fields.merge(field_name => ValidationField.new(attribute_name, field_name, type, :default => default, :block => block))
         require_set(field_name) if required
       end
@@ -82,13 +71,15 @@ module Floe
         field(:hash, ...)
       end
 
-      # TODO: verify type
       def method_missing(type, ...)
+        raise "bad type: #{type}" unless ValidationMixin::ValidationField::TYPES.include?(type)
+
         field(type, ...)
       end
 
-      # TODO: verify type
-      def respond_to_missing?(_type, *)
+      def respond_to_missing?(type, *)
+        raise "bad type: #{type}" unless ValidationMixin::ValidationField::TYPES.include?(type)
+
         true
       end
     end
@@ -112,11 +103,15 @@ module Floe
       end
     end
 
-    def string!(field_name, field_value)
+    def raw!(_field_name, field_value, _ = nil)
+      field_value
+    end
+
+    def string!(field_name, field_value, _ = nil)
       field!(field_name, field_value, :type => String)
     end
 
-    def boolean!(field_name, field_value)
+    def boolean!(field_name, field_value, _ = nil)
       field_value ||= false
 
       error!("requires field \"#{field_name}\" to be a Boolean but got [#{field_value}]") unless [true, false].include?(field_value)
@@ -124,7 +119,7 @@ module Floe
       field_value
     end
 
-    def number!(field_name, field_value)
+    def number!(field_name, field_value, _ = nil)
       field!(field_name, field_value, :type => Numeric)
     end
 
@@ -146,7 +141,7 @@ module Floe
       end
     end
 
-    def timestamp!(field_name, field_value)
+    def timestamp!(field_name, field_value, _ = nil)
       require "date"
       DateTime.rfc3339(field_value) if field_value
 
@@ -161,19 +156,19 @@ module Floe
       field_value
     end
 
-    def path!(field_name, field_value)
+    def path!(field_name, field_value, _ = nil)
       Workflow::Path.new(field_value) if field_value
     rescue Floe::InvalidWorkflowError => err
       error!("requires field \"#{field_name}\" #{err.message}")
     end
 
-    def reference_path!(field_name, field_value)
+    def reference_path!(field_name, field_value, _ = nil)
       Workflow::ReferencePath.new(field_value)
     rescue Floe::InvalidWorkflowError => err
       error!("requires field \"#{field_name}\" #{err.message}")
     end
 
-    def payload_template!(_field_name, field_value)
+    def payload_template!(_field_name, field_value, _ = nil)
       Workflow::PayloadTemplate.new(field_value) if field_value
     end
 
