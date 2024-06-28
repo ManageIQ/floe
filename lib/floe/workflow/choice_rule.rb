@@ -27,7 +27,7 @@ module Floe
         end
       end
 
-      attr_reader :payload, :children, :full_name
+      attr_reader :children, :full_name
 
       fields do
         state_ref "Next"
@@ -36,7 +36,6 @@ module Floe
 
       def initialize(workflow, full_name, payload, children = nil)
         @full_name = full_name
-        @payload   = payload
         @children  = children
 
         load_fields(payload, workflow)

@@ -34,16 +34,15 @@ module Floe
         end
       end
 
-      attr_reader :full_name, :payload
+      attr_reader :full_name
 
       fields do
         string "Type"
         string "Comment"
       end
 
-      def initialize(_workflow, full_name, payload)
+      def initialize(_workflow, full_name, _payload)
         @full_name = full_name
-        @payload   = payload
 
         # NOTE: requires child class to call: load_fields(payload, workflow)
       end

@@ -16,7 +16,6 @@ module Floe
 
       def initialize(workflow, full_name, payload)
         @full_name = full_name
-        @payload   = payload
 
         load_fields(payload, workflow)
       end
