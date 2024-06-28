@@ -4,18 +4,11 @@ module Floe
   class Workflow
     module States
       class Choice < Floe::Workflow::State
-        attr_reader :choices, :default, :input_path, :output_path
-
-        def initialize(workflow, full_name, payload)
-          super
-
-          @choices     = list!("Choices", payload["Choices"], workflow) { |wf, choice_name, choice_payload| ChoiceRule.build(wf, choice_name, choice_payload) }
-          @default     = state_ref!("Default", payload["Default"], workflow)
-
-          @input_path  = path!("InputPath", payload.fetch("InputPath", "$"))
-          @output_path = path!("OutputPath", payload.fetch("OutputPath", "$"))
-
-          require_fields!("Choices" => payload["Choices"])
+        fields do
+          list("Choices", :required => true) { |wf, choice_name, choice_payload| ChoiceRule.build(wf, choice_name, choice_payload) }
+          state_ref "Default"
+          path "InputPath", :default => "$"
+          path "OutputPath", :default => "$"
         end
 
         def finish(context)

@@ -7,21 +7,16 @@ module Floe
         include InputOutputMixin
         include NonTerminalMixin
 
-        attr_reader :end, :next, :result, :parameters, :input_path, :output_path, :result_path
+        fields do
+          state_ref        "Next"
+          boolean          "End"
+          raw              "Result"
+          payload_template "Parameters"
+          path             "InputPath", :default => "$"
+          path             "OutputPath", :default => "$"
+          reference_path   "ResultPath", :default => "$"
 
-        def initialize(workflow, name, payload)
-          super
-
-          @next        = state_ref!("Next", payload["Next"], workflow)
-          @end         = boolean!("End", payload["End"])
-          @result      = payload["Result"]
-
-          @parameters  = payload_template!("Parameters", payload["Parameters"])
-          @input_path  = path!("InputPath", payload.fetch("InputPath", "$"))
-          @output_path = path!("OutputPath", payload.fetch("OutputPath", "$"))
-          @result_path = reference_path!("ResultPath", payload.fetch("ResultPath", "$"))
-
-          require_fields!("Next" => @next, "End" => @end)
+          require_set "Next", "End"
         end
 
         def finish(context)

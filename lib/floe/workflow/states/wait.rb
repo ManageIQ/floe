@@ -8,23 +8,18 @@ module Floe
       class Wait < Floe::Workflow::State
         include NonTerminalMixin
 
-        attr_reader :end, :input_path, :next, :seconds, :seconds_path, :timestamp, :timestamp_path, :output_path
+        fields do
+          state_ref "Next"
+          boolean "End"
+          number "Seconds"
+          timestamp "Timestamp"
+          path "TimestampPath"
+          path "SecondsPath"
+          path "InputPath", :default => "$"
+          path "OutputPath", :default => "$"
 
-        def initialize(workflow, name, payload)
-          super
-
-          @next           = state_ref!("Next", payload["Next"], workflow)
-          @end            = boolean!("End", payload["End"])
-          @seconds        = payload["Seconds"]&.to_i
-          @timestamp      = payload["Timestamp"]
-          @timestamp_path = path!("TimestampPath", payload["TimestampPath"])
-          @seconds_path   = path!("SecondsPath", payload["SecondsPath"])
-
-          @input_path     = path!("InputPath", payload.fetch("InputPath", "$"))
-          @output_path    = path!("OutputPath", payload.fetch("OutputPath", "$"))
-
-          require_fields!("Next" => @next, "End" => @end)
-          require_fields!("Seconds" => @seconds, "Timestamp" => @timestamp, "TimestampPath" => @timestamp_path, "SecondsPath" => @seconds_path)
+          require_set "Next", "End"
+          require_set "Seconds", "Timestamp", "TimestampPath", "SecondsPath"
         end
 
         def start(context)

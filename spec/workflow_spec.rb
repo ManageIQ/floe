@@ -51,7 +51,7 @@ RSpec.describe Floe::Workflow do
       truncated_state_name = "#{"a" * 80}..."
       payload = make_payload({state_name => {"Type" => "Succeed"}})
 
-      expect { described_class.new(payload) }.to raise_error(Floe::InvalidWorkflowError, "State name [#{truncated_state_name}] must be less than or equal to 80 characters")
+      expect { described_class.new(payload) }.to raise_error(Floe::InvalidWorkflowError, "States.#{truncated_state_name} State name must be less than or equal to 80 characters")
     end
 
     it "raises an exception for invalid context" do
