@@ -28,8 +28,6 @@ module Floe
 
         def initialize(workflow, full_name, payload)
           super
-
-          load_fields(payload, workflow)
           @runner = Floe::Runner.for_resource(@resource)
         rescue ArgumentError => err
           raise Floe::InvalidWorkflowError, err.message

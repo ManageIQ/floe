@@ -22,12 +22,6 @@ module Floe
           require_set "Seconds", "Timestamp", "TimestampPath", "SecondsPath"
         end
 
-        def initialize(workflow, name, payload)
-          super
-
-          load_fields(payload, workflow)
-        end
-
         def start(context)
           super
 

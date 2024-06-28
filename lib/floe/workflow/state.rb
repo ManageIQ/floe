@@ -41,10 +41,10 @@ module Floe
         string "Comment"
       end
 
-      def initialize(_workflow, full_name, _payload)
+      def initialize(workflow, full_name, payload)
         @full_name = full_name
 
-        # NOTE: requires child class to call: load_fields(payload, workflow)
+        load_fields(payload, workflow)
       end
 
       def wait(context, timeout: nil)

@@ -13,12 +13,6 @@ module Floe
           require_set "Error", "ErrorPath"
         end
 
-        def initialize(workflow, name, payload)
-          super
-
-          load_fields(payload, workflow)
-        end
-
         def finish(context)
           context.next_state = nil
           # TODO: support intrinsic functions here

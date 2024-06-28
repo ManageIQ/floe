@@ -19,12 +19,6 @@ module Floe
           require_set "Next", "End"
         end
 
-        def initialize(workflow, name, payload)
-          super
-
-          load_fields(payload, workflow)
-        end
-
         def finish(context)
           input = result.nil? ? process_input(context) : result
           context.output = process_output(context, input)

@@ -9,12 +9,6 @@ module Floe
           path "OutputPath", :default => "$"
         end
 
-        def initialize(workflow, name, payload)
-          super
-
-          load_fields(payload, workflow)
-        end
-
         def finish(context)
           input              = input_path.value(context, context.input)
           context.output     = output_path.value(context, input)
