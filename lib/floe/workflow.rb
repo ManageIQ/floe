@@ -20,16 +20,21 @@ module Floe
         workflows = [workflows] if workflows.kind_of?(self)
         logger.info("checking #{workflows.count} workflows...")
 
-        run_until   = Time.now.utc + timeout if timeout.to_i > 0
-        ready       = []
-        queue       = Queue.new
-        wait_thread = Thread.new do
-          loop do
-            Runner.for_resource("docker").wait do |event, runner_context|
-              queue.push([event, runner_context])
+        run_until    = Time.now.utc + timeout if timeout.to_i > 0
+        ready        = []
+        queue        = Queue.new
+        wait_threads =
+          Runner.runners.map do |runner|
+            next unless runner.respond_to?(:wait)
+
+            Thread.new do
+              loop do
+                runner.wait do |event, runner_context|
+                  queue.push([event, runner_context])
+                end
+              end
             end
           end
-        end
 
         loop do
           ready = workflows.select(&:step_nonblock_ready?)
@@ -81,7 +86,7 @@ module Floe
         logger.info("checking #{workflows.count} workflows...Complete - #{ready.count} ready")
         ready
       ensure
-        wait_thread&.kill
+        wait_threads.compact.map(&:kill)
       end
     end
 
