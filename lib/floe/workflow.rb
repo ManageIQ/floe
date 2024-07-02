@@ -6,6 +6,7 @@ require "json"
 module Floe
   class Workflow
     include Logging
+    include ValidationMixin
 
     class << self
       def load(path_or_io, context = nil, credentials = {}, name = nil)
@@ -96,9 +97,9 @@ module Floe
       # caller should really put credentials into context and not pass that variable
       context.credentials = credentials if credentials
 
-      raise Floe::InvalidWorkflowError, "Missing field \"States\""  if payload["States"].nil?
-      raise Floe::InvalidWorkflowError, "Missing field \"StartAt\"" if payload["StartAt"].nil?
-      raise Floe::InvalidWorkflowError, "\"StartAt\" not in the \"States\" field" unless payload["States"].key?(payload["StartAt"])
+      parser_missing_field!("States") if payload["States"].nil?
+      parser_missing_field!("StartAt") if payload["StartAt"].nil?
+      parser_invalid_field!("StartAt", payload["StartAt"], "is not found in \"States\"") unless payload["States"].key?(payload["StartAt"])
 
       @name        = name
       @payload     = payload
@@ -106,7 +107,7 @@ module Floe
       @comment     = payload["Comment"]
       @start_at    = payload["StartAt"]
 
-      @states         = payload["States"].to_a.map { |state_name, state| State.build!(self, state_name, state) }
+      @states         = payload["States"].to_a.map { |state_name, state| State.build!(self, ["States", state_name], state) }
       @states_by_name = @states.each_with_object({}) { |state, result| result[state.name] = state }
     rescue Floe::InvalidWorkflowError
       raise
@@ -187,7 +188,16 @@ module Floe
     def credentials
       @context.credentials
     end
+
     private
+
+    def full_name
+      []
+    end
+
+    def full_name_string
+      "State Machine"
+    end
 
     def step!
       next_state = {"Name" => context.next_state, "Guid" => SecureRandom.uuid, "PreviousStateGuid" => context.state["Guid"]}

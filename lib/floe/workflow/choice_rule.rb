@@ -4,26 +4,31 @@ module Floe
   class Workflow
     class ChoiceRule
       class << self
-        def build(payload)
+        def build(full_name, payload)
           if (sub_payloads = payload["Not"])
-            Floe::Workflow::ChoiceRule::Not.new(payload, build_children([sub_payloads]))
+            name = full_name + ["Not"]
+            Floe::Workflow::ChoiceRule::Not.new(name, payload, build_children(name, [sub_payloads]))
           elsif (sub_payloads = payload["And"])
-            Floe::Workflow::ChoiceRule::And.new(payload, build_children(sub_payloads))
+            name = full_name + ["And"]
+            Floe::Workflow::ChoiceRule::And.new(name, payload, build_children(name, sub_payloads))
           elsif (sub_payloads = payload["Or"])
-            Floe::Workflow::ChoiceRule::Or.new(payload, build_children(sub_payloads))
+            name = full_name + ["Or"]
+            Floe::Workflow::ChoiceRule::Or.new(name, payload, build_children(name, sub_payloads))
           else
-            Floe::Workflow::ChoiceRule::Data.new(payload)
+            name = full_name + ["Data"]
+            Floe::Workflow::ChoiceRule::Data.new(name, payload)
           end
         end
 
-        def build_children(sub_payloads)
-          sub_payloads.map { |payload| build(payload) }
+        def build_children(full_name, sub_payloads)
+          sub_payloads.map.with_index { |payload, i| build(full_name + [i.to_s], payload) }
         end
       end
 
-      attr_reader :next, :payload, :variable, :children
+      attr_reader :next, :payload, :variable, :children, :full_name
 
-      def initialize(payload, children = nil)
+      def initialize(full_name, payload, children = nil)
+        @full_name = full_name
         @payload   = payload
         @children  = children
 
