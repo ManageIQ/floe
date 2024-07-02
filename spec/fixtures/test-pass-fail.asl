@@ -5,13 +5,12 @@
     "Setup": {
       "Type": "Pass",
       "Next": "ChooseTest",
-      "Parameters": {"test.$": "$.test", "num1": 1, "str1": "1", "num2": 1, "str2": "1"}
+      "Parameters": {"test.$": "$.test", "num1": 1, "str1": "1"}
     },
     "ChooseTest": {
       "Type":  "Choice",
       "Choices": [
-        {"Variable": "$.test", "NumericEquals": 1, "Next": "Test1"},
-        {"Variable": "$.test", "NumericEquals": 2, "Next": "Test2"}
+        {"Variable": "$.test", "NumericEquals": 1, "Next": "Test1"}
       ],
       "Default": "Unknown"
     },
@@ -23,22 +22,13 @@
       },
       "Next": "Match"
     },
-    "Test2": {
-      "Comment": "Parameter missing -> Parse error: Field \"param1.$\" of Parameters at \"State Machine.Test2\" is not a JSONPath or intrinsic function expression",
-      "Type":  "Pass",
-      "Parameters": {
-        "param1.$": "missing"
-      },
-      "Next": "Match"
-    },
     "Match": {
       "Type": "Pass",
       "End": true
     },
     "Unknown": {
       "Type": "Fail",
-      "Error": "Unknown test number",
-      "End": true
+      "Error": "Unknown test number"
     }
   }
 }
