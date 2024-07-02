@@ -35,6 +35,8 @@ module Floe
       end
 
       workflows.all? { |workflow| workflow.context.success? }
+    rescue Floe::Error => err
+      abort(err.message)
     end
 
     private
