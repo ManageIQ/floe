@@ -7,6 +7,7 @@ require_relative "floe/logging"
 
 require_relative "floe/runner"
 
+require_relative "floe/workflow_base"
 require_relative "floe/workflow"
 require_relative "floe/workflow/error_matcher_mixin"
 require_relative "floe/workflow/catcher"
@@ -16,6 +17,7 @@ require_relative "floe/workflow/choice_rule/or"
 require_relative "floe/workflow/choice_rule/and"
 require_relative "floe/workflow/choice_rule/data"
 require_relative "floe/workflow/context"
+require_relative "floe/workflow/item_processor"
 require_relative "floe/workflow/intrinsic_function"
 require_relative "floe/workflow/intrinsic_function/parser"
 require_relative "floe/workflow/intrinsic_function/transformer"
@@ -41,6 +43,7 @@ require "time"
 module Floe
   class Error < StandardError; end
   class InvalidWorkflowError < Error; end
+  class InvalidExecutionInput < Error; end
 
   def self.logger
     @logger ||= NullLogger.new
