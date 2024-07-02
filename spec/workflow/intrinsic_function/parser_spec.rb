@@ -210,6 +210,28 @@ RSpec.describe Floe::Workflow::IntrinsicFunction::Parser do
     end
   end
 
+  describe "states_array_partition" do
+    subject { described_class.new.states_array_partition }
+
+    it do
+      expect(subject).to parse("States.ArrayPartition(States.Array(1, 2, 3, 4, 5, 6, 7, 8, 9), 4)")
+      expect(subject).to parse("States.ArrayPartition(States.Array(), 4)")
+      expect(subject).to parse("States.ArrayPartition(States.Array(1, 2, 3), 4)")
+      expect(subject).to parse("States.ArrayPartition($.array, 4)")
+      expect(subject).to parse("States.ArrayPartition($.array, $.chunk)")
+
+      # Parser will properly parse, but will fail later at transform time due to incorrect args
+      expect(subject).to parse("States.ArrayPartition()")
+      expect(subject).to parse("States.ArrayPartition(1)")
+      expect(subject).to parse("States.ArrayPartition(States.Array(), 'foo')")
+      expect(subject).to parse("States.ArrayPartition(States.Array(), 1, 'foo')")
+      expect(subject).to parse("States.ArrayPartition(States.Array(), -1)")
+      expect(subject).to parse("States.ArrayPartition(States.Array(), 0)")
+
+      expect(subject).to_not parse("States.ArrayPartition")
+    end
+  end
+
   describe "states_uuid" do
     subject { described_class.new.states_uuid }
 

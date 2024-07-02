@@ -34,6 +34,22 @@ module Floe
           Transformer.resolve_args(args)
         end
 
+        rule(:states_array_partition => {:args => subtree(:args)}) do
+          args = Transformer.resolve_args(args())
+          raise ArgumentError, "wrong number of arguments to States.ArrayPartition (given #{args.size}, expected 2)" unless args.size == 2
+
+          array, chunk = *args
+          raise ArgumentError, "wrong type for first argument to States.ArrayPartition (given #{array.class}, expected Array)" unless array.kind_of?(Array)
+          raise ArgumentError, "wrong type for second argument to States.ArrayPartition (given #{chunk.class}, expected Integer)" unless chunk.kind_of?(Integer)
+          raise ArgumentError, "invalid value for second argument to States.ArrayPartition (given #{chunk}, expected a positive Integer)" unless chunk.positive?
+
+          if array.empty?
+            [[]]
+          else
+            array.each_slice(chunk).to_a
+          end
+        end
+
         rule(:states_uuid => {:args => subtree(:args)}) do
           args = Transformer.resolve_args(args())
           raise ArgumentError, "wrong number of arguments to States.UUID (given #{args.size}, expected 0)" unless args.empty?
