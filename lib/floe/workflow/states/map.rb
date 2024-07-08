@@ -54,7 +54,6 @@ module Floe
           context.state["MaxIterations"] = process_input(context).count
           context.state["Result"] = []
           context.state["ItemProcessorContext"] = {}
-          step(context)
         end
 
         def finish(context)
@@ -63,16 +62,16 @@ module Floe
           super
         end
 
-        def end?
-          @end
+        def run_nonblock!(context)
+          start(context) unless context.state_started?
+          loop while step_nonblock!(context) == 0 && running?(context)
+          return Errno::EAGAIN unless ready?(context)
+
+          finish(context)
         end
 
-        def ready?(context)
-          return true unless context.state_started?
-          return true unless running?(context)
-
-          step(context)
-          false
+        def end?
+          @end
         end
 
         def running?(context)
@@ -82,7 +81,7 @@ module Floe
 
         private
 
-        def step(context)
+        def step_nonblock!(context)
           input = process_input(context)
           item  = input[context.state["Iteration"]]
 
@@ -94,6 +93,9 @@ module Floe
             context.state["Result"] << JSON.parse(result)
             context.state["Iteration"] += 1
             context.state["ItemProcessorContext"] = {}
+            0
+          else
+            Errno::EAGAIN
           end
         end
 
