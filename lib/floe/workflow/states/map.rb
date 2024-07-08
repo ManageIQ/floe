@@ -50,10 +50,12 @@ module Floe
         def start(context)
           super
 
+          input = process_input(context)
+
           context.state["Iteration"] = 0
-          context.state["MaxIterations"] = process_input(context).count
+          context.state["MaxIterations"] = input.count
           context.state["Result"] = []
-          context.state["ItemProcessorContext"] = {}
+          context.state["ItemProcessorContext"] = input.map { |item| Context.new(nil, :input => item.to_json).to_h }
         end
 
         def finish(context)
@@ -82,17 +84,13 @@ module Floe
         private
 
         def step_nonblock!(context)
-          input = process_input(context)
-          item  = input[context.state["Iteration"]]
-
-          item_processor_context = Context.new(context.state["ItemProcessorContext"], :input => item.to_json)
+          item_processor_context = Context.new(context.state["ItemProcessorContext"][context.state["Iteration"]])
           item_processor.run_nonblock(item_processor_context) if item_processor.step_nonblock_ready?(item_processor_context)
           if item_processor_context.ended?
             result = item_processor.output(item_processor_context)
 
             context.state["Result"] << JSON.parse(result)
             context.state["Iteration"] += 1
-            context.state["ItemProcessorContext"] = {}
             0
           else
             Errno::EAGAIN
