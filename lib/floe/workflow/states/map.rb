@@ -52,20 +52,20 @@ module Floe
 
           input = process_input(context)
 
-          context.state["Iteration"] = 0
-          context.state["MaxIterations"] = input.count
-          context.state["Result"] = []
+          context.state["Iteration"]            = 0
+          context.state["MaxIterations"]        = input.count
           context.state["ItemProcessorContext"] = input.map { |item| Context.new(nil, :input => item.to_json).to_h }
         end
 
         def finish(context)
-          result = context.state["Result"]
+          result = context.state["ItemProcessorContext"].map { |ctx| Context.new(ctx).output }
           context.output = process_output(context, result)
           super
         end
 
         def run_nonblock!(context)
           start(context) unless context.state_started?
+
           loop while step_nonblock!(context) == 0 && running?(context)
           return Errno::EAGAIN unless ready?(context)
 
@@ -77,8 +77,11 @@ module Floe
         end
 
         def running?(context)
-          # TODO: this only works with MaxConcurrency=1
-          context.state["Iteration"] < context.state["MaxIterations"]
+          !ended?(context)
+        end
+
+        def ended?(context)
+          context.state["ItemProcessorContext"].all? { |ctx| Context.new(ctx).ended? }
         end
 
         private
@@ -87,9 +90,6 @@ module Floe
           item_processor_context = Context.new(context.state["ItemProcessorContext"][context.state["Iteration"]])
           item_processor.run_nonblock(item_processor_context) if item_processor.step_nonblock_ready?(item_processor_context)
           if item_processor_context.ended?
-            result = item_processor.output(item_processor_context)
-
-            context.state["Result"] << JSON.parse(result)
             context.state["Iteration"] += 1
             0
           else
