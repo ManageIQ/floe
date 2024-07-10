@@ -46,6 +46,14 @@ module Floe
       !context.started? || current_state(context).ready?(context)
     end
 
+    def waiting?(context)
+      current_state(context)&.waiting?(context)
+    end
+
+    def wait_until(context)
+      current_state(context)&.wait_until(context)
+    end
+
     def start_workflow(context)
       return if context.state_name
 

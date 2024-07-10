@@ -69,11 +69,23 @@ module Floe
           loop while step_nonblock!(context) == 0 && running?(context)
           return Errno::EAGAIN unless ready?(context)
 
-          finish(context)
+          finish(context) if ended?(context)
         end
 
         def end?
           @end
+        end
+
+        def ready?(context)
+          !context.state_started? || context.state["ItemProcessorContext"].any? { |ctx| item_processor.step_nonblock_ready?(Context.new(ctx)) }
+        end
+
+        def wait_until(context)
+          context.state["ItemProcessorContext"].filter_map { |ctx| item_processor.wait_until(Context.new(ctx)) }.min
+        end
+
+        def waiting?(context)
+          context.state["ItemProcessorContext"].any? { |ctx| item_processor.waiting?(Context.new(ctx)) }
         end
 
         def running?(context)
