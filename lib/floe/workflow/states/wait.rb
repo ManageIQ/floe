@@ -17,11 +17,10 @@ module Floe
           @end            = !!payload["End"]
           @seconds        = payload["Seconds"]&.to_i
           @timestamp      = payload["Timestamp"]
-          @timestamp_path = Path.new(payload["TimestampPath"]) if payload.key?("TimestampPath")
-          @seconds_path   = Path.new(payload["SecondsPath"]) if payload.key?("SecondsPath")
-
-          @input_path  = Path.new(payload.fetch("InputPath", "$"))
-          @output_path = Path.new(payload.fetch("OutputPath", "$"))
+          @timestamp_path = wrap_parser_error("TimestampPath", payload["TimestampPath"]) { Path.new(payload["TimestampPath"]) } if payload.key?("TimestampPath")
+          @seconds_path   = wrap_parser_error("SecondsPath", payload["SecondsPath"]) { Path.new(payload["SecondsPath"]) } if payload.key?("SecondsPath")
+          @input_path     = wrap_parser_error("InputPath", payload["InputPath"]) { Path.new(payload.fetch("InputPath", "$")) }
+          @output_path    = wrap_parser_error("OutputPath", payload["OutputPath"]) { Path.new(payload.fetch("OutputPath", "$")) }
 
           validate_state!(workflow)
         end
