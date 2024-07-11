@@ -9,8 +9,8 @@ module Floe
         def initialize(workflow, name, payload)
           super
 
-          @input_path  = Path.new(payload.fetch("InputPath", "$"))
-          @output_path = Path.new(payload.fetch("OutputPath", "$"))
+          @input_path  = wrap_parser_error("InputPath", payload.fetch("InputPath", nil)) { Path.new(payload.fetch("InputPath", "$")) }
+          @output_path = wrap_parser_error("OutputPath", payload.fetch("OutputPath", nil)) { Path.new(payload.fetch("OutputPath", "$")) }
         end
 
         def finish(context)

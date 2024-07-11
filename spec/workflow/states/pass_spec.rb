@@ -98,7 +98,7 @@ RSpec.describe Floe::Workflow::States::Pass do
         }
       end
 
-      it { expect { workflow }.to raise_error(Floe::InvalidWorkflowError, "Path [bad] must start with \"$\"") }
+      it { expect { workflow }.to raise_error(Floe::InvalidWorkflowError, "States.PassState field \"InputPath\" value \"bad\" Path [bad] must start with \"$\"") }
     end
 
     context "With an invalid OutputPath" do
@@ -112,7 +112,7 @@ RSpec.describe Floe::Workflow::States::Pass do
         }
       end
 
-      it { expect { workflow }.to raise_error(Floe::InvalidWorkflowError, "Path [bad] must start with \"$\"") }
+      it { expect { workflow }.to raise_error(Floe::InvalidWorkflowError, "States.PassState field \"OutputPath\" value \"bad\" Path [bad] must start with \"$\"") }
     end
   end
 
