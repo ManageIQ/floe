@@ -11,7 +11,7 @@ RSpec.describe Floe::Workflow::Path do
   describe "#value" do
     context "referencing the global context" do
       it "with a missing value" do
-        expect { described_class.new("$$.foo").value({}, {"foo" => "bar"}) }.to raise_error(Floe::PathError, "Path [$$.foo] references an invalid value")
+        expect { described_class.new("$$.foo").value({}, {"foo" => "bar"}) }.to raise_error(Floe::PathError, "references an invalid value")
       end
 
       it "with a single value" do
@@ -36,7 +36,7 @@ RSpec.describe Floe::Workflow::Path do
       let(:input)   { {} }
 
       it "with a missing value" do
-        expect { described_class.new("$$.Credentials.username").value(context, input) }.to raise_error(Floe::PathError, "Path [$$.Credentials.username] references an invalid value")
+        expect { described_class.new("$$.Credentials.username").value(context, input) }.to raise_error(Floe::PathError, "references an invalid value")
       end
 
       it "returns the password" do
@@ -46,7 +46,7 @@ RSpec.describe Floe::Workflow::Path do
 
     context "referencing the inputs" do
       it "with a missing value" do
-        expect { described_class.new("$.foo").value({"foo" => "bar"}, {}) }.to raise_error(Floe::PathError, "Path [$.foo] references an invalid value")
+        expect { described_class.new("$.foo").value({"foo" => "bar"}, {}) }.to raise_error(Floe::PathError, "references an invalid value")
       end
 
       it "with a single value" do
