@@ -21,8 +21,8 @@ module Floe
           # see https://docs.aws.amazon.com/step-functions/latest/dg/amazon-states-language-fail-state.html
           #     https://docs.aws.amazon.com/step-functions/latest/dg/amazon-states-language-intrinsic-functions.html#asl-intrsc-func-generic
           context.output     = {
-            "Error" => @error_path ? @error_path.value(context, context.input) : error,
-            "Cause" => @cause_path ? @cause_path.value(context, context.input) : cause
+            "Error" => error_path ? wrap_runtime_error("ErrorPath", error_path.to_s) { @error_path.value(context, context.input) } : error,
+            "Cause" => cause_path ? wrap_runtime_error("CausePath", cause_path.to_s) { @cause_path.value(context, context.input) } : cause
           }.compact
           super
         end

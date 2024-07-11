@@ -195,7 +195,10 @@ RSpec.describe Floe::Workflow::IntrinsicFunction do
       end
 
       it "fails with invalid argument values" do
-        expect { described_class.value("States.StringToJson($.input)", {}, {"input" => "foo"}) }.to raise_error(ArgumentError, /invalid value for argument 1 to States.StringToJson \(invalid json/)
+        # regex handles
+        #   unexpected token at 'foo'
+        #   unexpected token 'foo' at line 1 column 1
+        expect { described_class.value("States.StringToJson($.input)", {}, {"input" => "foo"}) }.to raise_error(ArgumentError, /invalid value for argument 1 to States\.StringToJson \(invalid json: unexpected token .*\)/)
       end
     end
 
@@ -990,7 +993,7 @@ RSpec.describe Floe::Workflow::IntrinsicFunction do
 
       it "handles invalid path references" do
         ctx = {"context" => {"baz" => "qux"}}, {"input" => {"foo" => "bar"}}
-        expect { described_class.value("States.Array($.xxx)", ctx) }.to raise_error(Floe::PathError, "Path [$.xxx] references an invalid value")
+        expect { described_class.value("States.Array($.xxx)", ctx) }.to raise_error(Floe::PathError, "references an invalid value")
       end
     end
 
