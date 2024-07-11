@@ -14,7 +14,7 @@ module Floe
 
         @error_equals = payload["ErrorEquals"]
         @next         = payload["Next"]
-        @result_path  = ReferencePath.new(payload.fetch("ResultPath", "$"))
+        @result_path  = wrap_parser_error("ResultPath", payload.fetch("ResultPath", nil)) { ReferencePath.new(payload.fetch("ResultPath", "$")) }
 
         missing_field_error!("ErrorEquals") if !@error_equals.kind_of?(Array) || @error_equals.empty?
         validate_state_next!(workflow)
