@@ -168,7 +168,7 @@ RSpec.describe Floe::Workflow::States::Pass do
         expect(ctx.state_finished?).to eq(true)
         expect(ctx.output).to eq(
           {
-            "Cause" => "Path [$.missing] references an invalid value",
+            "Cause" => "States.PassState field \"InputPath\" value \"$.missing\" references an invalid value",
             "Error" => "States.Runtime"
           }
         )
@@ -191,7 +191,7 @@ RSpec.describe Floe::Workflow::States::Pass do
         expect(ctx.state_finished?).to eq(true)
         expect(ctx.output).to eq(
           {
-            "Cause" => "Path [$.missing.spot] references an invalid value",
+            "Cause" => "States.PassState field \"OutputPath\" value \"$.missing.spot\" references an invalid value",
             "Error" => "States.Runtime"
           }
         )
@@ -264,7 +264,7 @@ RSpec.describe Floe::Workflow::States::Pass do
 
         it "detects missing value" do
           workflow.run_nonblock
-          expect(ctx.output).to eq({"Cause" => "Path [$.color] references an invalid value", "Error" => "States.Runtime"})
+          expect(ctx.output).to eq({"Cause" => "States.Pass field \"InputPath\" value \"$.color\" references an invalid value", "Error" => "States.Runtime"})
         end
       end
 

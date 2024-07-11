@@ -38,7 +38,7 @@ module Floe
           return if catcher.nil?
 
           context.next_state = catcher.next
-          context.output     = catcher.result_path.set(context.input, error)
+          context.output     = wrap_runtime_error("ResultPath", result_path.to_s) { catcher.result_path.set(context.input, error) }
           context.logger.info("Running state: [#{long_name}] with input [#{context.json_input}]...CatchError - next state: [#{context.next_state}] output: [#{context.json_output}]")
 
           true

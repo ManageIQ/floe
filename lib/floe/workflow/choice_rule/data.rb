@@ -43,7 +43,7 @@ module Floe
           # The variable_value is present
           # If predicate is true, then presence check was successful, return true.
           predicate
-        rescue Floe::PathError
+        rescue Floe::ExecutionError
           # variable_value is not present. (the path lookup threw an error)
           # If predicate is false, then it successfully wasn't present, return true.
           !predicate
@@ -170,7 +170,7 @@ module Floe
 
         # fetch a path at runtime
         def fetch_path(field_name, field_path, context, input)
-          value = field_path.value(context, input)
+          value =  wrap_runtime_error(field_name, field_path.to_s) { field_path.value(context, input) }
           # if this is an operation (GreaterThanPath), ensure the value is the correct type
           return value if type.nil? || correct_type?(value, type)
 
