@@ -11,8 +11,8 @@ module Floe
 
           @cause      = payload["Cause"]
           @error      = payload["Error"]
-          @cause_path = Path.new(payload["CausePath"]) if payload["CausePath"]
-          @error_path = Path.new(payload["ErrorPath"]) if payload["ErrorPath"]
+          @cause_path = wrap_parser_error("CausePath", payload["CausePath"]) { Path.new(payload["CausePath"]) } if payload["CausePath"]
+          @error_path = wrap_parser_error("ErrorPath", payload["ErrorPath"]) { Path.new(payload["ErrorPath"]) } if payload["ErrorPath"]
         end
 
         def finish(context)

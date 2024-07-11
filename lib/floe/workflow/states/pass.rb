@@ -16,10 +16,10 @@ module Floe
           @end         = !!payload["End"]
           @result      = payload["Result"]
 
-          @parameters  = PayloadTemplate.new(payload["Parameters"]) if payload["Parameters"]
-          @input_path  = Path.new(payload.fetch("InputPath", "$"))
-          @output_path = Path.new(payload.fetch("OutputPath", "$"))
-          @result_path = ReferencePath.new(payload.fetch("ResultPath", "$"))
+          @parameters  = wrap_parser_error("Parameters", payload["Parameters"]) { PayloadTemplate.new(payload["Parameters"]) } if payload["Parameters"]
+          @input_path  = wrap_parser_error("InputPath", payload.fetch("InputPath", nil)) { Path.new(payload.fetch("InputPath", "$")) }
+          @output_path = wrap_parser_error("OutputPath", payload.fetch("OutputPath", nil)) { Path.new(payload.fetch("OutputPath", "$")) }
+          @result_path = wrap_parser_error("ResultPath", payload.fetch("ResultPath", nil)) { ReferencePath.new(payload.fetch("ResultPath", "$")) }
 
           validate_state!(workflow)
         end
