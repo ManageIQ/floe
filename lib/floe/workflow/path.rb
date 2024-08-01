@@ -34,7 +34,18 @@ module Floe
         return obj if path == "$"
 
         results = JsonPath.on(obj, path)
-        results.count < 2 ? results.first : results
+        case results.count
+        when 0
+          raise Floe::PathError, "references an invalid value"
+        when 1
+          results.first
+        else
+          results
+        end
+      end
+
+      def to_s
+        payload
       end
     end
   end

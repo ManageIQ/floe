@@ -48,17 +48,27 @@ module Floe
         return Errno::EAGAIN unless ready?(context)
 
         finish(context)
+      rescue Floe::ExecutionError => e
+        mark_error(context, e)
       end
 
       def start(context)
+        mark_started(context)
+      end
+
+      def finish(context)
+        mark_finished(context)
+      end
+
+      def mark_started(context)
         context.state["EnteredTime"] = Time.now.utc.iso8601
 
         logger.info("Running state: [#{long_name}] with input [#{context.json_input}]...")
       end
 
-      def finish(context)
-        finished_time     = Time.now.utc
-        entered_time      = Time.parse(context.state["EnteredTime"])
+      def mark_finished(context)
+        finished_time = Time.now.utc
+        entered_time  = Time.parse(context.state["EnteredTime"])
 
         context.state["FinishedTime"] ||= finished_time.iso8601
         context.state["Duration"]       = finished_time - entered_time
@@ -67,6 +77,14 @@ module Floe
         logger.public_send(level, "Running state: [#{long_name}] with input [#{context.json_input}]...Complete #{context.next_state ? "- next state [#{context.next_state}]" : "workflow -"} output: [#{context.json_output}]")
 
         0
+      end
+
+      def mark_error(context, exception)
+        # input or output paths were bad
+        context.next_state = nil
+        context.output     = {"Error" => exception.floe_error, "Cause" => exception.message}
+        # finish threw an exception, so super was never called, so lets call now
+        mark_finished(context)
       end
 
       def ready?(context)

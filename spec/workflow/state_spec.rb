@@ -45,7 +45,7 @@ RSpec.describe Floe::Workflow::State do
 
     it "is finished" do
       state.start(ctx)
-      state.finish(ctx)
+      state.mark_finished(ctx)
 
       expect(ctx.state_started?).to eq(true)
     end
@@ -63,7 +63,7 @@ RSpec.describe Floe::Workflow::State do
 
     it "is finished" do
       state.start(ctx)
-      state.finish(ctx)
+      state.mark_finished(ctx)
 
       expect(ctx.state_finished?).to eq(true)
     end

@@ -11,15 +11,15 @@ RSpec.describe Floe::Workflow::Path do
   describe "#value" do
     context "referencing the global context" do
       it "with a missing value" do
-        expect(described_class.new("$$.foo").value({})).to be_nil
+        expect { described_class.new("$$.foo").value({}, {"foo" => "bar"}) }.to raise_error(Floe::PathError, "references an invalid value")
       end
 
       it "with a single value" do
-        expect(described_class.new("$$.foo").value({"foo" => "bar"})).to eq("bar")
+        expect(described_class.new("$$.foo").value({"foo" => "bar"}, {})).to eq("bar")
       end
 
       it "with a nested hash" do
-        expect(described_class.new("$$.foo.bar").value({"foo" => {"bar" => "baz"}})).to eq("baz")
+        expect(described_class.new("$$.foo.bar").value({"foo" => {"bar" => "baz"}}, {})).to eq("baz")
       end
 
       it "with an array" do
@@ -33,7 +33,7 @@ RSpec.describe Floe::Workflow::Path do
 
     context "referencing the inputs" do
       it "with a missing value" do
-        expect(described_class.new("$.foo").value({"foo" => "bar"})).to be_nil
+        expect { described_class.new("$.foo").value({"foo" => "bar"}, {}) }.to raise_error(Floe::PathError, "references an invalid value")
       end
 
       it "with a single value" do

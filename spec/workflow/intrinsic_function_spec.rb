@@ -655,8 +655,8 @@ RSpec.describe Floe::Workflow::IntrinsicFunction do
       end
 
       it "handles invalid path references" do
-        result = described_class.value("States.Array($.xxx)", {"context" => {"baz" => "qux"}}, {"input" => {"foo" => "bar"}})
-        expect(result).to eq([nil])
+        ctx = {"context" => {"baz" => "qux"}}, {"input" => {"foo" => "bar"}}
+        expect { described_class.value("States.Array($.xxx)", ctx) }.to raise_error(Floe::PathError, "references an invalid value")
       end
     end
 

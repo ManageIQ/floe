@@ -86,6 +86,34 @@ RSpec.describe Floe::Workflow::States::Pass do
 
     #   it { expect { workflow }.to raise_error(Floe::InvalidWorkflowError, "States.PassState error") }
     # end
+
+    context "With an invalid InputPath" do
+      let(:payload) do
+        {
+          "PassState" => {
+            "Type"      => "Pass",
+            "InputPath" => "bad",
+            "End"       => true
+          }
+        }
+      end
+
+      it { expect { workflow }.to raise_error(Floe::InvalidWorkflowError, "States.PassState field \"InputPath\" value \"bad\" Path [bad] must start with \"$\"") }
+    end
+
+    context "With an invalid OutputPath" do
+      let(:payload) do
+        {
+          "PassState" => {
+            "Type"       => "Pass",
+            "OutputPath" => "bad",
+            "End"        => true
+          }
+        }
+      end
+
+      it { expect { workflow }.to raise_error(Floe::InvalidWorkflowError, "States.PassState field \"OutputPath\" value \"bad\" Path [bad] must start with \"$\"") }
+    end
   end
 
   describe "#end?" do
@@ -121,6 +149,52 @@ RSpec.describe Floe::Workflow::States::Pass do
         state.run_nonblock!(ctx)
         expect(ctx.credentials).to include({"user" => "luggage", "password" => "1234"})
         expect(ctx.next_state).to eq("SuccessState")
+      end
+    end
+
+    context "With a missing InputPath" do
+      let(:payload) do
+        {
+          "PassState" => {
+            "Type"      => "Pass",
+            "End"       => true,
+            "InputPath" => "$.missing"
+          }
+        }
+      end
+
+      it "completes with an error" do
+        workflow.run_nonblock
+        expect(ctx.state_finished?).to eq(true)
+        expect(ctx.output).to eq(
+          {
+            "Cause" => "States.PassState field \"InputPath\" value \"$.missing\" references an invalid value",
+            "Error" => "States.Runtime"
+          }
+        )
+      end
+    end
+
+    context "With a missing OutputPath" do
+      let(:payload) do
+        {
+          "PassState" => {
+            "Type"       => "Pass",
+            "End"        => true,
+            "OutputPath" => "$.missing.spot"
+          }
+        }
+      end
+
+      it "completes with an error" do
+        workflow.run_nonblock
+        expect(ctx.state_finished?).to eq(true)
+        expect(ctx.output).to eq(
+          {
+            "Cause" => "States.PassState field \"OutputPath\" value \"$.missing.spot\" references an invalid value",
+            "Error" => "States.Runtime"
+          }
+        )
       end
     end
 
@@ -179,6 +253,18 @@ RSpec.describe Floe::Workflow::States::Pass do
         it "Uses InputPath to select color" do
           workflow.run_nonblock
           expect(ctx.output).to eq("red")
+        end
+      end
+
+      context "with Invalid InputPath" do
+        let(:input) { {} }
+        let(:payload) do
+          {"Pass" => {"Type" => "Pass", "End" => true, "InputPath" => "$.color"}}
+        end
+
+        it "detects missing value" do
+          workflow.run_nonblock
+          expect(ctx.output).to eq({"Cause" => "States.Pass field \"InputPath\" value \"$.color\" references an invalid value", "Error" => "States.Runtime"})
         end
       end
 
