@@ -53,7 +53,7 @@ module Floe
       def start(context)
         context.state["EnteredTime"] = Time.now.utc.iso8601
 
-        logger.info("Running state: [#{long_name}] with input [#{context.json_input}]...")
+        context.logger.info("Running state: [#{long_name}] with input [#{context.json_input}]...")
       end
 
       def finish(context)
@@ -64,7 +64,7 @@ module Floe
         context.state["Duration"]       = finished_time - entered_time
 
         level = context.failed? ? :error : :info
-        logger.public_send(level, "Running state: [#{long_name}] with input [#{context.json_input}]...Complete #{context.next_state ? "- next state [#{context.next_state}]" : "workflow -"} output: [#{context.json_output}]")
+        context.logger.public_send(level, "Running state: [#{long_name}] with input [#{context.json_input}]...Complete #{context.next_state ? "- next state [#{context.next_state}]" : "workflow -"} output: [#{context.json_output}]")
 
         0
       end
