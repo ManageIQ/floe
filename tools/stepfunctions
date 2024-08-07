@@ -1,0 +1,115 @@
+#!/usr/bin/env ruby
+
+require "bundler/inline"
+gemfile do
+  source "https://rubygems.org"
+  gem "optimist"
+  gem "colorize"
+end
+require "pp"
+
+SUB_COMMANDS = {
+  "start"     => "Start the stepfunctions simulator.",
+  "execute"   => "Execute an .asl file through the stepfunctions simulator.",
+  "intrinsic" => "Execute an intrinsic function or JSONPath standalone."
+}.freeze
+Optimist.options do
+  banner "Run the aws stepfunctions simulator."
+  banner ""
+  banner "Commands:"
+  SUB_COMMANDS.each { |k, v| banner "  #{k.ljust(14)}#{v}" }
+  banner ""
+  banner "  For more help with a specific command use #{$0} <command> --help"
+  banner ""
+  banner "Global Options:"
+  stop_on SUB_COMMANDS.keys
+end
+cmd = ARGV.shift
+Optimist.die "unknown subcommand #{cmd.inspect}" unless SUB_COMMANDS.include?(cmd)
+
+def start
+  Optimist.options do
+    banner SUB_COMMANDS["start"]
+    banner ""
+  end
+
+  exec "java -jar StepFunctionsLocal.jar", :chdir => File.join(__dir__, "StepFunctionsLocal")
+end
+
+def aws_stepfunctions(args)
+  cmd = "aws stepfunctions --endpoint-url http://localhost:8083 #{args}"
+  puts "** #{cmd}".light_black if ENV["DEBUG"]
+  output = `#{cmd}`.chomp
+  output = output.empty? ? {} : JSON.parse(output)
+  puts output.pretty_inspect.light_black if ENV["DEBUG"]
+  output
+rescue JSON::ParserError => err
+  $stderr.puts "ERROR: #{err}".light_red if ENV["DEBUG"]
+  {}
+end
+
+def execute_stepfunction(definition, input)
+  require "json"
+  require "shellwords"
+
+  begin
+    state_machine_arn = aws_stepfunctions("create-state-machine --definition #{Shellwords.escape(definition)} --name 'StateMachine' --role-arn 'arn:aws:iam::012345678901:role/DummyRole'")["stateMachineArn"]
+    exit 1 if state_machine_arn.nil?
+
+    input = input ? "--input #{Shellwords.escape(input)}" : ""
+    execution_arn = aws_stepfunctions("start-execution --state-machine-arn #{state_machine_arn} #{input}")["executionArn"]
+    exit 1 if execution_arn.nil?
+
+    status, output = aws_stepfunctions("describe-execution --execution-arn #{execution_arn}").values_at("status", "output")
+    if status == "FAILED"
+      $stderr.puts "ERROR: Execution failed. See simulator for reason.".light_red
+      exit 1
+    end
+  ensure
+    aws_stepfunctions("stop-execution --execution-arn #{execution_arn}") if execution_arn
+    aws_stepfunctions("delete-state-machine --state-machine-arn #{state_machine_arn}") if state_machine_arn
+  end
+
+  puts output if output
+end
+
+def execute
+  opts = Optimist.options do
+    banner SUB_COMMANDS["execute"]
+    banner ""
+
+    opt :file,  "The .asl file to execute", :default => "definition.asl"
+    opt :input, "Input to the execution", :type => :string
+  end
+
+  definition = File.read(opts[:file]).chomp
+  execute_stepfunction(definition, opts[:input])
+end
+
+def intrinsic
+  opts = Optimist.options do
+    banner SUB_COMMANDS["intrinsic"]
+    banner ""
+
+    opt :function, "The intrinsic function or JSONPath to run", :type => :string, :required => :true
+    opt :input, "Input to the execution", :type => :string
+  end
+
+  require "json"
+
+  definition = {
+    "StartAt" => "ExecState",
+    "States" => {
+      "ExecState" => {
+        "Type" => "Pass",
+        "Parameters" => {"data.$" => opts[:function]},
+        "OutputPath" => "$.data",
+        "End" => true
+      }
+    }
+  }.to_json
+
+  execute_stepfunction(definition, opts[:input])
+end
+
+send(cmd)
