@@ -27,9 +27,8 @@ RSpec.describe Floe::Workflow::States::Pass do
     end
   end
 
-  describe "#running?" do
-    context "with seconds" do
-      let(:workflow) { make_workflow(ctx, {"WaitState" => {"Type" => "Wait", "Seconds" => 10, "Next" => "SuccessState"}, "SuccessState" => {"Type" => "Succeed"}}) }
+  shared_examples_for "Wait10Seconds" do
+    context "includes Waiting" do
       it "is running before finished" do
         state.start(ctx)
         expect(state.running?(ctx)).to be_truthy
@@ -55,93 +54,35 @@ RSpec.describe Floe::Workflow::States::Pass do
         expect(workflow.context.state_history.size).to eq(2)
       end
     end
+  end
+
+  describe "#running?" do
+    context "with seconds" do
+      let(:workflow) { make_workflow(ctx, {"WaitState" => {"Type" => "Wait", "Seconds" => 10, "Next" => "SuccessState"}, "SuccessState" => {"Type" => "Succeed"}}) }
+
+      include_examples "Wait10Seconds"
+    end
 
     context "with secondsPath" do
       let(:input)    { {"expire" => "10"} }
       let(:workflow) { make_workflow(ctx, {"WaitState" => {"Type" => "Wait", "SecondsPath" => "$.expire", "Next" => "SuccessState"}, "SuccessState" => {"Type" => "Succeed"}}) }
-      it "is running? before finished" do
-        state.start(ctx)
-        expect(state.running?(ctx)).to be_truthy
-      end
 
-      it "is not running after finished" do
-        Timecop.travel(Time.now.utc - 10) do
-          state.start(ctx)
-        end
-        expect(state.running?(ctx)).to be_falsey
-      end
-
-      it "run_nonblock marks workflow finished only after time has expired" do
-        workflow.run_nonblock
-        expect(workflow.end?).to eq(false)
-        expect(workflow.context.state_history.size).to eq(0)
-
-        Timecop.travel(Time.now.utc + 100) do
-          workflow.run_nonblock
-        end
-
-        expect(workflow.end?).to eq(true)
-        expect(workflow.context.state_history.size).to eq(2)
-      end
+      include_examples "Wait10Seconds"
     end
 
     context "with Timestamp" do
       let(:expiry) { Time.now.utc + 10 }
       let(:workflow) { make_workflow(ctx, {"WaitState" => {"Type" => "Wait", "Timestamp" => expiry.iso8601, "Next" => "SuccessState"}, "SuccessState" => {"Type" => "Succeed"}}) }
-      it "is running? before finished" do
-        state.start(ctx)
-        expect(state.running?(ctx)).to be_truthy
-      end
 
-      it "is not running after finished" do
-        Timecop.travel(Time.now.utc - 10) do
-          state.start(ctx)
-        end
-        expect(state.running?(ctx)).to be_falsey
-      end
-
-      it "run_nonblock marks workflow finished only after time has expired" do
-        workflow.run_nonblock
-        expect(workflow.end?).to eq(false)
-        expect(workflow.context.state_history.size).to eq(0)
-
-        Timecop.travel(Time.now.utc + 100) do
-          workflow.run_nonblock
-        end
-
-        expect(workflow.end?).to eq(true)
-        expect(workflow.context.state_history.size).to eq(2)
-      end
+      include_examples "Wait10Seconds"
     end
 
     context "with TimestampPath" do
       let(:expiry) { Time.now.utc + 10 }
       let(:input) { {"expire" => expiry.iso8601} }
       let(:workflow) { make_workflow(ctx, {"WaitState" => {"Type" => "Wait", "TimestampPath" => "$.expire", "Next" => "SuccessState"}, "SuccessState" => {"Type" => "Succeed"}}) }
-      it "is running? before finished" do
-        state.start(ctx)
-        expect(state.running?(ctx)).to be_truthy
-      end
 
-      it "is not running after finished" do
-        Timecop.travel(Time.now.utc - 10) do
-          state.start(ctx)
-        end
-        expect(state.running?(ctx)).to be_falsey
-      end
-
-      it "run_nonblock marks workflow finished only after time has expired" do
-        workflow.run_nonblock
-        expect(workflow.end?).to eq(false)
-        expect(workflow.context.state_history.size).to eq(0)
-
-        Timecop.travel(Time.now.utc + 100) do
-          workflow.run_nonblock
-        end
-
-        expect(workflow.end?).to eq(true)
-        expect(workflow.context.state_history.size).to eq(2)
-      end
+      include_examples "Wait10Seconds"
     end
   end
 end
