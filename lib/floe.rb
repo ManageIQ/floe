@@ -43,7 +43,17 @@ module Floe
   class Error < StandardError; end
   class InvalidWorkflowError < Error; end
   class InvalidExecutionInput < Error; end
-  class PathError < Error; end
+
+  class ExecutionError < Error
+    attr_reader :floe_error
+
+    def initialize(message, floe_error = "States.Runtime")
+      super(message)
+      @floe_error = floe_error
+    end
+  end
+
+  class PathError < ExecutionError; end
 
   def self.logger
     @logger ||= NullLogger.new

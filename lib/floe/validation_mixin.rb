@@ -18,6 +18,10 @@ module Floe
       self.class.invalid_field_error!(name, field_name, field_value, comment)
     end
 
+    def runtime_field_error!(field_name, field_value, comment, floe_error: "States.Runtime")
+      raise Floe::ExecutionError.new(self.class.field_error_text(name, field_name, field_value, comment), floe_error)
+    end
+
     def workflow_state?(field_value, workflow)
       workflow.payload["States"] ? workflow.payload["States"].include?(field_value) : true
     end
@@ -39,10 +43,14 @@ module Floe
       end
 
       def invalid_field_error!(name, field_name, field_value, comment)
+        raise Floe::InvalidWorkflowError, field_error_text(name, field_name, field_value, comment)
+      end
+
+      def field_error_text(name, field_name, field_value, comment = nil)
         # instead of displaying a large hash or array, just displaying the word Hash or Array
         field_value = field_value.class if field_value.kind_of?(Hash) || field_value.kind_of?(Array)
 
-        parser_error!(name, "field \"#{field_name}\"#{" value \"#{field_value}\"" unless field_value.nil?} #{comment}")
+        "#{Array(name).join(".")} field \"#{field_name}\"#{" value \"#{field_value}\"" unless field_value.nil?} #{comment}"
       end
     end
   end

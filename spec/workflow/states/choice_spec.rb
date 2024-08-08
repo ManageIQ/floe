@@ -12,11 +12,7 @@ RSpec.describe Floe::Workflow::States::Choice do
 
   let(:payload) do
     {
-      "Choice1"          => {
-        "Type"    => "Choice",
-        "Choices" => choices,
-        "Default" => "DefaultState"
-      },
+      "Choice1"          => {"Type" => "Choice", "Choices" => choices, "Default" => "DefaultState"},
       "FirstMatchState"  => {"Type" => "Succeed"},
       "SecondMatchState" => {"Type" => "Succeed"},
       "DefaultState"     => {"Type" => "Succeed"}
@@ -51,6 +47,7 @@ RSpec.describe Floe::Workflow::States::Choice do
     context "with a missing variable" do
       it "shows error" do
         workflow.run_nonblock
+        expect(ctx.failed?).to eq(true)
         expect(ctx.output).to eq(
           {
             "Cause" => "Path [$.foo] references an invalid value",
@@ -75,6 +72,36 @@ RSpec.describe Floe::Workflow::States::Choice do
       it "returns the default state" do
         state.run_nonblock!(ctx)
         expect(ctx.next_state).to eq("DefaultState")
+      end
+    end
+
+    context "with no default" do
+      let(:payload) do
+        {
+          "Choice1"          => {"Type" => "Choice", "Choices" => choices},
+          "FirstMatchState"  => {"Type" => "Succeed"},
+          "SecondMatchState" => {"Type" => "Succeed"}
+        }
+      end
+
+      context "with an input value matching a condition" do
+        let(:input) { {"foo" => 1} }
+
+        it "returns the next state" do
+          state.run_nonblock!(ctx)
+          expect(ctx.next_state).to eq("FirstMatchState")
+        end
+      end
+
+      context "with an input value not matching a condition" do
+        let(:input) { {"foo" => 3} }
+
+        it "throws error when not found" do
+          workflow.run_nonblock
+          expect(ctx.failed?).to eq(true)
+          expect(ctx.output["Error"]).to eq("States.NoChoiceMatched")
+          expect(ctx.output["Cause"]).to eq("States.Choice1 field \"Default\" not defined and no match found")
+        end
       end
     end
   end

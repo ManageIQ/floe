@@ -23,6 +23,7 @@ module Floe
           output     = output_path.value(context, input)
           next_state = choices.detect { |choice| choice.true?(context, output) }&.next || default
 
+          runtime_field_error!("Default", nil, "not defined and no match found", :floe_error => "States.NoChoiceMatched") if next_state.nil?
           context.next_state = next_state
           context.output     = output
           super
