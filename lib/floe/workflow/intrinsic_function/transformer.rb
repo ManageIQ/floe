@@ -151,6 +151,18 @@ module Floe
           OpenSSL::Digest.hexdigest(algorithm, data)
         end
 
+        rule(:states_json_merge => {:args => subtree(:args)}) do
+          args = Transformer.process_args(args(), "States.JsonMerge", [Hash, Hash, Boolean])
+          left, right, deep = *args
+
+          if deep
+            # NOTE: not implemented by aws States language and nuances not defined in docs
+            left.merge(right) { |_key, l, r| l.kind_of?(Hash) && r.kind_of?(Hash) ? l.merge(r) : r }
+          else
+            left.merge(right)
+          end
+        end
+
         rule(:states_json_to_string => {:args => subtree(:args)}) do
           args = Transformer.process_args(args(), "States.JsonToString", [Object])
           json = args.first

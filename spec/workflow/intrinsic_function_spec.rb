@@ -450,6 +450,35 @@ RSpec.describe Floe::Workflow::IntrinsicFunction do
       end
     end
 
+    describe "States.JsonMerge" do
+      it "it merges with right hand precedence" do
+        result = described_class.value(
+          "States.JsonMerge($.left, $.right, false)", {},
+          {"left" => {"a" => "la", "b" => "lb"}, "right" => {"b" => "rb"}}
+        )
+        expect(result).to eq({"a" => "la", "b" => "rb"})
+      end
+
+      it "it deep merges with right hand precedence" do
+        result = described_class.value(
+          "States.JsonMerge($.left, $.right, true)", {},
+          {"left" => {"b" => {"ba" => "lb", "bb" => "lb"}}, "right" => {"b" => {"ba" => "rb"}}}
+        )
+        expect(result).to eq({"b" => {"ba" => "rb", "bb" => "lb"}})
+      end
+
+      it "fails with wrong number of parameters" do
+        expect { described_class.value("States.JsonMerge($.left, $.right)", {}, {"left" => [1, 2], "right" => {"a" => "la"}}) }.to raise_error(ArgumentError, "wrong number of arguments to States.JsonMerge (given 2, expected 3)")
+        expect { described_class.value("States.JsonMerge($.left, $.right, false, 5)", {}, {"left" => [1, 2], "right" => {"a" => "la"}}) }.to raise_error(ArgumentError, "wrong number of arguments to States.JsonMerge (given 4, expected 3)")
+      end
+
+      it "fails with wrong type of parameters" do
+        expect { described_class.value("States.JsonMerge($.left, $.right, false)", {}, {"left" => [1, 2], "right" => {"a" => "la"}}) }.to raise_error(ArgumentError, "wrong type for argument 1 to States.JsonMerge (given Array, expected Hash)")
+        expect { described_class.value("States.JsonMerge($.left, $.right, false)", {}, {"left" => {"a" => "la"}, "right" => [1, 2]}) }.to raise_error(ArgumentError, "wrong type for argument 2 to States.JsonMerge (given Array, expected Hash)")
+        expect { described_class.value("States.JsonMerge($.left, $.right, 5)", {}, {"left" => {"a" => "la"}, "right" => {"b" => "rb"}}) }.to raise_error(ArgumentError, "wrong type for argument 3 to States.JsonMerge (given Integer, expected Boolean)")
+      end
+    end
+
     describe "States.JsonToString" do
       it "fetches values from the input" do
         # this is not in the spec but automatic as part of the parser

@@ -66,6 +66,7 @@ module Floe
           :states_base64_encode,   "States.Base64Encode",
           :states_base64_decode,   "States.Base64Decode",
           :states_hash,            "States.Hash",
+          :states_json_merge,      "States.JsonMerge",
           :states_math_random,     "States.MathRandom",
           :states_math_add,        "States.MathAdd",
           :states_string_split,    "States.StringSplit",
@@ -91,6 +92,7 @@ module Floe
             states_base64_encode |
             states_base64_decode |
             states_hash |
+            states_json_merge |
             states_math_random |
             states_math_add |
             states_string_split |
