@@ -4,6 +4,18 @@ module Floe
   class Workflow
     class ChoiceRule
       class Data < Floe::Workflow::ChoiceRule
+        COMPARE_KEYS = %w[IsNull IsPresent IsNumeric IsString IsBoolean IsTimestamp String Numeric Boolean Timestamp].freeze
+
+        attr_reader :variable, :compare_key, :value, :path
+
+        def initialize(_workflow, _name, payload)
+          super
+
+          @variable = parse_path("Variable", payload)
+          parse_compare_key
+          @value = path ? parse_path(compare_key, payload) : payload[compare_key]
+        end
+
         def true?(context, input)
           return presence_check(context, input) if compare_key == "IsPresent"
 
@@ -92,12 +104,25 @@ module Floe
           false
         end
 
-        def compare_key
-          @compare_key ||= payload.keys.detect { |key| key.match?(/^(IsNull|IsPresent|IsNumeric|IsString|IsBoolean|IsTimestamp|String|Numeric|Boolean|Timestamp)/) }
+        def variable_value(context, input)
+          variable.value(context, input)
         end
 
         def compare_value(context, input)
-          compare_key.end_with?("Path") ? Path.value(payload[compare_key], context, input) : payload[compare_key]
+          path ? value.value(context, input) : value
+        end
+
+        def parse_compare_key
+          @compare_key = payload.keys.detect { |key| key.match?(/^(#{COMPARE_KEYS.join("|")})/) }
+          parser_error!("requires a compare key") unless compare_key
+
+          @path = compare_key.end_with?("Path")
+        end
+
+        def parse_path(field_name, payload)
+          value = payload[field_name]
+          missing_field_error!(field_name) unless value
+          wrap_parser_error(field_name, value) { Path.new(value) }
         end
       end
     end

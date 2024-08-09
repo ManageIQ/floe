@@ -47,6 +47,7 @@ RSpec.describe Floe::Workflow::States::Choice do
     context "with a missing variable" do
       it "shows error" do
         workflow.run_nonblock
+        expect(ctx.failed?).to eq(true)
         expect(ctx.output).to eq(
           {
             "Cause" => "Path [$.foo] references an invalid value",
