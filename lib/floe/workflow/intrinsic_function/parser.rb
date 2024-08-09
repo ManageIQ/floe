@@ -54,6 +54,7 @@ module Floe
         end
 
         [
+          :states_format,          "States.Format",
           :states_string_to_json,  "States.StringToJson",
           :states_json_to_string,  "States.JsonToString",
           :states_array,           "States.Array",
@@ -79,7 +80,8 @@ module Floe
         end
 
         rule(:expression) do
-          states_string_to_json |
+          states_format |
+            states_string_to_json |
             states_json_to_string |
             states_array |
             states_array_partition |

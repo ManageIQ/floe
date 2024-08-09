@@ -20,6 +20,85 @@ RSpec.describe Floe::Workflow::IntrinsicFunction do
   end
 
   describe ".value" do
+    describe "States.Format" do
+      it "with a template with placeholders" do
+        result = described_class.value("States.Format('Your name is {}, we are in the year {}', 'Foo', 2020)")
+        expect(result).to eq("Your name is Foo, we are in the year 2020")
+      end
+
+      it "with a template without placeholders" do
+        result = described_class.value("States.Format('Your name is Foo, we are in the year 2020')")
+        expect(result).to eq("Your name is Foo, we are in the year 2020")
+      end
+
+      it "with a template that is an empty string" do
+        result = described_class.value("States.Format('')")
+        expect(result).to eq("")
+      end
+
+      it "with a template with escaped placeholders" do
+        result = described_class.value("States.Format('This value is \\{{}\\}', 'Foo')")
+        expect(result).to eq("This value is {Foo}")
+      end
+
+      it "with a template with escaped placeholders only" do
+        result = described_class.value("States.Format('\\{\\}')")
+        expect(result).to eq("{}")
+      end
+
+      it "with a template with various escaped characters" do
+        result = described_class.value("States.Format('This value is {} - \\'\\{\\}\\\\', 'Foo')")
+        expect(result).to eq("This value is Foo - '{}\\")
+      end
+
+      it "with different types of args" do
+        result = described_class.value("States.Format('This value is {}, {}, {}, {}, {}, {}', 'Foo', true, false, 1, 1.5, null)")
+        expect(result).to eq("This value is Foo, true, false, 1, 1.5, null")
+      end
+
+      it "with args with escaped characters" do
+        pending "better handling of escaped characters in the template"
+
+        result = described_class.value("States.Format('This value is {}', '\\'')")
+        expect(result).to eq("This value is \\'")
+      end
+
+      it "with jsonpath for the template" do
+        result = described_class.value("States.Format($.template, 'Foo', 2020)", {}, {"template" => "Your name is {}, we are in the year {}"})
+        expect(result).to eq("Your name is Foo, we are in the year 2020")
+      end
+
+      it "with jsonpath for the template and arguments" do
+        result = described_class.value("States.Format($.template, $.arg1, $.arg2)", {}, {"template" => "Your name is {}, we are in the year {}", "arg1" => "Foo", "arg2" => 2020})
+        expect(result).to eq("Your name is Foo, we are in the year 2020")
+      end
+
+      it "with jsonpath for the template with escaped placeholders" do
+        result = described_class.value("States.Format($.template, 'Foo')", {}, {"template" => "This value is \\{{}\\}"})
+        expect(result).to eq("This value is {Foo}")
+      end
+
+      it "fails with invalid templates" do
+        pending "better handling of escaped characters in the template"
+
+        expect { described_class.value("States.Format('\\{}')") }.to raise_error(ArgumentError, "Invalid template in States.Format (matching '{' not found for '}')")
+        expect { described_class.value("States.Format('{\\}')") }.to raise_error(ArgumentError, "Invalid template in States.Format (matching '}' not found for '{')")
+      end
+
+      it "fails with invalid args" do
+        expect { described_class.value("States.Format()") }.to raise_error(ArgumentError, "wrong number of arguments to States.Format (given 0, expected at least 1)")
+
+        expect { described_class.value("States.Format(1, 4)") }.to raise_error(ArgumentError, "wrong type for argument 1 to States.Format (given Integer, expected String)")
+
+        expect { described_class.value("States.Format('{} {}', States.Array(), 1)") }.to raise_error(ArgumentError, "wrong type for argument 2 to States.Format (given Array, expected one of String, TrueClass, FalseClass, Integer, Float, NilClass)")
+        expect { described_class.value("States.Format('{} {}', 1, States.Array())") }.to raise_error(ArgumentError, "wrong type for argument 3 to States.Format (given Array, expected one of String, TrueClass, FalseClass, Integer, Float, NilClass)")
+        expect { described_class.value("States.Format('{} {}', $.hash, 1)", {}, {"hash" => {}}) }.to raise_error(ArgumentError, "wrong type for argument 2 to States.Format (given Hash, expected one of String, TrueClass, FalseClass, Integer, Float, NilClass)")
+
+        expect { described_class.value("States.Format('{}')") }.to raise_error(ArgumentError, "number of arguments to States.Format do not match the occurrences of {} (given 0, expected 1)")
+        expect { described_class.value("States.Format('{} {}', 1)") }.to raise_error(ArgumentError, "number of arguments to States.Format do not match the occurrences of {} (given 1, expected 2)")
+      end
+    end
+
     describe "States.Array" do
       it "with no values" do
         result = described_class.value("States.Array()")

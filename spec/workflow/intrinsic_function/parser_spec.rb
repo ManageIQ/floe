@@ -196,6 +196,16 @@ RSpec.describe Floe::Workflow::IntrinsicFunction::Parser do
     end
   end
 
+  describe "states_format" do
+    subject { described_class.new.states_format }
+
+    it do
+      expect(subject).to parse("States.Format('Your name is {}, we are in the year {}', 'Foo', 2020)")
+
+      expect(subject).to_not parse("States.Format")
+    end
+  end
+
   describe "states_string_to_json" do
     subject { described_class.new.states_string_to_json }
 
