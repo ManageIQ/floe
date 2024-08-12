@@ -8,8 +8,8 @@ module Floe
       # @param context [Json|Hash] (default, create another with input and execution params)
       # @param input [Hash] (default: {})
       def initialize(context = nil, input: nil, credentials: nil, logger: nil)
-        context = JSON.parse(context) if context.kind_of?(String)
-        input   = JSON.parse(input || "{}")
+        context = self.class.safe_parse("Execution Context", context) if context.kind_of?(String)
+        input   = self.class.safe_parse("Execution Input", input || "{}")
 
         @context = context || {}
         self["Credentials"]        ||= credentials || {}
@@ -21,8 +21,6 @@ module Floe
         self["Task"]               ||= {}
 
         self.logger = logger if logger
-      rescue JSON::ParserError => err
-        raise Floe::InvalidExecutionInput, "Invalid State Machine Execution Input: #{err}: was expecting (JSON String, Number, Array, Object or token 'null', 'true' or 'false')"
       end
 
       def execution
@@ -160,6 +158,18 @@ module Floe
 
       def safe_context
         @context.except("Credentials")
+      end
+
+      def to_json(*args)
+        to_h.to_json(*args)
+      end
+
+      private
+
+      def self.safe_parse(field, string)
+        JSON.parse(string)
+      rescue JSON::ParserError => err
+        raise Floe::InvalidExecutionInput, "Invalid State Machine #{field}: #{err}: was expecting (JSON String, Number, Array, Object or token 'null', 'true' or 'false')"
       end
     end
   end
