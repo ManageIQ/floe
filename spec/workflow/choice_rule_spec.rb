@@ -155,6 +155,13 @@ RSpec.describe Floe::Workflow::ChoiceRule do
         end
       end
 
+      context "with an invalid predicate" do
+        let(:choices) { [{"Variable" => "$.foo", "IsNull" => 5, "Next" => "FirstMatchState"}] }
+        it "fails" do
+          expect { subject }.to raise_exception(Floe::InvalidWorkflowError, "States.Choice1.Choices.0.Data field \"IsNull\" value \"5\" required to be a Boolean")
+        end
+      end
+
       context "with IsNull" do
         let(:predicate) { true }
         let(:choices) { [{"Variable" => "$.foo", "IsNull" => predicate, "Next" => "FirstMatchState"}] }
@@ -384,6 +391,16 @@ RSpec.describe Floe::Workflow::ChoiceRule do
           end
         end
 
+        context "with wrong match type on the left" do
+          let(:input) { {"foo" => "abc", "bar" => 2} }
+          it { expect { subject }.to raise_exception(Floe::ExecutionError, "States.Choice1.Choices.0.Data field \"Variable\" value \"$.foo\" required to point to a Numeric") }
+        end
+
+        context "with wrong match type on the right" do
+          let(:input) { {"foo" => 2, "bar" => "xyz"} }
+          it { expect { subject }.to raise_exception(Floe::ExecutionError, "States.Choice1.Choices.0.Data field \"NumericEqualsPath\" value \"$.bar\" required to point to a Numeric") }
+        end
+
         context "with path not found" do
           let(:input) { {"foo" => 2} }
           it { expect { subject }.to raise_error(Floe::PathError, "Path [$.bar] references an invalid value") }
@@ -467,6 +484,12 @@ RSpec.describe Floe::Workflow::ChoiceRule do
           it "returns false" do
             expect(subject).to eq(false)
           end
+        end
+
+        context "with invalid Path" do
+          let(:choices) { [{"Variable" => "$.foo", "NumericGreaterThanPath" => "bogus", "Next" => "FirstMatchState"}] }
+          let(:input) { {} }
+          it { expect { subject }.to raise_exception(Floe::InvalidWorkflowError, "States.Choice1.Choices.0.Data field \"NumericGreaterThanPath\" value \"bogus\" Path [bogus] must start with \"$\"") }
         end
       end
 
@@ -555,18 +578,22 @@ RSpec.describe Floe::Workflow::ChoiceRule do
 
         context "that is true" do
           let(:input) { {"foo" => "audit.log"} }
-
-          it "returns true" do
-            expect(subject).to eq(true)
-          end
+          it { expect(subject).to eq(true) }
         end
 
         context "that is false" do
           let(:input) { {"foo" => "audit"} }
+          it { expect(subject).to eq(false) }
+        end
 
-          it "returns false" do
-            expect(subject).to eq(false)
-          end
+        context "that does not exist" do
+          let(:input) { {} }
+          it { expect { subject }.to raise_exception(Floe::PathError, "Path [$.foo] references an invalid value") }
+        end
+
+        context "that references a number" do
+          let(:input) { {"foo" => 5} }
+          it { expect { subject }.to raise_exception(Floe::ExecutionError, "States.Choice1.Choices.0.Data field \"Variable\" value \"$.foo\" required to point to a String") }
         end
       end
     end

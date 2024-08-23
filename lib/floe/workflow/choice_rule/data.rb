@@ -4,12 +4,12 @@ module Floe
   class Workflow
     class ChoiceRule
       class Data < Floe::Workflow::ChoiceRule
-        TYPES      = ["String", "Numeric", "Boolean", "Timestamp", "Present", "Null"].freeze
+        TYPES      = {"String" => :is_string?, "Numeric" => :is_numeric?, "Boolean" => :is_boolean?, "Timestamp" => :is_timestamp?, "Present" => :is_present?, "Null" => :is_null?}.freeze
         COMPARES   = ["Equals", "LessThan", "GreaterThan", "LessThanEquals", "GreaterThanEquals", "Matches"].freeze
         # e.g.: (Is)(String), (Is)(Present)
-        TYPE_CHECK = /^(Is)(#{TYPES.join("|")})$/.freeze
+        TYPE_CHECK = /^(Is)(#{TYPES.keys.join("|")})$/.freeze
         # e.g.: (String)(LessThan)(Path), (Numeric)(GreaterThanEquals)()
-        OPERATION  = /^(#{(TYPES - %w[Null Present]).join("|")})(#{COMPARES.join("|")})(Path)?$/.freeze
+        OPERATION  = /^(#{(TYPES.keys - %w[Null Present]).join("|")})(#{COMPARES.join("|")})(Path)?$/.freeze
 
         attr_reader :variable, :compare_key, :type, :compare_predicate, :path
 
@@ -135,18 +135,18 @@ module Floe
         # parse predicate at initilization time
         # @return the right predicate attached to the compare key
         def parse_predicate(payload)
-          path ? parse_path(compare_key, payload) : payload[compare_key]
+          path ? parse_path(compare_key, payload) : parse_value(compare_key, payload)
         end
 
         # @return right hand predicate - input path or static payload value)
         def compare_value(context, input)
-          path ? compare_predicate.value(context, input) : compare_predicate
+          path ? fetch_path(compare_key, compare_predicate, context, input) : compare_predicate
         end
 
         # feth the variable value at runtime
         # @return variable value (left hand side )
         def variable_value(context, input)
-          variable.value(context, input)
+          fetch_path("Variable", variable, context, input)
         end
 
         # parse path at initilization time
@@ -155,6 +155,24 @@ module Floe
           value = payload[field_name]
           missing_field_error!(field_name) unless value
           wrap_parser_error(field_name, value) { Path.new(value) }
+        end
+
+        def parse_value(field_name, payload)
+          value = payload[field_name]
+          invalid_field_error!(field_name, value, "required to be a #{type || "Boolean"}") unless correct_type?(value)
+          value
+        end
+
+        # fetch a path at runtime
+        # @ the value at a path
+        def fetch_path(field_name, field_path, context, input)
+          ret_value = field_path.value(context, input)
+          runtime_field_error!(field_name, field_path.to_s, "required to point to a #{type}") if type && !correct_type?(ret_value)
+          ret_value
+        end
+
+        def correct_type?(val)
+          send(TYPES[type || "Boolean"], val)
         end
       end
     end
