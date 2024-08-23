@@ -4,15 +4,20 @@ module Floe
   class Workflow
     class ChoiceRule
       class Data < Floe::Workflow::ChoiceRule
-        COMPARE_KEYS = %w[IsNull IsPresent IsNumeric IsString IsBoolean IsTimestamp String Numeric Boolean Timestamp].freeze
+        TYPES      = ["String", "Numeric", "Boolean", "Timestamp", "Present", "Null"].freeze
+        COMPARES   = ["Equals", "LessThan", "GreaterThan", "LessThanEquals", "GreaterThanEquals", "Matches"].freeze
+        # e.g.: (Is)(String), (Is)(Present)
+        TYPE_CHECK = /^(Is)(#{TYPES.join("|")})$/.freeze
+        # e.g.: (String)(LessThan)(Path), (Numeric)(GreaterThanEquals)()
+        OPERATION  = /^(#{(TYPES - %w[Null Present]).join("|")})(#{COMPARES.join("|")})(Path)?$/.freeze
 
-        attr_reader :variable, :compare_key, :compare_predicate, :path
+        attr_reader :variable, :compare_key, :type, :compare_predicate, :path
 
         def initialize(_workflow, _name, payload)
           super
 
           @variable = parse_path("Variable", payload)
-          parse_compare_key
+          parse_compare_key(payload)
           @compare_predicate = parse_predicate(payload)
         end
 
@@ -108,11 +113,23 @@ module Floe
         # rubocop:enable Naming/PredicateName
         # rubocop:enable Style/OptionalBooleanParameter
 
-        def parse_compare_key
-          @compare_key = payload.keys.detect { |key| key.match?(/^(#{COMPARE_KEYS.join("|")})/) }
-          parser_error!("requires a compare key") unless compare_key
-
-          @path = compare_key.end_with?("Path")
+        # parse the compare key at initialization time
+        def parse_compare_key(payload)
+          payload.each_key do |key|
+            # e.g. (String)(GreaterThan)(Path)
+            if (match_values = OPERATION.match(key))
+              @compare_key = key
+              @type, _operator, @path = match_values.captures
+              break
+            end
+            # e.g. (Is)(String)
+            if (_match_value = TYPE_CHECK.match(key))
+              @compare_key = key
+              @type = @path = nil
+              break
+            end
+          end
+          parser_error!("requires a compare key") unless @compare_key
         end
 
         # parse predicate at initilization time

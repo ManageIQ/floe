@@ -147,7 +147,7 @@ RSpec.describe Floe::Workflow::ChoiceRule do
       end
 
       context "with an invalid compare key" do
-        let(:choices) { [{"Variable" => "$.foo", "InvalidCompare" => "$.bar", "Next" => "FirstMatchState"}] }
+        let(:choices) { [{"Variable" => "$.foo", "StringBeGone" => "$.bar", "Next" => "FirstMatchState"}] }
         let(:input)   { {"foo" => 0, "bar" => 1} }
 
         it "fails" do
