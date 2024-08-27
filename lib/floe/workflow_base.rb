@@ -4,7 +4,7 @@ module Floe
   class WorkflowBase
     include ValidationMixin
 
-    attr_reader :name, :payload, :start_at, :states, :states_by_name
+    attr_reader :name, :start_at, :states, :states_by_name
 
     def initialize(payload, name = nil)
       # NOTE: this is a string, and states use an array
@@ -75,6 +75,11 @@ module Floe
 
     def output(context)
       context.output.to_json if end?(context)
+    end
+
+    # overrides ValidationMixin#workflow_state?
+    def workflow_state?(field_value, _workflow)
+      @payload["States"] ? @payload["States"].include?(field_value) : true
     end
 
     private

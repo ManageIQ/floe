@@ -23,7 +23,7 @@ module Floe
     end
 
     def workflow_state?(field_value, workflow)
-      workflow.payload["States"] ? workflow.payload["States"].include?(field_value) : true
+      workflow.workflow_state?(field_value, workflow)
     end
 
     def wrap_parser_error(field_name, field_value)

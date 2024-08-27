@@ -18,8 +18,8 @@ module Floe
         def initialize(_workflow, _name, payload)
           super
 
-          @variable = parse_path("Variable")
-          parse_compare_key
+          @variable = parse_path(payload, "Variable")
+          parse_compare_key(payload)
         end
 
         def true?(context, input)
@@ -107,13 +107,13 @@ module Floe
         end
 
         # parse the compare key at initialization time
-        def parse_compare_key
+        def parse_compare_key(payload)
           payload.each_key do |key|
             # e.g. (String)(GreaterThan)(Path)
             if (match_values = OPERATION.match(key))
               @compare_key = key
               @type, @operator, @path = match_values.captures
-              @compare_predicate = parse_predicate(type)
+              @compare_predicate = parse_predicate(payload, type)
               break
             # e.g. (Is)(String)
             elsif (match_value = TYPE_CHECK.match(key))
@@ -121,7 +121,7 @@ module Floe
               @operator = match_value.captures.first
               # type: nil means no runtime type checking.
               @type = @path = nil
-              @compare_predicate = parse_predicate("Boolean")
+              @compare_predicate = parse_predicate(payload, "Boolean")
               break
             end
           end
@@ -133,8 +133,8 @@ module Floe
         #                  When parsing operations (IntegerGreaterThan), this will be the operation data type (e.g.: Integer)
         #                  When parsing type checks (IsString), this will always be a Boolean
         # @return the right predicate attached to the compare key
-        def parse_predicate(data_type)
-          path ? parse_path(compare_key) : parse_field(compare_key, data_type)
+        def parse_predicate(payload, data_type)
+          path ? parse_path(payload, compare_key) : parse_field(compare_key, payload, data_type)
         end
 
         # @return right hand predicate - input path or static payload value)
@@ -150,7 +150,7 @@ module Floe
 
         # parse path at initialization time
         # helper method to parse a path from the payload
-        def parse_path(field_name)
+        def parse_path(payload, field_name)
           value = payload[field_name]
           missing_field_error!(field_name) unless value
           wrap_parser_error(field_name, value) { Path.new(value) }
@@ -161,7 +161,7 @@ module Floe
         # @param data_type [String] the data type of the variable
         #                  When parsing operations (IntegerGreaterThan), this will be the operation data type (e.g.: Integer)
         #                  When parsing type checks (IsString), this will always be a Boolean
-        def parse_field(field_name, data_type)
+        def parse_field(field_name, payload, data_type)
           value = payload[field_name]
           return value if correct_type?(value, data_type)
 

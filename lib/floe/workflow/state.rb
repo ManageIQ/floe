@@ -21,11 +21,10 @@ module Floe
         end
       end
 
-      attr_reader :comment, :name, :type, :payload
+      attr_reader :comment, :name, :type
 
       def initialize(_workflow, name, payload)
         @name     = name
-        @payload  = payload
         @type     = payload["Type"]
         @comment  = payload["Comment"]
       end

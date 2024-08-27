@@ -10,8 +10,6 @@ module Floe
 
       def initialize(workflow, name, payload)
         @name         = name
-        @payload      = payload
-
         @error_equals = payload["ErrorEquals"]
         @next         = payload["Next"]
         @result_path  = ReferencePath.new(payload.fetch("ResultPath", "$"))

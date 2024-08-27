@@ -11,11 +11,8 @@ module Floe
         payload.start_with?("States.")
       end
 
-      attr_reader :payload
-
       def initialize(payload)
-        @payload = payload
-        @tree    = Parser.new.parse(payload)
+        @tree = Parser.new.parse(payload)
 
         Floe.logger.debug { "Parsed intrinsic function: #{payload.inspect} => #{tree.inspect}" }
       rescue Parslet::ParseFailed => err
