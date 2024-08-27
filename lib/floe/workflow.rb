@@ -101,6 +101,7 @@ module Floe
 
       # NOTE: this is a string, and states use an array
       @name        = name || "State Machine"
+      # NOTE: payload is stored to look up valid state names
       @payload     = payload
       @context     = context
       @comment     = payload["Comment"]

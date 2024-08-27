@@ -17,7 +17,7 @@ module Floe
           super
 
           @variable = parse_path("Variable", payload)
-          parse_compare_key
+          parse_compare_key(payload)
           @compare_predicate = parse_predicate(payload)
         end
 
@@ -114,7 +114,7 @@ module Floe
         # rubocop:enable Style/OptionalBooleanParameter
 
         # parse the compare key at initialization time
-        def parse_compare_key
+        def parse_compare_key(payload)
           payload.each_key do |key|
             # e.g. (String)(GreaterThan)(Path)
             if (match_values = OPERATION.match(key))

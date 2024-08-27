@@ -10,7 +10,6 @@ module Floe
 
       def initialize(_workflow, name, payload)
         @name             = name
-        @payload          = payload
 
         @error_equals     = payload["ErrorEquals"]
         @interval_seconds = payload["IntervalSeconds"] || 1.0

@@ -27,11 +27,10 @@ module Floe
         end
       end
 
-      attr_reader :next, :payload, :children, :name
+      attr_reader :next, :children, :name
 
       def initialize(workflow, name, payload, children = nil)
         @name      = name
-        @payload   = payload
         @children  = children
         @next      = payload["Next"]
 

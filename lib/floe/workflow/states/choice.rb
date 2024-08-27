@@ -9,10 +9,10 @@ module Floe
         def initialize(workflow, name, payload)
           super
 
-          validate_state!(workflow)
-
-          @choices = payload["Choices"].map.with_index { |choice, i| ChoiceRule.build(workflow, name + ["Choices", i.to_s], choice) }
+          @choices = payload["Choices"]&.map&.with_index { |choice, i| ChoiceRule.build(workflow, name + ["Choices", i.to_s], choice) }
           @default = payload["Default"]
+
+          validate_state!(workflow)
 
           @input_path  = Path.new(payload.fetch("InputPath", "$"))
           @output_path = Path.new(payload.fetch("OutputPath", "$"))
@@ -45,12 +45,12 @@ module Floe
         end
 
         def validate_state_choices!
-          missing_field_error!("Choices") unless payload.key?("Choices")
-          invalid_field_error!("Choices", nil, "must be a non-empty array") unless payload["Choices"].kind_of?(Array) && !payload["Choices"].empty?
+          missing_field_error!("Choices") if @choices.nil?
+          invalid_field_error!("Choices", nil, "must be a non-empty array") unless @choices.kind_of?(Array) && !@choices.empty?
         end
 
         def validate_state_default!(workflow)
-          invalid_field_error!("Default", payload["Default"], "is not found in \"States\"") if payload["Default"] && !workflow_state?(payload["Default"], workflow)
+          invalid_field_error!("Default", @default, "is not found in \"States\"") if @default && !workflow_state?(@default, workflow)
         end
       end
     end
