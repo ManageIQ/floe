@@ -26,7 +26,9 @@ module Floe
           Floe::Workflow.load(workflow, context)
         end
 
-      Floe::Workflow.wait(workflows, &:run_nonblock)
+      puts "Checking #{workflows.count} workflows..."
+      ready = Floe::Workflow.wait(workflows, &:run_nonblock)
+      puts "Checking #{workflows.count} workflows...Complete - #{ready.count} ready"
 
       # Display status
       workflows.each do |workflow|
