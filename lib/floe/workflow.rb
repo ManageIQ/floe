@@ -18,7 +18,6 @@ module Floe
 
       def wait(workflows, timeout: nil, &block)
         workflows = [workflows] if workflows.kind_of?(self)
-        logger.info("Checking #{workflows.count} workflows...")
 
         run_until   = Time.now.utc + timeout if timeout.to_i > 0
         ready       = []
@@ -72,7 +71,6 @@ module Floe
           sleep_thread&.kill
         end
 
-        logger.info("Checking #{workflows.count} workflows...Complete - #{ready.count} ready")
         ready
       ensure
         wait_thread&.kill
@@ -110,8 +108,11 @@ module Floe
     def step_nonblock
       return Errno::EPERM if end?
 
+      start_state unless context.state_started?
       result = current_state.run_nonblock!(context)
       return result if result != 0
+
+      end_state
 
       # if it completed the step
       context.state_history << context.state
@@ -179,6 +180,15 @@ module Floe
     end
 
     private
+
+    def start_state
+      logger.info("Running state: [#{current_state.long_name}] with input [#{context.json_input}]...")
+    end
+
+    def end_state
+      level = context.failed? ? :error : :info
+      logger.public_send(level, "Running state: [#{current_state.long_name}] with input [#{context.json_input}]...Complete #{context.next_state ? "- next state [#{context.next_state}]" : "workflow -"} output: [#{context.json_output}]")
+    end
 
     def step!
       next_state = {"Name" => context.next_state, "Guid" => SecureRandom.uuid, "PreviousStateGuid" => context.state["Guid"]}
