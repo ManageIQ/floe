@@ -13,17 +13,11 @@ module Floe
     def run(args = ARGV)
       workflows_inputs, opts = parse_options!(args)
 
-      credentials =
-        if opts[:credentials_given]
-          opts[:credentials] == "-" ? $stdin.read : opts[:credentials]
-        elsif opts[:credentials_file_given]
-          File.read(opts[:credentials_file])
-        end
+      credentials = create_credentials(opts)
 
       workflows =
         workflows_inputs.each_slice(2).map do |workflow, input|
-          context = Floe::Workflow::Context.new(opts[:context], :input => input, :credentials => credentials)
-          Floe::Workflow.load(workflow, context)
+          create_workflow(workflow, opts[:context], input, credentials)
         end
 
       Floe::Workflow.wait(workflows, &:run_nonblock)
@@ -81,6 +75,19 @@ module Floe
       Floe::ContainerRunner.resolve_cli_options!(opts)
 
       return workflows_inputs, opts
+    end
+
+    def create_credentials(opts)
+      if opts[:credentials_given]
+        opts[:credentials] == "-" ? $stdin.read : opts[:credentials]
+      elsif opts[:credentials_file_given]
+        File.read(opts[:credentials_file])
+      end
+    end
+
+    def create_workflow(workflow, context_payload, input, credentials)
+      context = Floe::Workflow::Context.new(context_payload, :input => input, :credentials => credentials)
+      Floe::Workflow.load(workflow, context)
     end
   end
 end
