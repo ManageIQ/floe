@@ -6,12 +6,14 @@ module Floe
       class Data < Floe::Workflow::ChoiceRule
         TYPES      = ["String", "Numeric", "Boolean", "Timestamp", "Present", "Null"].freeze
         COMPARES   = ["Equals", "LessThan", "GreaterThan", "LessThanEquals", "GreaterThanEquals", "Matches"].freeze
+        OPERATIONS = TYPES.each_with_object({}) { |dt, a| a[dt] = "is_#{dt.downcase}?".to_sym } \
+                          .merge(COMPARES.each_with_object({}) { |op, a| a[op] = "#{op.downcase}?".to_sym }).freeze
         # e.g.: (Is)(String), (Is)(Present)
         TYPE_CHECK = /^(Is)(#{TYPES.join("|")})$/.freeze
         # e.g.: (String)(LessThan)(Path), (Numeric)(GreaterThanEquals)()
         OPERATION  = /^(#{(TYPES - %w[Null Present]).join("|")})(#{COMPARES.join("|")})(Path)?$/.freeze
 
-        attr_reader :variable, :compare_key, :type, :compare_predicate, :path
+        attr_reader :variable, :compare_key, :operator, :type, :compare_predicate, :path
 
         def initialize(_workflow, _name, payload)
           super
@@ -25,39 +27,7 @@ module Floe
 
           lhs = variable_value(context, input)
           rhs = compare_value(context, input)
-
-          case compare_key
-          when "IsNull" then is_null?(lhs, rhs)
-          when "IsNumeric" then is_numeric?(lhs, rhs)
-          when "IsString" then is_string?(lhs, rhs)
-          when "IsBoolean" then is_boolean?(lhs, rhs)
-          when "IsTimestamp" then is_timestamp?(lhs, rhs)
-          when "StringEquals", "StringEqualsPath",
-               "NumericEquals", "NumericEqualsPath",
-               "BooleanEquals", "BooleanEqualsPath",
-               "TimestampEquals", "TimestampEqualsPath"
-            lhs == rhs
-          when "StringLessThan", "StringLessThanPath",
-               "NumericLessThan", "NumericLessThanPath",
-               "TimestampLessThan", "TimestampLessThanPath"
-            lhs < rhs
-          when "StringGreaterThan", "StringGreaterThanPath",
-               "NumericGreaterThan", "NumericGreaterThanPath",
-               "TimestampGreaterThan", "TimestampGreaterThanPath"
-            lhs > rhs
-          when "StringLessThanEquals", "StringLessThanEqualsPath",
-               "NumericLessThanEquals", "NumericLessThanEqualsPath",
-               "TimestampLessThanEquals", "TimestampLessThanEqualsPath"
-            lhs <= rhs
-          when "StringGreaterThanEquals", "StringGreaterThanEqualsPath",
-               "NumericGreaterThanEquals", "NumericGreaterThanEqualsPath",
-               "TimestampGreaterThanEquals", "TimestampGreaterThanEqualsPath"
-            lhs >= rhs
-          when "StringMatches"
-            lhs.match?(Regexp.escape(rhs).gsub('\*', '.*?'))
-          else
-            raise Floe::InvalidWorkflowError, "Invalid choice [#{compare_key}]"
-          end
+          send(OPERATIONS[operator], lhs, rhs)
         end
 
         private
@@ -112,26 +82,51 @@ module Floe
         # rubocop:enable Naming/PredicateName
         # rubocop:enable Style/OptionalBooleanParameter
 
+        def equals?(lhs, rhs)
+          lhs == rhs
+        end
+
+        def lessthan?(lhs, rhs)
+          lhs < rhs
+        end
+
+        def greaterthan?(lhs, rhs)
+          lhs > rhs
+        end
+
+        def lessthanequals?(lhs, rhs)
+          lhs <= rhs
+        end
+
+        def greaterthanequals?(lhs, rhs)
+          lhs >= rhs
+        end
+
+        def matches?(lhs, rhs)
+          lhs.match?(Regexp.escape(rhs).gsub('\*', '.*?'))
+        end
+
         # parse the compare key at initialization time
         def parse_compare_key
           payload.each_key do |key|
             # e.g. (String)(GreaterThan)(Path)
             if (match_values = OPERATION.match(key))
               @compare_key = key
-              @type, _operator, @path = match_values.captures
+              @type, @operator, @path = match_values.captures
               @compare_predicate = parse_predicate(type)
               break
             end
             # e.g. (Is)(String)
-            if TYPE_CHECK.match?(key)
+            if (match_value = TYPE_CHECK.match(key))
               @compare_key = key
+              _is, @operator = match_value.captures
               # type: nil means no runtime type checking.
               @type = @path = nil
               @compare_predicate = parse_predicate("Boolean")
               break
             end
           end
-          parser_error!("requires a compare key") unless compare_key
+          parser_error!("requires a compare key") if compare_key.nil? || operator.nil?
         end
 
         # parse predicate at initilization time
@@ -178,7 +173,7 @@ module Floe
         # if we have runtime checking, check against that type
         #   otherwise assume checking a TYPE_CHECK predicate and check against Boolean
         def correct_type?(value, data_type)
-          send("is_#{data_type.downcase}?".to_sym, value)
+          send(OPERATIONS[data_type], value)
         end
       end
     end
