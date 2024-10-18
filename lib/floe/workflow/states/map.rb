@@ -50,8 +50,6 @@ module Floe
 
           input = process_input(context)
 
-          context.state["Iteration"]            = 0
-          context.state["MaxIterations"]        = input.count
           context.state["ItemProcessorContext"] = input.map { |item| Context.new({"Execution" => {"Id" => context.execution["Id"]}}, :input => item.to_json).to_h }
         end
 
@@ -70,7 +68,7 @@ module Floe
         def run_nonblock!(context)
           start(context) unless context.state_started?
 
-          loop while step_nonblock!(context) == 0 && running?(context)
+          step_nonblock!(context) while running?(context)
           return Errno::EAGAIN unless ready?(context)
 
           finish(context) if ended?(context)
@@ -127,14 +125,20 @@ module Floe
         end
 
         def step_nonblock!(context)
-          item_processor_context = Context.new(context.state["ItemProcessorContext"][context.state["Iteration"]])
-          item_processor.run_nonblock(item_processor_context) if item_processor.step_nonblock_ready?(item_processor_context)
-          if item_processor_context.ended?
-            context.state["Iteration"] += 1
-            0
-          else
-            Errno::EAGAIN
+          each_item_processor(context).each do |ctx|
+            # If this iteration isn't already running and we can't start any more
+            next if !ctx.started? && concurrency_exceeded?(context)
+
+            item_processor.run_nonblock(ctx) if item_processor.step_nonblock_ready?(ctx)
           end
+        end
+
+        def concurrency_exceeded?(context)
+          max_concurrency && num_running(context) >= max_concurrency
+        end
+
+        def num_running(context)
+          each_item_processor(context).count(&:running?)
         end
 
         def parse_error(context)
@@ -150,6 +154,7 @@ module Floe
 
         def validate_state!(workflow)
           validate_state_next!(workflow)
+          invalid_field_error!("MaxConcurrency", @max_concurrency, "must be greater than 0") if @max_concurrency && @max_concurrency <= 0
         end
       end
     end
