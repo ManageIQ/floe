@@ -27,6 +27,10 @@ module Floe
         scheme = resource.split("://").first
         resolve_scheme(scheme) || raise(ArgumentError, "Invalid resource scheme [#{scheme}]")
       end
+
+      def runners
+        @runners.each_value.map { |runner| runner.kind_of?(Proc) ? runner.call : runner }
+      end
     end
 
     # Run a command asynchronously and create a runner_context

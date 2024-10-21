@@ -4,6 +4,7 @@ module Floe
       require "optimist"
       require "floe"
       require "floe/container_runner"
+      require "floe/awesome_runner"
       require "logger"
 
       Floe.logger = Logger.new($stdout)
