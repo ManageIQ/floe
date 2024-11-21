@@ -61,7 +61,8 @@ module Floe
         end
 
         def running?(context)
-          return true if waiting?(context)
+          return true  if waiting?(context)
+          return false if finished?(context)
 
           runner.status!(context.state["RunnerContext"])
           runner.running?(context.state["RunnerContext"])
