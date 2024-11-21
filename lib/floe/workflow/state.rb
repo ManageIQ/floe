@@ -55,8 +55,16 @@ module Floe
         mark_started(context)
       end
 
+      def started?(context)
+        context.state_started?
+      end
+
       def finish(context)
         mark_finished(context)
+      end
+
+      def finished?(context)
+        context.state_finished?
       end
 
       def mark_started(context)
@@ -87,7 +95,7 @@ module Floe
       end
 
       def ready?(context)
-        !context.state_started? || !running?(context)
+        !started?(context) || !running?(context)
       end
 
       def running?(context)
