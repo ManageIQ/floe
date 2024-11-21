@@ -403,7 +403,7 @@ RSpec.describe Floe::ContainerRunner::Kubernetes do
 
     it "raises an exception when getting pod info fails" do
       allow(kubeclient).to receive(:get_pod).and_raise(Kubeclient::ResourceNotFoundError.new(404, "Resource Not Found", {}))
-      expect { subject.status!(runner_context) }.to raise_error(Kubeclient::ResourceNotFoundError, /Resource Not Found/)
+      expect { subject.status!(runner_context) }.to raise_error(Floe::ExecutionError, /Failed to get status for pod/)
     end
   end
 
