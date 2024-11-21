@@ -4,6 +4,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.15.1] - 2024-11-21
+### Fixed
+- Fix Map/Parallel States checking container_runner#status! of finished states ([#296](https://github.com/ManageIQ/floe/pull/296))
+- Fix child workflow mixin tight loop ([#297](https://github.com/ManageIQ/floe/pull/297))
+
 ## [0.15.0] - 2024-10-28
 ### Added
 - Add WorkflowBase base class for Workflow ([#279](https://github.com/ManageIQ/floe/pull/279))
@@ -267,7 +272,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Initial release
 
-[Unreleased]: https://github.com/ManageIQ/floe/compare/v0.14.0...HEAD
+[Unreleased]: https://github.com/ManageIQ/floe/compare/v0.15.1...HEAD
+[0.15.1]: https://github.com/ManageIQ/floe/compare/v0.15.0...v0.15.1
+[0.15.0]: https://github.com/ManageIQ/floe/compare/v0.14.0...v0.15.0
 [0.14.0]: https://github.com/ManageIQ/floe/compare/v0.13.1...v0.14.0
 [0.13.1]: https://github.com/ManageIQ/floe/compare/v0.13.0...v0.13.1
 [0.13.0]: https://github.com/ManageIQ/floe/compare/v0.12.0...v0.13.0
