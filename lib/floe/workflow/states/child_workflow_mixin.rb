@@ -6,8 +6,7 @@ module Floe
       module ChildWorkflowMixin
         def run_nonblock!(context)
           start(context) unless context.state_started?
-
-          step_nonblock!(context) while running?(context)
+          step_nonblock!(context)
           return Errno::EAGAIN unless ready?(context)
 
           finish(context) if ended?(context)
