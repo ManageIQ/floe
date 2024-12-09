@@ -80,27 +80,27 @@ module Floe
         # rubocop:enable Naming/PredicateName
         # rubocop:enable Style/OptionalBooleanParameter
 
-        def equals?(lhs, rhs)
+        def op_equals?(lhs, rhs)
           lhs == rhs
         end
 
-        def lessthan?(lhs, rhs)
+        def op_lessthan?(lhs, rhs)
           lhs < rhs
         end
 
-        def greaterthan?(lhs, rhs)
+        def op_greaterthan?(lhs, rhs)
           lhs > rhs
         end
 
-        def lessthanequals?(lhs, rhs)
+        def op_lessthanequals?(lhs, rhs)
           lhs <= rhs
         end
 
-        def greaterthanequals?(lhs, rhs)
+        def op_greaterthanequals?(lhs, rhs)
           lhs >= rhs
         end
 
-        def matches?(lhs, rhs)
+        def op_matches?(lhs, rhs)
           lhs.match?(Regexp.escape(rhs).gsub('\*', '.*?'))
         end
 
@@ -111,7 +111,7 @@ module Floe
             if (match_values = OPERATION.match(key))
               @compare_key = key
               @type, operator, @path = match_values.captures
-              @operation = "#{operator.downcase}?".to_sym
+              @operation = "op_#{operator.downcase}?".to_sym
               @compare_predicate = parse_predicate(type)
               break
             end
