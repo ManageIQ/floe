@@ -37,7 +37,7 @@ module Floe
         return if max_items_per_batch_path.nil?
 
         result = max_items_per_batch_path.value(context, state_input)
-        raise runtime_field_error!("MaxItemsPerBatchPath", result, "must be a positive integer") if result <= 0
+        raise runtime_field_error!("MaxItemsPerBatchPath", result, "must be a positive integer") if result.nil? || !result.kind_of?(Integer) || result <= 0
 
         result
       end
@@ -47,10 +47,15 @@ module Floe
           parser_error!("must have one of \"MaxItemsPerBatch\", \"MaxItemsPerBatchPath\"")
         end
 
-        parser_error!("must not specify both \"MaxItemsPerBatch\" and \"MaxItemsPerBatchPath\"")               if max_items_per_batch && max_items_per_batch_path
-        parser_error!("must not specify both \"MaxInputBytesPerBatch\" and \"MaxInputBytesPerBatchPath\"")     if max_input_bytes_per_batch && max_input_bytes_per_batch_path
-        invalid_field_error!("MaxItemsPerBatch", max_items_per_batch, "must be a positive integer")            if max_items_per_batch && max_items_per_batch <= 0
-        invalid_field_error!("MaxInputBytesPerBatch", max_input_bytes_per_batch, "must be a positive integer") if max_input_bytes_per_batch && max_input_bytes_per_batch <= 0
+        parser_error!("must not specify both \"MaxItemsPerBatch\" and \"MaxItemsPerBatchPath\"")           if max_items_per_batch && max_items_per_batch_path
+        parser_error!("must not specify both \"MaxInputBytesPerBatch\" and \"MaxInputBytesPerBatchPath\"") if max_input_bytes_per_batch && max_input_bytes_per_batch_path
+
+        if max_items_per_batch && (!max_items_per_batch.kind_of?(Integer) || max_items_per_batch <= 0)
+          invalid_field_error!("MaxItemsPerBatch", max_items_per_batch, "must be a positive integer")
+        end
+        if max_input_bytes_per_batch && (!max_input_bytes_per_batch.kind_of?(Integer) || max_input_bytes_per_batch <= 0)
+          invalid_field_error!("MaxInputBytesPerBatch", max_input_bytes_per_batch, "must be a positive integer")
+        end
       end
     end
   end

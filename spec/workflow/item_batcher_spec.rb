@@ -38,10 +38,15 @@ RSpec.describe Floe::Workflow::ItemBatcher do
       end
 
       context "that is an invalid value" do
-        let(:payload) { {"MaxItemsPerBatch" => 0} }
-
         it "raises an exception" do
-          expect { subject }.to raise_error(Floe::InvalidWorkflowError, "Map.ItemBatcher field \"MaxItemsPerBatch\" value \"0\" must be a positive integer")
+          expect { described_class.new({"MaxItemsPerBatch" => 0}, ["Map", "ItemBatcher"]) }
+            .to raise_error(Floe::InvalidWorkflowError, "Map.ItemBatcher field \"MaxItemsPerBatch\" value \"0\" must be a positive integer")
+          expect { described_class.new({"MaxItemsPerBatch" => -1}, ["Map", "ItemBatcher"]) }
+            .to raise_error(Floe::InvalidWorkflowError, "Map.ItemBatcher field \"MaxItemsPerBatch\" value \"-1\" must be a positive integer")
+          expect { described_class.new({"MaxItemsPerBatch" => 2.5}, ["Map", "ItemBatcher"]) }
+            .to raise_error(Floe::InvalidWorkflowError, "Map.ItemBatcher field \"MaxItemsPerBatch\" value \"2.5\" must be a positive integer")
+          expect { described_class.new({"MaxItemsPerBatch" => "1"}, ["Map", "ItemBatcher"]) }
+            .to raise_error(Floe::InvalidWorkflowError, "Map.ItemBatcher field \"MaxItemsPerBatch\" value \"1\" must be a positive integer")
         end
       end
     end
@@ -61,12 +66,17 @@ RSpec.describe Floe::Workflow::ItemBatcher do
       end
 
       context "that is an invalid value" do
-        let(:payload) { {"MaxInputBytesPerBatch" => 0} }
-
         it "raises an exception" do
           pending "implement MaxInputBytesPerBatch"
 
-          expect { subject }.to raise_error(Floe::InvalidWorkflowError, "Map.ItemBatcher field \"MaxInputBytesPerBatch\" value \"0\" must be a positive integer")
+          expect { described_class.new({"MaxInputBytesPerBatch" => 0}, ["Map", "ItemBatcher"]) }
+            .to raise_error(Floe::InvalidWorkflowError, "Map.ItemBatcher field \"MaxInputBytesPerBatch\" value \"0\" must be a positive integer")
+          expect { described_class.new({"MaxInputBytesPerBatch" => -1}, ["Map", "ItemBatcher"]) }
+            .to raise_error(Floe::InvalidWorkflowError, "Map.ItemBatcher field \"MaxInputBytesPerBatch\" value \"-1\" must be a positive integer")
+          expect { described_class.new({"MaxInputBytesPerBatch" => 2.5}, ["Map", "ItemBatcher"]) }
+            .to raise_error(Floe::InvalidWorkflowError, "Map.ItemBatcher field \"MaxInputBytesPerBatch\" value \"2.5\" must be a positive integer")
+          expect { described_class.new({"MaxInputBytesPerBatch" => "1"}, ["Map", "ItemBatcher"]) }
+            .to raise_error(Floe::InvalidWorkflowError, "Map.ItemBatcher field \"MaxInputBytesPerBatch\" value \"1\" must be a positive integer")
         end
       end
     end
@@ -141,11 +151,15 @@ RSpec.describe Floe::Workflow::ItemBatcher do
       end
 
       context "with an invalid value in input" do
-        let(:state_input) { {"batchSize" => 0, "items" => input} }
-
         it "raises an exception" do
-          expect { subject.value(context, input, state_input) }
+          expect { subject.value(context, input, {"batchSize" => 0, "items" => input}) }
             .to raise_error(Floe::ExecutionError, "Map.ItemBatcher field \"MaxItemsPerBatchPath\" value \"0\" must be a positive integer")
+          expect { subject.value(context, input, {"batchSize" => -1, "items" => input}) }
+            .to raise_error(Floe::ExecutionError, "Map.ItemBatcher field \"MaxItemsPerBatchPath\" value \"-1\" must be a positive integer")
+          expect { subject.value(context, input, {"batchSize" => 2.5, "items" => input}) }
+            .to raise_error(Floe::ExecutionError, "Map.ItemBatcher field \"MaxItemsPerBatchPath\" value \"2.5\" must be a positive integer")
+          expect { subject.value(context, input, {"batchSize" => "1", "items" => input}) }
+            .to raise_error(Floe::ExecutionError, "Map.ItemBatcher field \"MaxItemsPerBatchPath\" value \"1\" must be a positive integer")
         end
       end
     end
