@@ -37,6 +37,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "kubeclient", "~>4.7"
   spec.add_dependency "optimist", "~>3.0"
   spec.add_dependency "parslet", "~>2.0"
+  spec.add_dependency "json", "~>2.10"
 
   spec.add_development_dependency "manageiq-style", ">= 1.5.2"
   spec.add_development_dependency "rake", "~> 13.0"
