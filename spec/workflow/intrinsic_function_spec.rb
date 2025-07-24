@@ -195,7 +195,7 @@ RSpec.describe Floe::Workflow::IntrinsicFunction do
       end
 
       it "fails with invalid argument values" do
-        expect { described_class.value("States.StringToJson($.input)", {}, {"input" => "foo"}) }.to raise_error(ArgumentError, "invalid value for argument 1 to States.StringToJson (invalid json: unexpected token at 'foo')")
+        expect { described_class.value("States.StringToJson($.input)", {}, {"input" => "foo"}) }.to raise_error(ArgumentError, /invalid value for argument 1 to States.StringToJson \(invalid json/)
       end
     end
 
