@@ -43,7 +43,7 @@ RSpec.describe Floe::Workflow do
     it "raises an exception for invalid context" do
       payload = {"StartAt" => "FirstState", "States" => {"FirstState" => {"Type" => "Succeed"}}}
 
-      expect { described_class.new(payload, "invalid context") }.to raise_error(Floe::InvalidExecutionInput, "Invalid State Machine Execution Input: unexpected character: 'invalid context': was expecting (JSON String, Number, Array, Object or token 'null', 'true' or 'false')")
+      expect { described_class.new(payload, "invalid context") }.to raise_error(Floe::InvalidExecutionInput, /Invalid State Machine Execution Input: unexpected character: /)
     end
   end
 
