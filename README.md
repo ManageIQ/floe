@@ -155,6 +155,78 @@ until running_workflows.empty?
 end
 ```
 
+### Task Runners
+
+Floe provides a number of options for the Task `"Resource"` parameter.  The `"Resource"` runner is declared by the author based on the `URI`.
+
+Task Runner Types:
+* `floe://`
+* `docker://`
+
+#### Floe resource
+
+This is the "builtin" runner and exposes methods that are executed internally without having to call out to a docker image.
+
+##### HTTP builtin method
+
+`floe://http` allows you to execute HTTP method calls.
+
+Example:
+```json
+{
+  "Comment": "Execute a HTTP call",
+  "StartAt": "HTTP",
+  "States": {
+    "HTTP": {
+      "Type": "Task",
+      "Resource": "floe://http",
+      "Parameters": {
+        "Method": "POST",
+        "Url": "http://localhost:3000/api/login",
+        "Headers": {"ContentType": "application/json"},
+        "Body.$": {"username.$": "$$.Credentials.username", "password.$": "$$.Credentials.password"},
+        "Options": {"Encoding": "JSON"}
+      },
+      "ResultSelector": {"auth_token.$": "$.Body.auth_token"},
+      "ResultPath": "$$.Credentials",
+      "End": true
+    }
+```
+
+HTTP Parameters:
+* `Method` (required) - HTTP method name. Permitted values: `GET`, `POST`, `PUT`, `DELETE`, `HEAD`, `PATCH`, `OPTIONS`, or `TRACE`
+* `Url` (required) - URL to execute the HTTP call to
+* `Headers` - Hash of unencoded HTTP request header key/value pairs.
+* `QueryParameters` - URI query unencoded key/value pairs.
+* `Body` - HTTP request body.  Depending on Encoding this can be a String or a Hash of key/value pairs.
+* `Ssl` - SSL options
+  * `Verify` - Boolean - Verify SSL certificate.
+  * `VerifyHostname` - Boolean - Verify SSL certificate hostname.
+  * `Hostname` - String - Server hostname for SNI.
+  * `CaFile` - String - Path to a CA file in PEM format.
+  * `CaPath` - String - Path to a CA directory.
+  * `VerifyMode` - Integer - OpenSSL constant.
+  * `VerifyDepth` - Integer - Maximum depth for the certificate chain validation.
+  * `Version` - Integer - SSL Version.
+  * `MinVersion` - Integer - Minimum SSL Version.
+  * `MaxVersion` - Integer - Maximum SSL Version.
+  * `Ciphers` - String - Ciphers supported.
+* `Options`
+  * `Timeout`
+  * `ReadTimeout`
+  * `OpenTimeout`
+  * `WriteTimeout`
+  * `Encoding` - String
+    * `JSON` - JSON encodes the request and decodes the response
+* `Proxy`
+  * `Uri` - String - URI of the proxy.
+  * `User` - String - User for the proxy.
+  * `Password` - String - Pasword for the proxy
+
+#### Docker resource
+
+The docker resource runner takes a docker image URI, including the registry, name, and tag.
+
 ### Docker Runner Options
 
 #### Docker
