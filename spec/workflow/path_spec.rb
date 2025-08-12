@@ -31,6 +31,19 @@ RSpec.describe Floe::Workflow::Path do
       end
     end
 
+    context "referencing credentials" do
+      let(:context) { Floe::Workflow::Context.new({}, :credentials => {"password" => "s3cret"}) }
+      let(:input)   { {} }
+
+      it "with a missing value" do
+        expect { described_class.new("$$.Credentials.username").value(context, input) }.to raise_error(Floe::PathError, "Path [$$.Credentials.username] references an invalid value")
+      end
+
+      it "returns the password" do
+        expect(described_class.new("$$.Credentials.password").value(context, input)).to eq("s3cret")
+      end
+    end
+
     context "referencing the inputs" do
       it "with a missing value" do
         expect { described_class.new("$.foo").value({"foo" => "bar"}, {}) }.to raise_error(Floe::PathError, "Path [$.foo] references an invalid value")

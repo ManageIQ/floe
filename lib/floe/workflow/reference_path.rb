@@ -8,10 +8,13 @@ module Floe
       def initialize(*)
         super
 
-        raise Floe::InvalidWorkflowError, "Invalid Reference Path" if payload.match?(/@|,|:|\?/)
+        raise Floe::InvalidWorkflowError, "Invalid Reference Path"              if payload.match?(/@|,|:|\?/)
+        raise Floe::InvalidWorkflowError, "Reference Path cannot start with $$" if payload.start_with?("$$") && !payload.start_with?("$$.Credentials")
+
+        path_shift = payload.start_with?("$$.Credentials") ? 3 : 1
 
         @path = JsonPath.new(payload)
-                        .path[1..]
+                        .path[path_shift..]
                         .map { |v| v.match(/\[(?<name>.+)\]/)["name"] }
                         .filter_map { |v| v[0] == "'" ? v.delete("'") : v.to_i }
       end

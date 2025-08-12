@@ -138,7 +138,7 @@ RSpec.describe Floe::Workflow::States::Pass do
               "user"     => "luggage",
               "password" => "1234"
             },
-            "ResultPath" => "$.Credentials",
+            "ResultPath" => "$$.Credentials",
             "Next"       => "SuccessState"
           },
           "SuccessState" => {"Type" => "Succeed"}

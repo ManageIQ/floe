@@ -166,7 +166,7 @@ RSpec.describe Floe::Workflow::States::Task do
                 "State"        => {
                   "Type"       => "Task",
                   "Resource"   => resource,
-                  "ResultPath" => "$.Credentials",
+                  "ResultPath" => "$$.Credentials",
                   "Next"       => "SuccessState"
                 },
                 "SuccessState" => {"Type" => "Succeed"}
@@ -229,6 +229,56 @@ RSpec.describe Floe::Workflow::States::Task do
             workflow.run_nonblock
 
             expect(ctx.output).to eq("ip_addrs" => ["192.168.1.2"])
+          end
+        end
+      end
+
+      context "with Credentials" do
+        let(:credentials) { {"username" => "admin", "password" => "s3cret"} }
+        let(:input)       { {"foo" => {"bar" => "baz"}, "bar" => {"baz" => "foo"}, "username" => "foo"} }
+        let(:ctx)         { Floe::Workflow::Context.new(:input => input.to_json, :credentials => credentials) }
+        let(:workflow) do
+          make_workflow(
+            ctx, {
+              "State"         => {
+                "Type"        => "Task",
+                "Resource"    => resource,
+                "Parameters"  => {"var1.$" => "$.foo.bar"},
+                "Credentials" => credentials_spec,
+                "Next"        => "SuccessState"
+              },
+              "SuccessState" => {"Type" => "Succeed"}
+            }
+          )
+        end
+
+        context "with a value from input" do
+          let(:credentials_spec) { {"username.$" => "$.username"} }
+
+          it "passes the value from input" do
+            expect_run_async({"var1" => "baz"}, {"username" => "foo"}, :output => nil)
+
+            workflow.run_nonblock
+          end
+        end
+
+        context "with a value from Global Context" do
+          let(:credentials_spec) { {"username.$" => "$$.Credentials.username"} }
+
+          it "passes the value from Context Credentials" do
+            expect_run_async({"var1" => "baz"}, {"username" => "admin"}, :output => nil)
+
+            workflow.run_nonblock
+          end
+        end
+
+        context "with values from both Input and Context" do
+          let(:credentials_spec) { {"username.$" => "$.username", "password.$" => "$$.Credentials.password"} }
+
+          it "passes values from both input and Context Credentials" do
+            expect_run_async({"var1" => "baz"}, {"username" => "foo", "password" => "s3cret"}, :output => nil)
+
+            workflow.run_nonblock
           end
         end
       end
@@ -497,7 +547,7 @@ RSpec.describe Floe::Workflow::States::Task do
     end
   end
 
-  def expect_run_async(parameters, output: :none, error: nil, cause: nil, success: nil)
+  def expect_run_async(parameters, secrets = nil, output: :none, error: nil, cause: nil, success: nil)
     success = error.nil? if success.nil?
     output = {"Error" => error, "Cause" => cause}.compact.to_json if error
     allow(mock_runner).to receive(:status!).and_return({})
@@ -508,7 +558,7 @@ RSpec.describe Floe::Workflow::States::Task do
 
     expect(mock_runner)
       .to receive(:run_async!)
-      .with(resource, parameters, nil, ctx)
+      .with(resource, parameters, secrets, ctx)
       .and_return({"container_ref" => container_ref})
   end
 end

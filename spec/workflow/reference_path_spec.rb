@@ -2,12 +2,18 @@ RSpec.describe Floe::Workflow::ReferencePath do
   let(:subject) { described_class.new(payload) }
 
   describe "#initialize" do
-    context "with invalid value" do
-      let(:payload) { "$.foo@.bar" }
+    it "with invalid character raises an exception" do
+      expect { described_class.new("$.foo@.bar") }
+        .to raise_error(Floe::InvalidWorkflowError, "Invalid Reference Path")
+    end
 
-      it "raises an exception" do
-        expect { subject }.to raise_error(Floe::InvalidWorkflowError, "Invalid Reference Path")
-      end
+    it "inserting into Context raises an exception" do
+      expect { described_class.new("$$.Execution.Id") }
+        .to raise_error(Floe::InvalidWorkflowError, "Reference Path cannot start with $$")
+    end
+
+    it "with $$.Credentials" do
+      expect { described_class.new("$$.Credentials.AuthToken") }.not_to raise_error
     end
   end
 
