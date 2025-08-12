@@ -92,11 +92,14 @@ module Floe
     end
 
     def create_credentials(opts)
-      if opts[:credentials_given]
-        opts[:credentials] == "-" ? $stdin.read : opts[:credentials]
-      elsif opts[:credentials_file_given]
-        File.read(opts[:credentials_file])
-      end
+      credentials_str = if opts[:credentials_given]
+                          opts[:credentials] == "-" ? $stdin.read : opts[:credentials]
+                        elsif opts[:credentials_file_given]
+                          File.read(opts[:credentials_file])
+                        else
+                          return
+                        end
+      JSON.parse(credentials_str)
     end
 
     def create_workflow(workflow, context_payload, input, credentials)
