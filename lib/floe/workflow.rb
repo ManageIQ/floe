@@ -8,7 +8,7 @@ module Floe
     include Logging
 
     class << self
-      def load(path_or_io, context = nil, credentials = {}, name = nil)
+      def load(path_or_io, context = nil, credentials = nil, name = nil)
         payload = path_or_io.respond_to?(:read) ? path_or_io.read : File.read(path_or_io)
         # default the name if it is a filename and none was passed in
         name ||= path_or_io.respond_to?(:read) ? "stream" : path_or_io.split("/").last.split(".").first

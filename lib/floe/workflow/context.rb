@@ -9,7 +9,7 @@ module Floe
 
       # @param context [Json|Hash] (default, create another with input and execution params)
       # @param input [Hash] (default: {})
-      def initialize(context = nil, input: nil, credentials: {}, logger: nil)
+      def initialize(context = nil, input: nil, credentials: nil, logger: nil)
         context = JSON.parse(context) if context.kind_of?(String)
         input   = JSON.parse(input || "{}")
 
