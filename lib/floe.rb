@@ -6,6 +6,7 @@ require_relative "floe/null_logger"
 require_relative "floe/logging"
 
 require_relative "floe/runner"
+require_relative "floe/builtin_runner"
 
 require_relative "floe/validation_mixin"
 require_relative "floe/workflow_base"
