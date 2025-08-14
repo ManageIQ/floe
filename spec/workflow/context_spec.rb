@@ -195,4 +195,26 @@ RSpec.describe Floe::Workflow::Context do
       expect(ctx.status).to eq("failure")
     end
   end
+
+  describe "#inspect" do
+    context "with Credentials" do
+      let(:credentials) { {"username" => "user", "password" => "password"} }
+      let(:ctx)         { described_class.new(:input => input.to_json, :credentials => credentials) }
+
+      it "doesn't expose credentials when printing context" do
+        expect(ctx.inspect).not_to include("password")
+      end
+    end
+  end
+
+  describe "#to_h" do
+    context "with Credentials" do
+      let(:credentials) { {"username" => "user", "password" => "password"} }
+      let(:ctx)         { described_class.new(:input => input.to_json, :credentials => credentials) }
+
+      it "doesn't expose credentials when printing context" do
+        expect(ctx.to_h).not_to include("Credentials")
+      end
+    end
+  end
 end

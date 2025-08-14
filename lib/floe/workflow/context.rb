@@ -5,8 +5,6 @@ module Floe
     class Context
       include Logging
 
-      attr_accessor :credentials
-
       # @param context [Json|Hash] (default, create another with input and execution params)
       # @param input [Hash] (default: {})
       def initialize(context = nil, input: nil, credentials: nil, logger: nil)
@@ -14,14 +12,13 @@ module Floe
         input   = JSON.parse(input || "{}")
 
         @context = context || {}
+        self["Credentials"]        ||= credentials || {}
         self["Execution"]          ||= {}
         self["Execution"]["Input"] ||= input
         self["State"]              ||= {}
         self["StateHistory"]       ||= []
         self["StateMachine"]       ||= {}
         self["Task"]               ||= {}
-
-        @credentials = credentials || {}
 
         self.logger = logger if logger
       rescue JSON::ParserError => err
@@ -30,6 +27,10 @@ module Floe
 
       def execution
         @context["Execution"]
+      end
+
+      def credentials
+        @context["Credentials"]
       end
 
       def started?
@@ -138,8 +139,18 @@ module Floe
         @context.dig(*args)
       end
 
+      def inspect
+        format("#<%s: %s>", self.class.name, safe_context.inspect)
+      end
+
       def to_h
-        @context
+        safe_context
+      end
+
+      private
+
+      def safe_context
+        @context.except("Credentials")
       end
     end
   end

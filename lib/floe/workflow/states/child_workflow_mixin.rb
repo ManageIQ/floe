@@ -49,7 +49,7 @@ module Floe
         end
 
         def each_child_context(context)
-          context.state[child_context_key].map { |ctx| Context.new(ctx) }
+          context.state[child_context_key].map { |ctx| Context.new(ctx, :credentials => context.credentials) }
         end
       end
     end
