@@ -8,7 +8,7 @@
       "Parameters": {
         "ECHO": "TOKEN"
       },
-      "ResultPath": "$.Credentials",
+      "ResultPath": "$$.Credentials",
       "ResultSelector": {
         "bearer_token.$": "$.echo"
       },

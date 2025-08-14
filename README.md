@@ -61,7 +61,7 @@ Or you can pass a file path with the `--credentials-file` parameter:
 bundle exec ruby exe/floe --workflow my-workflow.asl --credentials-file /tmp/20231218-80537-kj494t
 ```
 
-If you need to set a credential at runtime you can do that by using the `"ResultPath": "$.Credentials"` directive, for example to user a username/password to login and get a Bearer token:
+If you need to set a credential at runtime you can do that by using the `"ResultPath": "$$.Credentials"` directive, for example to user a username/password to login and get a Bearer token:
 
 ```
 bundle exec ruby exe/floe --workflow my-workflow.asl --credentials='{"username": "user", "password": "pass"}'
@@ -78,14 +78,14 @@ bundle exec ruby exe/floe --workflow my-workflow.asl --credentials='{"username":
         "username.$": "$.username",
         "password.$": "$.password"
       },
-      "ResultPath": "$.Credentials",
+      "ResultPath": "$$.Credentials",
       "Next": "DoSomething"
     },
     "DoSomething": {
       "Type": "Task",
       "Resource": "docker://do-something:latest",
       "Credentials": {
-        "token.$": "$.bearer_token"
+        "token.$": "$$.Credentials.bearer_token"
       },
       "End": true
     }
