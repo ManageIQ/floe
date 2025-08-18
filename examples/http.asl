@@ -8,7 +8,7 @@
       "Parameters": {
         "Method": "GET",
         "Url": "http://localhost:3000/api/auth",
-        "Headers.$": {
+        "Headers": {
           "ContentType": "application/json",
           "Authorization.$": "States.Format('Basic {}', States.Base64Encode(States.Format('{}:{}', $$.Credentials.username, $$.Credentials.password)))"
         },
@@ -24,7 +24,7 @@
       "Parameters": {
         "Method": "GET",
         "Url": "http://localhost:3000/api/vms",
-        "Headers.$": {
+        "Headers": {
           "ContentType": "application/json",
           "X-Auth-Token.$": "$$.Credentials.auth_token"
         },

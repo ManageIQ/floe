@@ -17,11 +17,9 @@ module Floe
 
       def parse_payload(value)
         case value
-        when Array  then parse_payload_array(value)
-        when Hash   then parse_payload_hash(value)
-        when String then parse_payload_string(value)
-        else
-          value
+        when Array then parse_payload_array(value)
+        when Hash  then parse_payload_hash(value)
+        else value
         end
       end
 
@@ -32,29 +30,40 @@ module Floe
       def parse_payload_hash(value)
         value.to_h do |key, val|
           if key.end_with?(".$")
-            check_key_conflicts(key, value)
+            check_dynamic_datatype(key, val)
+            check_dynamic_key_conflicts(key, value)
 
-            [key, parse_payload(val)]
+            [key, parse_dynamic_payload_string(key, val)]
           else
-            [key, val]
+            [key, parse_payload(val)]
           end
         end
       end
 
-      def parse_payload_string(value)
+      def parse_dynamic_payload_string(key, value)
         return Path.new(value)              if Path.path?(value)
         return IntrinsicFunction.new(value) if IntrinsicFunction.intrinsic_function?(value)
 
-        value
+        raise Floe::InvalidWorkflowError, "The value for the field \"#{key}\" must be a String that contains a valid Reference Path or Intrinsic Function expression"
+      end
+
+      def check_dynamic_datatype(key, value)
+        unless value.is_a?(String)
+          raise Floe::InvalidWorkflowError, "The value for the field \"#{key}\" must be a String that contains a valid Reference Path or Intrinsic Function expression"
+        end
+      end
+
+      def check_dynamic_key_conflicts(key, value)
+        if value.key?(key.chomp(".$"))
+          raise Floe::InvalidWorkflowError, "both #{key} and #{key.chomp(".$")} present"
+        end
       end
 
       def interpolate_value(value, context, inputs)
         case value
-        when Array                   then interpolate_value_array(value, context, inputs)
-        when Hash                    then interpolate_value_hash(value, context, inputs)
-        when Path, IntrinsicFunction then value.value(context, inputs)
-        else
-          value
+        when Array then interpolate_value_array(value, context, inputs)
+        when Hash  then interpolate_value_hash(value, context, inputs)
+        else value
         end
       end
 
@@ -65,17 +74,16 @@ module Floe
       def interpolate_value_hash(value, context, inputs)
         value.to_h do |key, val|
           if key.end_with?(".$")
-            [key.chomp(".$"), interpolate_value(val, context, inputs)]
+            [key.chomp(".$"), interpolate_dynamic_value(val, context, inputs)]
           else
-            [key, val]
+            [key, interpolate_value(val, context, inputs)]
           end
         end
       end
 
-      def check_key_conflicts(key, value)
-        if value.key?(key.chomp(".$"))
-          raise Floe::InvalidWorkflowError, "both #{key} and #{key.chomp(".$")} present"
-        end
+      def interpolate_dynamic_value(value, context, inputs)
+        # value will be a Path or IntrinsicFunction
+        value.value(context, inputs)
       end
     end
   end
