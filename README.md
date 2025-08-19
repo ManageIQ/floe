@@ -274,8 +274,9 @@ Options supported by the kubernetes docker runner are:
 The following are not yet supported:
 - Map State Fields:
   - ItemReader
-  - ItemSelector/ItemBatcher
   - ResultWriter
+- JSONata Expressions
+- Assign field
 
 ## Development
 
