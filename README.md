@@ -184,7 +184,7 @@ Example:
         "Method": "POST",
         "Url": "http://localhost:3000/api/login",
         "Headers": {"ContentType": "application/json"},
-        "Body.$": {"username.$": "$$.Credentials.username", "password.$": "$$.Credentials.password"},
+        "Body": {"username.$": "$$.Credentials.username", "password.$": "$$.Credentials.password"},
         "Options": {"Encoding": "JSON"}
       },
       "ResultSelector": {"auth_token.$": "$.Body.auth_token"},
