@@ -4,6 +4,21 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.17.0] - 2025-08-19
+### Fixed
+- Fix credentials passed via CLI ([#307](https://github.com/ManageIQ/floe/pull/307))
+- Fix nested PayloadTemplate interpolation ([#311](https://github.com/ManageIQ/floe/pull/311))
+
+  NOTE: Using `".$"` for hash keys is no longer required and will result in an error
+
+### Changed
+- Allow credentials to be referenced from parameters ([#308](https://github.com/ManageIQ/floe/pull/308))
+
+  NOTE: Setting credentials via ResultPath now uses `$$.Credentials`
+
+### Added
+- Add floe:// builtin runner and floe://http method ([#306](https://github.com/ManageIQ/floe/pull/306))
+
 ## [0.16.0] - 2025-04-08
 ### Added
 - Add Map state ItemBatcher/ItemSelector support ([#294](https://github.com/ManageIQ/floe/pull/294))
@@ -279,7 +294,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Initial release
 
-[Unreleased]: https://github.com/ManageIQ/floe/compare/v0.16.0...HEAD
+[Unreleased]: https://github.com/ManageIQ/floe/compare/v0.17.0...HEAD
+[0.16.0]: https://github.com/ManageIQ/floe/compare/v0.16.0...v0.17.0
 [0.16.0]: https://github.com/ManageIQ/floe/compare/v0.15.1...v0.16.0
 [0.15.1]: https://github.com/ManageIQ/floe/compare/v0.15.0...v0.15.1
 [0.15.0]: https://github.com/ManageIQ/floe/compare/v0.14.0...v0.15.0
