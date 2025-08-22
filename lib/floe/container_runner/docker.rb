@@ -183,7 +183,7 @@ module Floe
       def inspect_container(container_id)
         JSON.parse(docker!("inspect", container_id).output).first
       rescue AwesomeSpawn::CommandResultError => err
-        raise Floe::ExecutionError.new("Failed to get status for container #{container_id}: #{err}")
+        raise Floe::ExecutionError, "Failed to get status for container #{container_id}: #{err}"
       end
 
       def delete_container(container_id)

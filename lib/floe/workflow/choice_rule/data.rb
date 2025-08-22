@@ -7,9 +7,9 @@ module Floe
         TYPES      = ["String", "Numeric", "Boolean", "Timestamp", "Present", "Null"].freeze
         COMPARES   = ["Equals", "LessThan", "GreaterThan", "LessThanEquals", "GreaterThanEquals", "Matches"].freeze
         # e.g.: (Is)(String), (Is)(Present)
-        TYPE_CHECK = /^(Is)(#{TYPES.join("|")})$/.freeze
+        TYPE_CHECK = /^(Is)(#{TYPES.join("|")})$/
         # e.g.: (String)(LessThan)(Path), (Numeric)(GreaterThanEquals)()
-        OPERATION  = /^(#{(TYPES - %w[Null Present]).join("|")})(#{COMPARES.join("|")})(Path)?$/.freeze
+        OPERATION  = /^(#{(TYPES - %w[Null Present]).join("|")})(#{COMPARES.join("|")})(Path)?$/
 
         attr_reader :variable, :compare_key, :operation, :type, :compare_predicate, :path
 
