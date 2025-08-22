@@ -18,8 +18,8 @@ if ENV['CI']
   SimpleCov.start
 end
 
-Dir['./spec/support/**/*.rb'].sort.each { |f| require f }
-Dir['./spec/shared/**/*.rb'].sort.each { |f| require f }
+Dir['./spec/support/**/*.rb'].each { |f| require f }
+Dir['./spec/shared/**/*.rb'].each { |f| require f }
 
 # See https://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
 RSpec.configure do |config|
