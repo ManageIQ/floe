@@ -4,6 +4,14 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.17.1] - 2025-08-25
+### Changed
+- Default Method=GET for floe://http method parameter ([#315](https://github.com/ManageIQ/floe/pull/315))
+- Update list of unsupported ASL features in README ([#313](https://github.com/ManageIQ/floe/pull/313))
+
+### Fixed
+- Fix README examples for nested has interpolation ([#312](https://github.com/ManageIQ/floe/pull/312))
+
 ## [0.17.0] - 2025-08-19
 ### Fixed
 - Fix credentials passed via CLI ([#307](https://github.com/ManageIQ/floe/pull/307))
