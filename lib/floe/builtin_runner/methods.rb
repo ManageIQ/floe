@@ -59,8 +59,8 @@ module Floe
           connection.response(:follow_redirects)
         end
 
-        response = connection.send(method.downcase) do |request|
-          request.body = body if body
+        response = connection.send(method.downcase) do |faraday_request|
+          faraday_request.body = body if body
         end
 
         output = {"Status" => response.status, "Body" => response.body, "Headers" => response.headers}

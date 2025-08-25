@@ -77,7 +77,7 @@ module Floe
         rule(:number   => simple(:v)) { v.match(/[eE.]/) ? Float(v) : Integer(v) }
         rule(:jsonpath => simple(:v)) { Floe::Workflow::Path.value(v.to_s, context, input) }
 
-        STATES_FORMAT_PLACEHOLDER = /(?<!\\)\{\}/.freeze
+        STATES_FORMAT_PLACEHOLDER = /(?<!\\)\{\}/
 
         rule(:states_format => {:args => subtree(:args)}) do
           args = Transformer.process_args(args(), "States.Format", [String, VariadicArgs[[String, TrueClass, FalseClass, Numeric, NilClass]]])

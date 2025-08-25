@@ -23,7 +23,7 @@ module Floe
         method_name = runner_context["method"]
         raise ArgumentError if method_name.nil?
 
-        cleanup_method = "#{method_name}_cleanup"
+        cleanup_method = :"#{method_name}_cleanup"
         return unless Methods.respond_to?(cleanup_method, true)
 
         Methods.send(cleanup_method, runner_context)
@@ -34,7 +34,7 @@ module Floe
         raise ArgumentError if method_name.nil?
         return if runner_context["running"] == false
 
-        Methods.send("#{method_name}_status!", runner_context)
+        Methods.send(:"#{method_name}_status!", runner_context)
       end
 
       def running?(runner_context)
