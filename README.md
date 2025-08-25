@@ -194,7 +194,7 @@ Example:
 ```
 
 HTTP Parameters:
-* `Method` (required) - HTTP method name. Permitted values: `GET`, `POST`, `PUT`, `DELETE`, `HEAD`, `PATCH`, `OPTIONS`, or `TRACE`
+* `Method` (required) - HTTP method name. Permitted values: `GET`, `POST`, `PUT`, `DELETE`, `HEAD`, `PATCH`, `OPTIONS`, or `TRACE`.  Defaults to `GET`.
 * `Url` (required) - URL to execute the HTTP call to
 * `Headers` - Hash of unencoded HTTP request header key/value pairs.
 * `QueryParameters` - URI query unencoded key/value pairs.
