@@ -14,16 +14,6 @@ RSpec.describe Floe::BuiltinRunner::Methods do
     end
 
     context "GET" do
-      it "with a missing Method parameter" do
-        runner_context = described_class.http({"Url" => "http://localhost"}, secrets, ctx)
-        expect(runner_context)
-          .to include(
-            "running" => false,
-            "success" => false,
-            "output"  => failed_task_status("Missing Parameter: Method")
-          )
-      end
-
       it "with a missing Url parameter" do
         runner_context = described_class.http({"Method" => "GET"}, secrets, ctx)
         expect(runner_context)
@@ -41,6 +31,18 @@ RSpec.describe Floe::BuiltinRunner::Methods do
             "running" => false,
             "success" => false,
             "output"  => failed_task_status("Invalid Parameter: Method: [Fetch], must be GET, POST, PUT, DELETE, HEAD, PATCH, OPTIONS, or TRACE")
+          )
+      end
+
+      it "defaults to Method=GET" do
+        expect(faraday_stub).to receive(:get).and_return(Faraday::Response.new(:status => 200, :body => "{}"))
+
+        runner_context = described_class.http({"Url" => "http://localhost"}, secrets, ctx)
+        expect(runner_context)
+          .to include(
+            "running" => false,
+            "success" => true,
+            "output"  => {"Body" => "{}", "Headers" => nil, "Status" => 200}
           )
       end
 

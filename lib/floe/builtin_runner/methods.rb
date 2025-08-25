@@ -2,6 +2,8 @@ module Floe
   module BuiltinRunner
     class Methods < BasicObject
       def self.http(params, _secrets, _context)
+        params["Method"] ||= "GET"
+
         error = http_verify_params(params)
         return BuiltinRunner.error!({}, :cause => error) if error
 
