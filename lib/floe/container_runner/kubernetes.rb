@@ -11,7 +11,7 @@ module Floe
       FAILURE_REASONS = %w[CrashLoopBackOff ImagePullBackOff ErrImagePull].freeze
 
       def initialize(options = {})
-        require "active_support/core_ext/hash/keys"
+        require "active_support/core_ext/hash/keys" # deep_stringify_keys
         require "awesome_spawn"
         require "securerandom"
         require "base64"
