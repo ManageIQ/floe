@@ -58,7 +58,7 @@ module Floe
               "Execution" => {
                 "Id" => context.execution["Id"]
               },
-              "Map" => {
+              "Map"       => {
                 "Item" => {"Index" => index, "Value" => item}
               }
             }

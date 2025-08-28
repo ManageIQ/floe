@@ -240,7 +240,7 @@ RSpec.describe Floe::Workflow::States::Task do
         let(:workflow) do
           make_workflow(
             ctx, {
-              "State"         => {
+              "State"        => {
                 "Type"        => "Task",
                 "Resource"    => resource,
                 "Parameters"  => {"var1.$" => "$.foo.bar"},

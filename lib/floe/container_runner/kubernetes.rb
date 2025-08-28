@@ -156,7 +156,7 @@ module Floe
       def pod_info(pod_name)
         kubeclient.get_pod(pod_name, namespace)
       rescue Kubeclient::HttpError => err
-        raise Floe::ExecutionError.new("Failed to get status for pod #{namespace}/#{pod_name}: #{err}")
+        raise Floe::ExecutionError, "Failed to get status for pod #{namespace}/#{pod_name}: #{err}"
       end
 
       def pod_running?(context)
