@@ -48,7 +48,7 @@ module Floe
       end
 
       def check_dynamic_datatype(key, value)
-        unless value.is_a?(String)
+        unless value.kind_of?(String)
           raise Floe::InvalidWorkflowError, "The value for the field \"#{key}\" must be a String that contains a valid Reference Path or Intrinsic Function expression"
         end
       end
