@@ -147,6 +147,10 @@ module Floe
         safe_context
       end
 
+      def ===(other)
+        other.is_a?(self.class) && other.instance_variable_get("@context") == @context
+      end
+
       private
 
       def safe_context

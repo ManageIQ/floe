@@ -216,5 +216,25 @@ RSpec.describe Floe::Workflow::Context do
         expect(ctx.to_h).not_to include("Credentials")
       end
     end
+
+    # NOTE: only used in specs
+    describe "===" do
+      let(:credentials) { {"username" => "user", "password" => "password"} }
+
+      it "equates values" do
+        ctx1 = described_class.new(:input => input.to_json)
+        ctx2 = described_class.new(:input => input.to_json)
+        expect(ctx1 === ctx2).to eq(true)
+      end
+
+      it "compares with passwords" do
+        ctx1 = described_class.new(:input => input.to_json, :credentials => credentials)
+        ctx2 = described_class.new(:input => input.to_json, :credentials => credentials)
+        ctx3 = described_class.new(:input => input.to_json)
+
+        expect(ctx1 === ctx2).to eq(true)
+        expect(ctx1 === ctx3).not_to eq(true)
+      end
+    end
   end
 end
