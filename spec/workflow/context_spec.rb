@@ -214,5 +214,65 @@ RSpec.describe Floe::Workflow::Context do
     it "doesn't expose credentials" do
       expect(ctx_creds.to_h).not_to include("Credentials")
     end
+
+    describe "#==" do
+      it "compares with values" do
+        ctx1 = described_class.new(:input => input.to_json)
+        ctx2 = described_class.new(:input => input.to_json)
+
+        expect(ctx1 == ctx2).to eq(true)
+      end
+
+      it "compares with passwords" do
+        ctx1 = described_class.new(:input => input.to_json, :credentials => credentials)
+        ctx2 = described_class.new(:input => input.to_json, :credentials => credentials)
+
+        expect(ctx1 == ctx2).to eq(true)
+      end
+
+      it "detects different passwords" do
+        ctx1 = described_class.new(:input => input.to_json, :credentials => credentials)
+        ctx2 = described_class.new(:input => input.to_json)
+
+        expect(ctx1 == ctx2).not_to eq(true)
+      end
+    end
+
+        describe "#eql?" do
+      it "compares with values" do
+        ctx1 = described_class.new(:input => input.to_json)
+        ctx2 = described_class.new(:input => input.to_json)
+
+        expect(ctx1.eql?(ctx2)).to eq(true)
+      end
+
+      it "compares with passwords" do
+        ctx1 = described_class.new(:input => input.to_json, :credentials => credentials)
+        ctx2 = described_class.new(:input => input.to_json, :credentials => credentials)
+
+        expect(ctx1.eql?(ctx2)).to eq(true)
+      end
+
+      it "detects different passwords" do
+        ctx1 = described_class.new(:input => input.to_json, :credentials => credentials)
+        ctx2 = described_class.new(:input => input.to_json)
+
+        expect(ctx1.eql?(ctx2)).not_to eq(true)
+      end
+    end
+
+    describe "#hash" do
+      it "compares with identical contexts" do
+        ctx1 = described_class.new(:input => input.to_json)
+        ctx2 = described_class.new(:input => input.to_json)
+        expect(ctx1.hash).to eq(ctx2.hash)
+      end
+
+      it "compares with different contexts" do
+        ctx1 = described_class.new(:input => input.to_json)
+        ctx2 = described_class.new(:input => input.to_json, :credentials => credentials)
+        expect(ctx1.hash).not_to eq(ctx2.hash)
+      end
+    end
   end
 end
