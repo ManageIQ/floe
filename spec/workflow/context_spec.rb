@@ -1,6 +1,8 @@
 RSpec.describe Floe::Workflow::Context do
-  let(:ctx) { described_class.new(:input => input.to_json) }
-  let(:input) { {"x" => "y"}.freeze }
+  let(:ctx)         { described_class.new(:input => input.to_json) }
+  let(:credentials) { {"username" => "user", "password" => "password"} }
+  let(:ctx_creds)   { described_class.new(:input => input.to_json, :credentials => credentials) }
+  let(:input)       { {"x" => "y"}.freeze }
 
   describe "#new" do
     it "with an empty context, sets input" do
@@ -197,24 +199,20 @@ RSpec.describe Floe::Workflow::Context do
   end
 
   describe "#inspect" do
-    context "with Credentials" do
-      let(:credentials) { {"username" => "user", "password" => "password"} }
-      let(:ctx)         { described_class.new(:input => input.to_json, :credentials => credentials) }
+    it "has the same value with or without credentials" do
+      # removing spaces because Hash#inspect in ruby 3.4 adds spaces that are not present before
+      expect(ctx.inspect.gsub(" ", "")).to eq("#<Floe::Workflow::Context: {\"Execution\" => {\"Input\" => {\"x\" => \"y\"}}, \"State\" => {}, \"StateHistory\" => [], \"StateMachine\" => {}, \"Task\" => {}}>".gsub(" ", ""))
+      expect(ctx_creds.inspect.gsub(" ", "")).to eq("#<Floe::Workflow::Context: {\"Execution\" => {\"Input\" => {\"x\" => \"y\"}}, \"State\" => {}, \"StateHistory\" => [], \"StateMachine\" => {}, \"Task\" => {}}>".gsub(" ", ""))
+    end
 
-      it "doesn't expose credentials when printing context" do
-        expect(ctx.inspect).not_to include("password")
-      end
+    it "doesn't expose credentials" do
+      expect(ctx_creds.inspect).not_to include("password")
     end
   end
 
   describe "#to_h" do
-    context "with Credentials" do
-      let(:credentials) { {"username" => "user", "password" => "password"} }
-      let(:ctx)         { described_class.new(:input => input.to_json, :credentials => credentials) }
-
-      it "doesn't expose credentials when printing context" do
-        expect(ctx.to_h).not_to include("Credentials")
-      end
+    it "doesn't expose credentials" do
+      expect(ctx_creds.to_h).not_to include("Credentials")
     end
   end
 end

@@ -140,7 +140,7 @@ module Floe
       end
 
       def inspect
-        format("#<%s: %s>", self.class.name, safe_context.inspect)
+        "#<#{self.class.name}: #{safe_context.inspect}>"
       end
 
       def to_h
