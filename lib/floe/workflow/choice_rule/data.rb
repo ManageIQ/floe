@@ -129,7 +129,10 @@ module Floe
           parser_error!("requires a compare key") if compare_key.nil? || operation.nil?
         end
 
-        # parse predicate at initilization time
+        # parse predicate at initialization time
+        # @param data_type [String] the data type of the variable
+        #                  When parsing operations (IntegerGreaterThan), this will be the operation data type (e.g.: Integer)
+        #                  When parsing type checks (IsString), this will always be a Boolean
         # @return the right predicate attached to the compare key
         def parse_predicate(data_type)
           path ? parse_path(compare_key) : parse_field(compare_key, data_type)
@@ -140,13 +143,13 @@ module Floe
           path ? fetch_path(compare_key, compare_predicate, context, input) : compare_predicate
         end
 
-        # feth the variable value at runtime
-        # @return variable value (left hand side )
+        # fetch the variable value at runtime
+        # @return variable value (left hand side)
         def variable_value(context, input)
           fetch_path("Variable", variable, context, input)
         end
 
-        # parse path at initilization time
+        # parse path at initialization time
         # helper method to parse a path from the payload
         def parse_path(field_name)
           value = payload[field_name]
@@ -155,6 +158,10 @@ module Floe
         end
 
         # parse predicate field at initialization time
+        # @param field_name [String] the compare key
+        # @param data_type [String] the data type of the variable
+        #                  When parsing operations (IntegerGreaterThan), this will be the operation data type (e.g.: Integer)
+        #                  When parsing type checks (IsString), this will always be a Boolean
         def parse_field(field_name, data_type)
           value = payload[field_name]
           return value if correct_type?(value, data_type)
@@ -165,6 +172,7 @@ module Floe
         # fetch a path at runtime
         def fetch_path(field_name, field_path, context, input)
           value = field_path.value(context, input)
+          # if this is an operation (GreaterThanPath), ensure the value is the correct type
           return value if type.nil? || correct_type?(value, type)
 
           runtime_field_error!(field_name, field_path.to_s, "required to point to a #{type}")
