@@ -176,7 +176,7 @@ module Floe
         when "die", "destroy"
           :delete
         else
-          :unkonwn
+          :unknown
         end
       end
 
