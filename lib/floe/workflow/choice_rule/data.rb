@@ -111,17 +111,16 @@ module Floe
             if (match_values = OPERATION.match(key))
               @compare_key = key
               @type, operator, @path = match_values.captures
-              @operation = "op_#{operator.downcase}?".to_sym
+              @operation = :"op_#{operator.downcase}?"
               @compare_predicate = parse_predicate(type)
               break
-            end
             # e.g. (Is)(String)
-            if (match_value = TYPE_CHECK.match(key))
+            elsif (match_value = TYPE_CHECK.match(key))
               @compare_key = key
               _operator, type = match_value.captures
               # type: nil means no runtime type checking.
               @type = @path = nil
-              @operation = "is_#{type.downcase}?".to_sym
+              @operation = :"is_#{type.downcase}?"
               @compare_predicate = parse_predicate("Boolean")
               break
             end
@@ -181,7 +180,7 @@ module Floe
         # if we have runtime checking, check against that type
         #   otherwise assume checking a TYPE_CHECK predicate and check against Boolean
         def correct_type?(value, data_type)
-          send("is_#{data_type.downcase}?".to_sym, value)
+          send(:"is_#{data_type.downcase}?", value)
         end
       end
     end

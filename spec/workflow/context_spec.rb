@@ -201,8 +201,8 @@ RSpec.describe Floe::Workflow::Context do
   describe "#inspect" do
     it "has the same value with or without credentials" do
       # removing spaces because Hash#inspect in ruby 3.4 adds spaces that are not present before
-      expect(ctx.inspect.gsub(" ", "")).to eq("#<Floe::Workflow::Context: {\"Execution\" => {\"Input\" => {\"x\" => \"y\"}}, \"State\" => {}, \"StateHistory\" => [], \"StateMachine\" => {}, \"Task\" => {}}>".gsub(" ", ""))
-      expect(ctx_creds.inspect.gsub(" ", "")).to eq("#<Floe::Workflow::Context: {\"Execution\" => {\"Input\" => {\"x\" => \"y\"}}, \"State\" => {}, \"StateHistory\" => [], \"StateMachine\" => {}, \"Task\" => {}}>".gsub(" ", ""))
+      expect(ctx.inspect.delete(" ")).to eq("#<Floe::Workflow::Context: {\"Execution\" => {\"Input\" => {\"x\" => \"y\"}}, \"State\" => {}, \"StateHistory\" => [], \"StateMachine\" => {}, \"Task\" => {}}>".delete(" "))
+      expect(ctx_creds.inspect.delete(" ")).to eq("#<Floe::Workflow::Context: {\"Execution\" => {\"Input\" => {\"x\" => \"y\"}}, \"State\" => {}, \"StateHistory\" => [], \"StateMachine\" => {}, \"Task\" => {}}>".delete(" "))
     end
 
     it "doesn't expose credentials" do
@@ -238,7 +238,7 @@ RSpec.describe Floe::Workflow::Context do
       end
     end
 
-        describe "#eql?" do
+    describe "#eql?" do
       it "compares with values" do
         ctx1 = described_class.new(:input => input.to_json)
         ctx2 = described_class.new(:input => input.to_json)
