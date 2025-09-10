@@ -236,15 +236,15 @@ module Floe
 
         rule(:states_string_split => {:args => subtree(:args)}) do
           args = Transformer.process_args(args(), "States.StringSplit", [String, String])
-          str, delimeter = *args
+          str, delimiter = *args
 
-          case delimeter.size
+          case delimiter.size
           when 0
             str.empty? ? [] : [str]
           when 1
-            str.split(delimeter)
+            str.split(delimiter)
           else
-            str.split(/[#{Regexp.escape(delimeter)}]+/)
+            str.split(/[#{Regexp.escape(delimiter)}]+/)
           end
         end
 

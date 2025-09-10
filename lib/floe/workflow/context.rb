@@ -148,7 +148,7 @@ module Floe
       end
 
       def ==(other)
-        other.is_a?(self.class) && other.instance_variable_get("@context") == @context
+        other.kind_of?(self.class) && other.instance_variable_get(:@context) == @context
       end
       alias eql? ==
 
