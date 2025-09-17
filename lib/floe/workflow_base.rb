@@ -77,6 +77,11 @@ module Floe
       context.output.to_json if end?(context)
     end
 
+    # overrides ValidationMixin#workflow_state?
+    def workflow_state?(field_value, _workflow)
+      @payload["States"].include?(field_value)
+    end
+
     private
 
     def step!(context)
