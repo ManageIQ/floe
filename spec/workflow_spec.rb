@@ -40,10 +40,12 @@ RSpec.describe Floe::Workflow do
       expect { described_class.new(payload) }.to raise_error(Floe::InvalidWorkflowError, "State Machine field \"StartAt\" value \"Foo\" is not found in \"States\"")
     end
 
+    # this error gets truncated when embedded in the parent string, so is basically useless
     it "raises an exception for invalid context" do
       payload = {"StartAt" => "FirstState", "States" => {"FirstState" => {"Type" => "Succeed"}}}
 
-      expect { described_class.new(payload, "invalid context") }.to raise_error(Floe::InvalidExecutionInput, /Invalid State Machine Execution Input: unexpected character: /)
+      expect { described_class.new(payload, "invalid context") }.to raise_error(Floe::InvalidExecutionInput,
+        /unexpected.*'invalid.*: was expecting \(JSON String, Number, Array, Object or token 'null', 'true' or 'false'\)/)
     end
   end
 

@@ -75,7 +75,7 @@ module Floe
 
         rule(:string   => simple(:v)) { v.to_s[1..-2] }
         rule(:number   => simple(:v)) { v.match(/[eE.]/) ? Float(v) : Integer(v) }
-        rule(:jsonpath => simple(:v)) { Floe::Workflow::Path.value(v.to_s, context, input) }
+        rule(:jsonpath => simple(:v)) { Floe::Workflow::Path.value(v.to_s, context, input) } # improve error here
 
         STATES_FORMAT_PLACEHOLDER = /(?<!\\)\{\}/
 
