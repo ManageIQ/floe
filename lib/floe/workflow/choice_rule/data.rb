@@ -9,9 +9,9 @@ module Floe
         OPERATIONS = TYPES.each_with_object({}) { |dt, a| a[dt] = :"is_#{dt.downcase}?" }
                           .merge(COMPARES.each_with_object({}) { |op, a| a[op] = :"op_#{op.downcase}?" }).freeze
         # e.g.: (Is)(String), (Is)(Present)
-        TYPE_CHECK = /^Is(#{TYPES.join("|")})$/
+        TYPE_CHECK = /^Is(#{Regexp.union(TYPES)})$/
         # e.g.: (String)(LessThan)(Path), (Numeric)(GreaterThanEquals)()
-        OPERATION  = /^(#{(TYPES - %w[Null Present]).join("|")})(#{COMPARES.join("|")})(Path)?$/
+        OPERATION  = /^(#{Regexp.union(TYPES - %w[Null Present])})(#{Regexp.union(COMPARES)})(Path)?$/
 
         attr_reader :variable, :compare_key, :operator, :type, :compare_predicate, :path
 
