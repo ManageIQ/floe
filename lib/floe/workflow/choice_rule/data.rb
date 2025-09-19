@@ -120,8 +120,8 @@ module Floe
           lhs >= rhs
         end
 
-        def op_matches?(lhs, rhs)
-          lhs.match?(Regexp.escape(rhs).gsub('\*', '.*?'))
+        def op_matches?(value, pattern)
+          value.match?(Regexp.escape(pattern).gsub('\*', '.*?'))
         end
 
         # parse the compare key at initialization time
