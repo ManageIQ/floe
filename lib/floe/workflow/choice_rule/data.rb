@@ -22,32 +22,50 @@ module Floe
           parse_compare_key
         end
 
+        # Evaluate whether this rule is true for the given context and input (runtime)
+        #
+        # @param context [Context] The workflow execution context
+        # @param input [Hash] The current state input
+        # @return [Boolean] true if the rule evaluate to true
         def true?(context, input)
-          return presence_check(context, input) if compare_key == "IsPresent"
-
-          lhs = variable_value(context, input)
+          # Payload pattern is: {"Variable": $lhs, $operator: $rhs}
+          # Example:
+          #
+          #   {"Variable": "$.foo", "IsNumeric": true}
+          #     lhs = input["$.foo"]
+          #     rhs = true
+          #     is_numeric?(lhs, rhs)
+          #
+          #   {"Variable": "$.foo", "GreaterThanString": "aaa"}
+          #     lhs = input["$.foo"]
+          #     rhs = "aaa"
+          #     op_greaterthan?(lhs, rhs)
+          #
+          #   {"Variable": "$.foo", "GreaterThanNumericPath": "$.bar"}
+          #     lhs = input["$.foo"]
+          #     rhs = input["$.bar"]
+          #     op_greaterthan?(lhs, rhs)
+          #
+          # NOTE: IsPresent works a little differently as lhs might raise a PathError.
+          #       See the exception handler below. This is why we process the rhs before the lhs.
           rhs = compare_value(context, input)
+          lhs = variable_value(context, input)
           send(OPERATIONS[operator], lhs, rhs)
+        rescue Floe::PathError
+          # For IsPresent, we can expect the lhs to not be present in some cases,
+          #                This throws a PathError. We handle that special case here.
+          # Example:
+          #
+          #   {"Variable": "$.foo", "IsPresent": false}
+          #     lhs = input["$.foo"], but variable is not present. (The variable lookup threw PathError)
+          #     rhs = false
+          return is_present?(:not_present, rhs) if operator == "Present"
+
+          # for non "IsPresent" checks, share that lhs or rhs is not found.
+          raise
         end
 
         private
-
-        def presence_check(context, input)
-          # Get the right hand side for {"Variable": "$.foo", "IsPresent": true} i.e.: true
-          # If true  then return true when present.
-          # If false then return true when not present.
-          predicate = compare_value(context, input)
-          # Don't need the variable_value, just need to see if the path finds the value.
-          variable_value(context, input)
-
-          # The variable_value is present
-          # If predicate is true, then presence check was successful, return true.
-          predicate
-        rescue Floe::PathError
-          # variable_value is not present. (the path lookup threw an error)
-          # If predicate is false, then it successfully wasn't present, return true.
-          !predicate
-        end
 
         # rubocop:disable Naming/PredicateName
         # rubocop:disable Style/OptionalBooleanParameter
@@ -56,7 +74,7 @@ module Floe
         end
 
         def is_present?(value, predicate = true)
-          !value.nil? == predicate
+          (value != :not_present) == predicate
         end
 
         def is_numeric?(value, predicate = true)
