@@ -69,33 +69,33 @@ module Floe
 
         # rubocop:disable Naming/PredicateName
         # rubocop:disable Style/OptionalBooleanParameter
-        def is_null?(value, predicate = true)
-          value.nil? == predicate
+        def is_null?(value, expectation)
+          value.nil? == expectation
         end
 
-        def is_present?(value, predicate = true)
-          (value != :not_present) == predicate
+        def is_present?(value, expectation)
+          (value != :not_present) == expectation
         end
 
-        def is_numeric?(value, predicate = true)
-          value.kind_of?(Numeric) == predicate
+        def is_numeric?(value, expectation)
+          value.kind_of?(Numeric) == expectation
         end
 
-        def is_string?(value, predicate = true)
-          value.kind_of?(String) == predicate
+        def is_string?(value, expectation)
+          value.kind_of?(String) == expectation
         end
 
-        def is_boolean?(value, predicate = true)
-          [true, false].include?(value) == predicate
+        def is_boolean?(value, expectation)
+          [true, false].include?(value) == expectation
         end
 
-        def is_timestamp?(value, predicate = true)
+        def is_timestamp?(value, expectation)
           require "date"
 
           DateTime.rfc3339(value)
-          predicate
+          expectation
         rescue TypeError, Date::Error
-          !predicate
+          !expectation
         end
         # rubocop:enable Naming/PredicateName
         # rubocop:enable Style/OptionalBooleanParameter
@@ -120,8 +120,8 @@ module Floe
           lhs >= rhs
         end
 
-        def op_matches?(lhs, rhs)
-          lhs.match?(Regexp.escape(rhs).gsub('\*', '.*?'))
+        def op_matches?(value, pattern)
+          value.match?(Regexp.escape(pattern).gsub('\*', '.*?'))
         end
 
         # parse the compare key at initialization time
@@ -198,7 +198,7 @@ module Floe
         # if we have runtime checking, check against that type
         #   otherwise assume checking a TYPE_CHECK predicate and check against Boolean
         def correct_type?(value, data_type)
-          send(OPERATIONS[data_type], value)
+          send(OPERATIONS[data_type], value, true)
         end
       end
     end
