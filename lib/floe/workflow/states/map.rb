@@ -43,7 +43,7 @@ module Floe
 
         def process_input(context)
           input = super
-          input = items_path.value(context, input)
+          input = wrap_runtime_error("ItemPath", items_path.to_s) { items_path.value(context, input) }
           input = item_batcher.value(context, input, context.state["Input"]) if item_batcher
           input
         end

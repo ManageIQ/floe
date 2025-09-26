@@ -28,18 +28,18 @@ module Floe
         def start(context)
           super
 
-          input = input_path.value(context, context.input)
+          input = wrap_runtime_error("InputPath", input_path.to_s) { input_path.value(context, context.input) }
 
           wait_until!(
             context,
-            :seconds => seconds_path ? seconds_path.value(context, input).to_i : seconds,
-            :time    => timestamp_path ? timestamp_path.value(context, input) : timestamp
+            :seconds => seconds_path ? wrap_runtime_error("SecondsPath", seconds_path.to_s) { seconds_path.value(context, input).to_i } : seconds,
+            :time    => timestamp_path ? wrap_runtime_error("TimestampPath", timestamp_path.to_s) { timestamp_path.value(context, input) } : timestamp
           )
         end
 
         def finish(context)
-          input          = input_path.value(context, context.input)
-          context.output = output_path.value(context, input)
+          input          = wrap_runtime_error("InputPath", input_path.to_s) { input_path.value(context, context.input) }
+          context.output = wrap_runtime_error("OutputPath", input_path.to_s) { output_path.value(context, input) }
           super
         end
 

@@ -138,7 +138,7 @@ RSpec.describe Floe::Workflow::ChoiceRule do
         let(:input) { {} }
 
         it "raises an exception" do
-          expect { subject }.to raise_exception(Floe::PathError, "Path [$.foo] references an invalid value")
+          expect { subject }.to raise_exception(Floe::ExecutionError, "States.Choice1.Choices.0.Data field \"Variable\" value \"$.foo\" references an invalid value")
         end
       end
 
@@ -408,7 +408,7 @@ RSpec.describe Floe::Workflow::ChoiceRule do
 
         context "with path not found" do
           let(:input) { {"foo" => 2} }
-          it { expect { subject }.to raise_error(Floe::PathError, "Path [$.bar] references an invalid value") }
+          it { expect { subject }.to raise_exception(Floe::ExecutionError, "States.Choice1.Choices.0.Data field \"NumericEqualsPath\" value \"$.bar\" references an invalid value") }
         end
       end
 
@@ -593,7 +593,7 @@ RSpec.describe Floe::Workflow::ChoiceRule do
 
         context "that does not exist" do
           let(:input) { {} }
-          it { expect { subject }.to raise_exception(Floe::PathError, "Path [$.foo] references an invalid value") }
+          it { expect { subject }.to raise_exception(Floe::ExecutionError, "States.Choice1.Choices.0.Data field \"Variable\" value \"$.foo\" references an invalid value") }
         end
 
         context "that references a number" do

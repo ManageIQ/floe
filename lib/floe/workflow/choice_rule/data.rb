@@ -51,7 +51,7 @@ module Floe
           rhs = compare_value(context, input)
           lhs = variable_value(context, input)
           send(OPERATIONS[operator], lhs, rhs)
-        rescue Floe::PathError
+        rescue Floe::ExecutionError
           # For IsPresent, we can expect the lhs to not be present in some cases,
           #                This throws a PathError. We handle that special case here.
           # Example:
@@ -188,7 +188,7 @@ module Floe
 
         # fetch a path at runtime
         def fetch_path(field_name, field_path, context, input)
-          value = field_path.value(context, input)
+          value = wrap_runtime_error(field_name, field_path.to_s) { field_path.value(context, input) }
           # if this is an operation (GreaterThanPath), ensure the value is the correct type
           return value if type.nil? || correct_type?(value, type)
 

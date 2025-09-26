@@ -50,7 +50,7 @@ RSpec.describe Floe::Workflow::States::Choice do
         expect(ctx.failed?).to eq(true)
         expect(ctx.output).to eq(
           {
-            "Cause" => "Path [$.foo] references an invalid value",
+            "Cause" => "States.Choice1.Choices.0.Data field \"Variable\" value \"$.foo\" references an invalid value",
             "Error" => "States.Runtime"
           }
         )

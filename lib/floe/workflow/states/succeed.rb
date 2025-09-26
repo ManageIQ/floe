@@ -14,8 +14,8 @@ module Floe
         end
 
         def finish(context)
-          input              = input_path.value(context, context.input)
-          context.output     = output_path.value(context, input)
+          input              = wrap_runtime_error("InputPath", input_path.to_s) { input_path.value(context, context.input) }
+          context.output     = wrap_runtime_error("OutputPath", output_path.to_s) { output_path.value(context, input) }
           context.next_state = nil
 
           super
