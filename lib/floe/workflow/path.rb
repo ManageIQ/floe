@@ -36,7 +36,7 @@ module Floe
         results = JsonPath.on(obj, path)
         case results.count
         when 0
-          raise Floe::PathError, "Path [#{payload}] references an invalid value"
+          raise Floe::PathError, "references an invalid value"
         when 1
           results.first
         else

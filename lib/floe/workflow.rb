@@ -79,10 +79,14 @@ module Floe
 
     attr_reader :comment, :context
 
+    # @param [Json String|Hash|Array] payload
+    # @param [Context|Hash] context
+    # @param [Hash|String|nil] credentials injects into credentials
+    # @param [String|nil] name (defaults to State Machine)
     def initialize(payload, context = nil, credentials = nil, name = nil)
-      payload     = JSON.parse(payload)     if payload.kind_of?(String)
-      credentials = JSON.parse(credentials) if credentials.kind_of?(String)
-      context     = Context.new(context)    unless context.kind_of?(Context)
+      payload     = self.class.safe_parse("Payload", payload, error: InvalidWorkflowError) if payload.kind_of?(String)
+      credentials = self.class.safe_parse("Credentials", credentials) if credentials.kind_of?(String)
+      context     = Context.new(context) unless context.kind_of?(Context)
 
       # backwards compatibility
       # caller should really put credentials into context and not pass that variable
@@ -193,6 +197,12 @@ module Floe
 
     def end_workflow!
       context.execution["EndTime"] = context.state["FinishedTime"]
+    end
+
+    def self.safe_parse(field, string, error: Floe::InvalidExecutionInput)
+      JSON.parse(string)
+    rescue JSON::ParserError => err
+      raise error, "Invalid State Machine #{field}: #{err}: was expecting (JSON String, Number, Array, Object or token 'null', 'true' or 'false')"
     end
   end
 end

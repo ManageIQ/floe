@@ -22,6 +22,12 @@ module Floe
       raise Floe::ExecutionError.new(self.class.field_error_text(name, field_name, field_value, comment), floe_error)
     end
 
+    def wrap_runtime_error(field_name, field_value)
+      yield
+    rescue Floe::ExecutionError => e
+      runtime_field_error!(field_name, field_value, e.message)
+    end
+
     def workflow_state?(field_value, workflow)
       workflow.payload["States"] ? workflow.payload["States"].include?(field_value) : true
     end
