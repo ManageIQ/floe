@@ -51,7 +51,7 @@ module Floe
         elsif !@next
           # top level nodes require a next
           missing_field_error!("Next")
-        elsif !workflow_state?(@next, workflow)
+        elsif !workflow.state?(@next)
           # top level nodes require a next field that is found
           invalid_field_error!("Next", @next, "is not found in \"States\"")
         end

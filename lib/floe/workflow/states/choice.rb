@@ -49,7 +49,7 @@ module Floe
         end
 
         def validate_state_default!(workflow)
-          invalid_field_error!("Default", @default, "is not found in \"States\"") if @default && !workflow_state?(@default, workflow)
+          invalid_field_error!("Default", @default, "is not found in \"States\"") if @default && !workflow.state?(@default)
         end
       end
     end
