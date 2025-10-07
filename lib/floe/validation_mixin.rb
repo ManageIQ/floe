@@ -22,10 +22,6 @@ module Floe
       raise Floe::ExecutionError.new(self.class.field_error_text(name, field_name, field_value, comment), floe_error)
     end
 
-    def workflow_state?(field_value, workflow)
-      workflow.payload["States"] ? workflow.payload["States"].include?(field_value) : true
-    end
-
     def wrap_parser_error(field_name, field_value)
       yield
     rescue ArgumentError, InvalidWorkflowError => error

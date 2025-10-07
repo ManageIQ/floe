@@ -77,6 +77,10 @@ module Floe
       context.output.to_json if end?(context)
     end
 
+    def state?(state_name)
+      @payload["States"].include?(state_name)
+    end
+
     private
 
     def step!(context)
@@ -102,7 +106,7 @@ module Floe
     def validate_workflow!
       missing_field_error!("States") if @states.empty?
       missing_field_error!("StartAt") if @start_at.nil?
-      invalid_field_error!("StartAt", @start_at, "is not found in \"States\"") unless workflow_state?(@start_at, self)
+      invalid_field_error!("StartAt", @start_at, "is not found in \"States\"") unless state?(@start_at)
     end
   end
 end

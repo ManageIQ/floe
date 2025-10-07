@@ -24,7 +24,7 @@ module Floe
 
       def validate_state_next!(workflow)
         missing_field_error!("Next") if @next.nil?
-        invalid_field_error!("Next", @next, "is not found in \"States\"") if @next && !workflow_state?(@next, workflow)
+        invalid_field_error!("Next", @next, "is not found in \"States\"") if @next && !workflow.state?(@next)
       end
     end
   end
