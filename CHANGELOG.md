@@ -4,6 +4,21 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.18.0] - 2025-10-24
+### Added
+- Declare active support dependency ([#316](https://github.com/ManageIQ/floe/pull/316))
+- Add Context equality comparison ([#317](https://github.com/ManageIQ/floe/pull/317))
+- Choice rule payload validation ([#189](https://github.com/ManageIQ/floe/pull/189))
+
+### Changed
+- In ChoiceRule use Regexp.union ([#323](https://github.com/ManageIQ/floe/pull/323))
+- Remove special case for choice rule IsPresent ([#322](https://github.com/ManageIQ/floe/pull/322))
+- Rename data operation parameters ([#324](https://github.com/ManageIQ/floe/pull/324))
+- Refactor workflow state check to not use payload ([#326](https://github.com/ManageIQ/floe/pull/326))
+
+### Fixed
+- Fix missing parameters in item_batcher_spec ([#325](https://github.com/ManageIQ/floe/pull/325))
+
 ## [0.17.1] - 2025-08-25
 ### Changed
 - Default Method=GET for floe://http method parameter ([#315](https://github.com/ManageIQ/floe/pull/315))
@@ -302,7 +317,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Initial release
 
-[Unreleased]: https://github.com/ManageIQ/floe/compare/v0.17.0...HEAD
+[Unreleased]: https://github.com/ManageIQ/floe/compare/v0.18.0...HEAD
+[0.18.0]: https://github.com/ManageIQ/floe/compare/v0.17.1...v0.18.0
+[0.17.1]: https://github.com/ManageIQ/floe/compare/v0.17.0...v0.17.1
+[0.17.0]: https://github.com/ManageIQ/floe/compare/v0.16.0...v0.17.0
 [0.16.0]: https://github.com/ManageIQ/floe/compare/v0.16.0...v0.17.0
 [0.16.0]: https://github.com/ManageIQ/floe/compare/v0.15.1...v0.16.0
 [0.15.1]: https://github.com/ManageIQ/floe/compare/v0.15.0...v0.15.1
