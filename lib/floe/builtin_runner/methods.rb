@@ -1,6 +1,37 @@
+require "active_support"
+require "active_support/core_ext/array/conversions"
+require "logger"
+
 module Floe
   module BuiltinRunner
     class Methods < BasicObject
+      def self.log(params, _secrets, context)
+        params["Level"] = (params["Level"] ||= "INFO").upcase
+
+        error = log_verify_params(params)
+        return BuiltinRunner.error!({}, :cause => error) if error
+
+        level, message = params.values_at("Level", "Message")
+
+        context.logger.add(::Logger::Severity.const_get(level), message)
+
+        BuiltinRunner.success!({}, :output => context.input)
+      end
+
+      LOG_SEVERITIES = ::Logger::Severity.constants.sort_by { |s| ::Logger::Severity.const_get(s) }.map(&:to_s)
+      LOG_SEVERITIES_S = LOG_SEVERITIES.to_sentence(:last_word_connector => ", or ")
+
+      private_class_method def self.log_verify_params(params)
+        return "Missing Parameter: Message" if params["Message"].nil?
+        return "Invalid Parameter: Level: [#{params["Level"]}], must be one of #{LOG_SEVERITIES_S}" unless LOG_SEVERITIES.include?(params["Level"])
+
+        nil
+      end
+
+      private_class_method def self.log_status!(runner_context)
+        runner_context
+      end
+
       def self.http(params, _secrets, _context)
         params["Method"] ||= "GET"
 

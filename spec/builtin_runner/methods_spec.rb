@@ -1,8 +1,97 @@
 RSpec.describe Floe::BuiltinRunner::Methods do
   require "floe"
 
-  let(:ctx) { Floe::Workflow::Context.new }
-  let(:secrets) { {} }
+  let(:input)    { {"foo" => "bar"} }
+  let(:start_at) { "Start" }
+  let(:secrets)  { {} }
+  let(:ctx) do
+    Floe::Workflow::Context.new(:input => input.to_json).tap { |c| c.prepare_start(start_at) }
+  end
+
+  describe ".log" do
+    let(:logdev) { StringIO.new }
+    let(:logger) { Logger.new(logdev) }
+
+    around do |example|
+      orig_logger, Floe.logger = Floe.logger, logger
+      example.run
+    ensure
+      Floe.logger = orig_logger
+    end
+
+    def expect_log_message(level, message)
+      log = logdev.tap(&:rewind).read.chomp
+      level_label = Logger::SEV_LABEL[Logger::Severity.const_get(level)]
+      expect(log).to end_with(" #{level_label.rjust(5, " ")} -- : #{message}")
+    end
+
+    def expect_no_log_message
+      log = logdev.tap(&:rewind).read.chomp
+      expect(log).to be_empty
+    end
+
+    described_class::LOG_SEVERITIES.each do |level|
+      it level do
+        runner_context = described_class.log({"Level" => level, "Message" => "Hello, Floe!"}, secrets, ctx)
+
+        expect_log_message(level, "Hello, Floe!")
+        expect(runner_context)
+          .to include(
+            "running" => false,
+            "success" => true,
+            "output"  => input
+          )
+      end
+    end
+
+    it "with a missing Message parameter" do
+      runner_context = described_class.log({"Level" => "INFO"}, secrets, ctx)
+
+      expect_no_log_message
+      expect(runner_context)
+        .to include(
+          "running" => false,
+          "success" => false,
+          "output"  => failed_task_status("Missing Parameter: Message")
+        )
+    end
+
+    it "with a missing Level parameter, defaults to INFO" do
+      runner_context = described_class.log({"Message" => "Hello, Floe!"}, secrets, ctx)
+
+      expect_log_message("INFO", "Hello, Floe!")
+      expect(runner_context)
+        .to include(
+          "running" => false,
+          "success" => true,
+          "output"  => input
+        )
+    end
+
+    it "with an invalid Level parameter" do
+      runner_context = described_class.log({"Level" => "XXX", "Message" => "Hello, Floe!"}, secrets, ctx)
+
+      expect_no_log_message
+      expect(runner_context)
+        .to include(
+          "running" => false,
+          "success" => false,
+          "output"  => failed_task_status("Invalid Parameter: Level: [XXX], must be one of DEBUG, INFO, WARN, ERROR, FATAL, or UNKNOWN")
+        )
+    end
+
+    it "accepts lowercase Level parameter" do
+      runner_context = described_class.log({"Level" => "info", "Message" => "Hello, Floe!"}, secrets, ctx)
+
+      expect_log_message("INFO", "Hello, Floe!")
+      expect(runner_context)
+        .to include(
+          "running" => false,
+          "success" => true,
+          "output"  => input
+        )
+    end
+  end
 
   describe ".http" do
     let(:faraday_stub) { double("Faraday::Connection") }
