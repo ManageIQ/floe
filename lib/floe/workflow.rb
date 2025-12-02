@@ -150,15 +150,7 @@ module Floe
 
     # setup a workflow
     def start_workflow
-      return if context.state_name
-
-      context.state["Name"]  = start_at
-      context.state["Input"] = context.execution["Input"].dup
-      context.state["Guid"]  = SecureRandom.uuid
-
-      context.execution["Id"]      ||= SecureRandom.uuid
-      context.execution["StartTime"] = Time.now.utc.iso8601
-
+      context.prepare_start(start_at)
       self
     end
 
