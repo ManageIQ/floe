@@ -23,7 +23,7 @@ module Floe
           missing_field_error!("Resource") unless @resource.kind_of?(String)
           @runner = wrap_parser_error("Resource", @resource) { Floe::Runner.for_resource(@resource) }
 
-          @timeout_seconds   = payload["TimeoutSeconds"]
+          @timeout_seconds   = payload["TimeoutSeconds"]&.to_i
           @retry             = payload["Retry"].to_a.map.with_index { |retrier, i| Retrier.new(workflow, name + ["Retry", i.to_s], retrier) }
           @catch             = payload["Catch"].to_a.map.with_index { |catcher, i| Catcher.new(workflow, name + ["Catch", i.to_s], catcher) }
           @input_path        = Path.new(payload.fetch("InputPath", "$"))
@@ -39,6 +39,9 @@ module Floe
         def start(context)
           super
 
+          # Wakeup no later than timeout_seconds to check if the Resource has timed out
+          wait_until!(context, :seconds => timeout_seconds) if timeout_seconds
+
           input          = process_input(context)
           secrets        = credentials&.value(context, context.input)
           runner_context = runner.run_async!(resource, input, secrets, context)
@@ -47,6 +50,7 @@ module Floe
         end
 
         def finish(context)
+          task_timed_out!(context) if timed_out?(context)
           output = runner.output(context.state["RunnerContext"])
 
           if success?(context)
@@ -62,6 +66,7 @@ module Floe
         end
 
         def running?(context)
+          return false if timed_out?(context)
           return true  if waiting?(context)
           return false if finished?(context)
 
@@ -79,10 +84,32 @@ module Floe
 
         def validate_state!(workflow)
           validate_state_next!(workflow)
+          validate_state_timeout_seconds!(workflow)
+        end
+
+        def validate_state_timeout_seconds!(workflow)
+          return if @timeout_seconds.nil?
+          return if @timeout_seconds.kind_of?(Integer) && @timeout_seconds > 0
+
+          invalid_field_error!("TimeoutSeconds", @timeout_seconds, "must be positive, non-zero integer")
         end
 
         def success?(context)
           runner.success?(context.state["RunnerContext"])
+        end
+
+        def timed_out?(context)
+          return false if timeout_seconds.nil?
+
+          entered_time = Time.parse(context.state["EnteredTime"])
+          Time.now.utc > entered_time + timeout_seconds
+        end
+
+        def task_timed_out!(context)
+          context.state["RunnerContext"]["Error"] = "States.Timeout"
+          context.state["RunnerContext"]["Cause"] = "Task timed out"
+
+          false
         end
 
         def parse_error(output)
