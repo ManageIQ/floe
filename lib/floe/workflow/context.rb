@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "securerandom"
+
 module Floe
   class Workflow
     class Context
@@ -23,6 +25,17 @@ module Floe
         self.logger = logger if logger
       rescue JSON::ParserError => err
         raise Floe::InvalidExecutionInput, "Invalid State Machine Execution Input: #{err}: was expecting (JSON String, Number, Array, Object or token 'null', 'true' or 'false')"
+      end
+
+      def prepare_start(start_at)
+        return if started?
+
+        state["Name"]  = start_at
+        state["Input"] = execution["Input"].dup
+        state["Guid"]  = SecureRandom.uuid
+
+        execution["Id"]      ||= SecureRandom.uuid
+        execution["StartTime"] = Time.now.utc.iso8601
       end
 
       def execution

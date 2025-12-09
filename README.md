@@ -167,6 +167,31 @@ Task Runner Types:
 
 This is the "builtin" runner and exposes methods that are executed internally without having to call out to a docker image.
 
+##### Log builtin method
+
+`floe://log` allows you to write a message to the logger.
+
+Example:
+```json
+{
+  "Comment": "Print log message",
+  "StartAt": "Log",
+  "States": {
+    "Log": {
+      "Type": "Task",
+      "Resource": "floe://log",
+      "Parameters": {
+        "Level": "INFO",
+        "Message": "Hello, Floe!"
+      },
+      "End": true
+    }
+```
+
+Log Parameters:
+* `Level` (required) - Log level. Permitted values: `DEBUG`, `INFO`, `WARN`, `ERROR`, `FATAL`, or `UNKNOWN`.  Defaults to `INFO`.
+* `Message` (required) - The message to log
+
 ##### HTTP builtin method
 
 `floe://http` allows you to execute HTTP method calls.
