@@ -1,8 +1,6 @@
 # Floe
 
 [![CI](https://github.com/ManageIQ/floe/actions/workflows/ci.yaml/badge.svg)](https://github.com/ManageIQ/floe/actions/workflows/ci.yaml)
-[![Code Climate](https://codeclimate.com/github/ManageIQ/floe.svg)](https://codeclimate.com/github/ManageIQ/floe)
-[![Test Coverage](https://codeclimate.com/github/ManageIQ/floe/badges/coverage.svg)](https://codeclimate.com/github/ManageIQ/floe/coverage)
 
 ## Overview
 
