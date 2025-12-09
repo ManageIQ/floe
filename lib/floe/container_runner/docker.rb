@@ -186,8 +186,11 @@ module Floe
         raise Floe::ExecutionError, "Failed to get status for container #{container_id}: #{err}"
       end
 
-      def delete_container(container_id)
-        docker!("rm", container_id)
+      def delete_container(container_id, force: true)
+        params = ["rm", container_id]
+        params << "--force" if force
+
+        docker!(*params)
       rescue
         nil
       end

@@ -114,7 +114,7 @@ RSpec.describe Floe::ContainerRunner::Docker do
     let(:secrets_file) { "/tmp/secretfile" }
 
     it "deletes the container and secret" do
-      stub_good_run!("docker", :params => ["rm", container_id])
+      stub_good_run!("docker", :params => ["rm", container_id, "--force"])
       allow(File).to receive(:exist?).and_call_original
       expect(File).to receive(:exist?).with(secrets_file).and_return(true)
       expect(File).to receive(:unlink).with(secrets_file)
@@ -122,13 +122,13 @@ RSpec.describe Floe::ContainerRunner::Docker do
     end
 
     it "doesn't delete the secret_file if not passed" do
-      stub_good_run!("docker", :params => ["rm", container_id])
+      stub_good_run!("docker", :params => ["rm", container_id, "--force"])
       expect(File).not_to receive(:unlink).with(secrets_file)
       subject.cleanup({"container_ref" => container_id})
     end
 
     it "deletes the secrets file if deleting the container fails" do
-      stub_bad_run!("docker", :params => ["rm", container_id])
+      stub_bad_run!("docker", :params => ["rm", container_id, "--force"])
       allow(File).to receive(:exist?).and_call_original
       expect(File).to receive(:exist?).with(secrets_file).and_return(true)
       expect(File).to receive(:unlink).with(secrets_file)
