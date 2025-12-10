@@ -582,6 +582,15 @@ RSpec.describe Floe::Workflow::States::Task do
         expect(ctx.status).to     eq("failure")
         expect(ctx.output).to     eq({"Error" => "States.Timeout"})
       end
+
+      it "state finishes before timeout" do
+        expect_run_async(input, :success => true, :output => nil)
+        workflow.run_nonblock
+
+        expect(ctx.next_state).to be_nil
+        expect(ctx.status).to     eq("success")
+        expect(workflow.end?).to  be_truthy
+      end
     end
   end
 

@@ -66,9 +66,7 @@ module Floe
         end
 
         def running?(context)
-          return false if timed_out?(context)
-          return true  if waiting?(context)
-          return false if finished?(context)
+          return false if timed_out?(context) || finished?(context)
 
           runner.status!(context.state["RunnerContext"])
           runner.running?(context.state["RunnerContext"])
