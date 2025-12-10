@@ -70,6 +70,7 @@ module Floe
       end
 
       def running?(runner_context)
+        return false if runner_context.key?("Error")
         return false unless pod_running?(runner_context)
         # If a pod is Pending and the containers are waiting with a failure
         # reason such as ImagePullBackOff or CrashLoopBackOff then the pod
@@ -80,6 +81,8 @@ module Floe
       end
 
       def success?(runner_context)
+        return false if runner_context.key?("Error")
+
         runner_context.dig("container_state", "phase") == "Succeeded"
       end
 

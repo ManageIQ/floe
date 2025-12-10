@@ -105,10 +105,14 @@ module Floe
       end
 
       def running?(runner_context)
+        return false if runner_context.key?("Error")
+
         !!runner_context.dig("container_state", "Running")
       end
 
       def success?(runner_context)
+        return false if runner_context.key?("Error")
+
         runner_context.dig("container_state", "ExitCode") == 0
       end
 
