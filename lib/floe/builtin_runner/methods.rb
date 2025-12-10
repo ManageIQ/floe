@@ -1,5 +1,3 @@
-require "active_support"
-require "active_support/core_ext/array/conversions"
 require "logger"
 
 module Floe
@@ -19,7 +17,7 @@ module Floe
       end
 
       LOG_SEVERITIES = ::Logger::Severity.constants.sort_by { |s| ::Logger::Severity.const_get(s) }.map(&:to_s)
-      LOG_SEVERITIES_S = LOG_SEVERITIES.to_sentence(:last_word_connector => ", or ")
+      LOG_SEVERITIES_S = "#{LOG_SEVERITIES[0..-2].join(", ")}, or #{LOG_SEVERITIES[-1]}"
 
       private_class_method def self.log_verify_params(params)
         return "Missing Parameter: Message" if params["Message"].nil?
