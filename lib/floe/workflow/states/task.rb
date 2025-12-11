@@ -9,29 +9,29 @@ module Floe
         include RetryCatchMixin
 
         attr_reader :credentials, :end, :heartbeat_seconds, :next, :parameters,
-                    :result_selector, :resource, :timeout_seconds, :retry, :catch,
-                    :input_path, :output_path, :result_path
+                    :result_selector, :resource, :timeout_seconds, :timeout_seconds_path,
+                    :retry, :catch, :input_path, :output_path, :result_path
 
         def initialize(workflow, name, payload)
           super
 
-          @heartbeat_seconds = payload["HeartbeatSeconds"]
-          @next              = payload["Next"]
-          @end               = !!payload["End"]
-          @resource          = payload["Resource"]
-
+          @resource = payload["Resource"]
           missing_field_error!("Resource") unless @resource.kind_of?(String)
           @runner = wrap_parser_error("Resource", @resource) { Floe::Runner.for_resource(@resource) }
 
-          @timeout_seconds   = payload["TimeoutSeconds"]&.to_i
-          @retry             = payload["Retry"].to_a.map.with_index { |retrier, i| Retrier.new(workflow, name + ["Retry", i.to_s], retrier) }
-          @catch             = payload["Catch"].to_a.map.with_index { |catcher, i| Catcher.new(workflow, name + ["Catch", i.to_s], catcher) }
-          @input_path        = Path.new(payload.fetch("InputPath", "$"))
-          @output_path       = Path.new(payload.fetch("OutputPath", "$"))
-          @result_path       = ReferencePath.new(payload.fetch("ResultPath", "$"))
-          @parameters        = PayloadTemplate.new(payload["Parameters"])     if payload["Parameters"]
-          @result_selector   = PayloadTemplate.new(payload["ResultSelector"]) if payload["ResultSelector"]
-          @credentials       = PayloadTemplate.new(payload["Credentials"])    if payload["Credentials"]
+          @next                 = payload["Next"]
+          @end                  = !!payload["End"]
+          @timeout_seconds      = payload["TimeoutSeconds"]
+          @heartbeat_seconds    = payload["HeartbeatSeconds"]
+          @retry                = payload["Retry"].to_a.map.with_index { |retrier, i| Retrier.new(workflow, name + ["Retry", i.to_s], retrier) }
+          @catch                = payload["Catch"].to_a.map.with_index { |catcher, i| Catcher.new(workflow, name + ["Catch", i.to_s], catcher) }
+          @input_path           = Path.new(payload.fetch("InputPath", "$"))
+          @output_path          = Path.new(payload.fetch("OutputPath", "$"))
+          @result_path          = ReferencePath.new(payload.fetch("ResultPath", "$"))
+          @timeout_seconds_path = ReferencePath.new(payload["TimeoutSecondsPath"]) if payload["TimeoutSecondsPath"]
+          @parameters           = PayloadTemplate.new(payload["Parameters"])       if payload["Parameters"]
+          @result_selector      = PayloadTemplate.new(payload["ResultSelector"])   if payload["ResultSelector"]
+          @credentials          = PayloadTemplate.new(payload["Credentials"])      if payload["Credentials"]
 
           validate_state!(workflow)
         end
@@ -83,6 +83,7 @@ module Floe
         def validate_state!(workflow)
           validate_state_next!(workflow)
           validate_state_timeout_seconds!(workflow)
+          validate_state_timeout_seconds_path!(workflow)
         end
 
         def validate_state_timeout_seconds!(workflow)
@@ -92,15 +93,23 @@ module Floe
           invalid_field_error!("TimeoutSeconds", @timeout_seconds, "must be positive, non-zero integer")
         end
 
+        def validate_state_timeout_seconds_path!(workflow)
+          return if @timeout_seconds_path.nil? || @timeout_seconds.nil?
+
+          invalid_field_error!("TimeoutSecondsPath", nil, "cannot specify both \"TimeoutSeconds\" and \"TimeoutSecondsPath\"")
+        end
+
         def success?(context)
           runner.success?(context.state["RunnerContext"])
         end
 
         def timed_out?(context)
-          return false if timeout_seconds.nil?
+          return false if timeout_seconds.nil? && timeout_seconds_path.nil?
 
+          timeout      = timeout_seconds || timeout_seconds_path.value(context, context.input)
           entered_time = Time.parse(context.state["EnteredTime"])
-          Time.now.utc > entered_time + timeout_seconds
+
+          Time.now.utc > entered_time + timeout
         end
 
         def task_timed_out!(context)

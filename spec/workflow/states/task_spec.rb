@@ -25,6 +25,13 @@ RSpec.describe Floe::Workflow::States::Task do
         expect { workflow }.to raise_error(Floe::InvalidWorkflowError, "States.FirstState field \"TimeoutSeconds\" value \"-1\" must be positive, non-zero integer")
       end
     end
+
+    context "with TimeoutSeconds and TimeoutSecondsPath" do
+      let(:payload) { {"FirstState" => {"Type" => "Task", "Resource" => "docker://hello-world", "TimeoutSeconds" => 10, "TimeoutSecondsPath" => "$.Timout", "End" => true}} }
+      it do
+        expect { workflow }.to raise_error(Floe::InvalidWorkflowError, "States.FirstState field \"TimeoutSecondsPath\" cannot specify both \"TimeoutSeconds\" and \"TimeoutSecondsPath\"")
+      end
+    end
   end
 
   describe "#run_async!" do
@@ -563,10 +570,65 @@ RSpec.describe Floe::Workflow::States::Task do
               "TimeoutSeconds" => timeout_seconds,
               "Next"           => "SuccessState"
             },
-            "FirstState"   => {"Type" => "Succeed"},
             "SuccessState" => {"Type" => "Succeed"}
           }
         )
+      end
+
+      it "raises States.Timeout error" do
+        expect_run_async(input, :running => true)
+        expect(mock_runner).to receive(:output).and_return({"Error" => "States.Timeout"})
+
+        Timecop.travel(Time.now.utc - 2 * timeout_seconds) do
+          workflow.run_nonblock
+        end
+
+        workflow.run_nonblock
+        expect(ctx.next_state).to be_nil
+        expect(ctx.status).to     eq("failure")
+        expect(ctx.output).to     eq({"Error" => "States.Timeout"})
+      end
+
+      it "state finishes before timeout" do
+        expect_run_async(input, :success => true, :output => nil)
+        workflow.run_nonblock
+
+        expect(ctx.next_state).to be_nil
+        expect(ctx.status).to     eq("success")
+        expect(workflow.end?).to  be_truthy
+      end
+    end
+
+    describe "with TimeoutSecondsPath" do
+      let(:timeout_seconds) { 10 }
+      let(:input) { {"Timeout" => timeout_seconds} }
+      let(:workflow) do
+        make_workflow(
+          ctx, {
+            "State"        => {
+              "Type"               => "Task",
+              "Resource"           => resource,
+              "TimeoutSecondsPath" => "$.Timeout",
+              "Next"               => "SuccessState"
+            },
+            "SuccessState" => {"Type" => "Succeed"}
+          }
+        )
+      end
+
+      context "with a missing path value" do
+        let(:input) { {} }
+
+        it "raises an invalid path error" do
+          expect_run_async(input, :running => true)
+          workflow.run_nonblock
+          expect(ctx.next_state).to be_nil
+          expect(ctx.status).to     eq("failure")
+          expect(ctx.output).to     eq(
+            "Error" => "States.Runtime",
+            "Cause" => "Path [$.Timeout] references an invalid value"
+          )
+        end
       end
 
       it "raises States.Timeout error" do
