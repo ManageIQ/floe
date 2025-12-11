@@ -307,8 +307,7 @@ RSpec.describe Floe::Workflow::States::Task do
         it "retries if that error is raised" do
           # 1 regular run + 2 retries = 3 times
           3.times { expect_run_async(input, :error => "States.Timeout") }
-
-          workflow.run_nonblock
+          3.times { |i| Timecop.travel(Time.now.utc + (i * 10)) { workflow.run_nonblock } }
 
           expect(ctx.next_state).to          be_nil
           expect(ctx.state["Retrier"]).to    eq(["States.Timeout"])
@@ -318,6 +317,22 @@ RSpec.describe Floe::Workflow::States::Task do
           expect(ctx.output).to              eq({"Error" => "States.Timeout"})
           expect(ctx.status).to              eq("failure")
           expect(ctx.ended?).to              eq(true)
+        end
+
+        context "with IntervalSeconds" do
+          let(:retriers) { [{"ErrorEquals" => ["States.Timeout"], "MaxAttempts" => 2, "IntervalSeconds" => 30}] }
+
+          it "doesn't execute the next state immediately" do
+            expect_run_async(input, :error => "States.Timeout")
+
+            workflow.run_nonblock
+
+            expect(workflow.end?).to           be_falsey
+            expect(ctx.state_name).to          eq("State")
+            expect(ctx.state["Retrier"]).to    eq(["States.Timeout"])
+            expect(ctx.state["RetryCount"]).to eq(1)
+            expect(ctx.state_history.count).to eq(1)
+          end
         end
 
         context "with multiple retriers" do
@@ -380,7 +395,7 @@ RSpec.describe Floe::Workflow::States::Task do
 
         it "retries if that error is raised" do
           4.times { expect_run_async(input, :error => "States.Timeout") }
-          workflow.run_nonblock
+          4.times { |i| Timecop.travel(Time.now.utc + (i * 10)) { workflow.run_nonblock } }
 
           expect(ctx.next_state).to          be_nil
           expect(ctx.state["Retrier"]).to    eq(["States.Timeout"])
@@ -389,7 +404,7 @@ RSpec.describe Floe::Workflow::States::Task do
 
         it "retries if any error is raised" do
           4.times { expect_run_async(input, :error => "ABORT!") }
-          workflow.run_nonblock
+          4.times { |i| Timecop.travel(Time.now.utc + (i * 10)) { workflow.run_nonblock } }
 
           expect(ctx.next_state).to          be_nil
           expect(ctx.state["Retrier"]).to    eq(["States.ALL"])

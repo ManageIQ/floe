@@ -314,8 +314,8 @@ RSpec.describe Floe::Workflow do
 
   describe ".wait" do
     context "with two ready workflows" do
-      let(:workflow_1) { make_workflow(ctx, {"FirstState" => {"Type" => "Succeed"}}) }
-      let(:workflow_2) { make_workflow(ctx, {"FirstState" => {"Type" => "Succeed"}}) }
+      let(:workflow_1) { make_workflow({}, {"FirstState" => {"Type" => "Succeed"}}) }
+      let(:workflow_2) { make_workflow({}, {"FirstState" => {"Type" => "Succeed"}}) }
 
       it "returns both workflows as ready to step" do
         expect(described_class.wait([workflow_1, workflow_2], :timeout => 0)).to include(workflow_1, workflow_2)
@@ -323,8 +323,8 @@ RSpec.describe Floe::Workflow do
     end
 
     context "with one ready workflow and one that would block" do
-      let(:workflow_1) { make_workflow(ctx, {"FirstState" => {"Type" => "Succeed"}}) }
-      let(:workflow_2) { make_workflow(ctx, {"FirstState" => {"Type" => "Wait", "Seconds" => 10, "End" => true}}).start_workflow.tap(&:step_nonblock) }
+      let(:workflow_1) { make_workflow({}, {"FirstState" => {"Type" => "Succeed"}}) }
+      let(:workflow_2) { make_workflow({}, {"FirstState" => {"Type" => "Wait", "Seconds" => 10, "End" => true}}).start_workflow.tap(&:step_nonblock) }
 
       it "returns only the first workflow as ready to step" do
         expect(described_class.wait([workflow_1, workflow_2], :timeout => 0)).to eq([workflow_1])
