@@ -43,7 +43,9 @@ module Floe
 
       # @return for incomplete Errno::EAGAIN, for completed 0
       def run_nonblock!(context)
-        start(context) unless context.state_started?
+        # Only start the state if it isn't already started and it isn't waiting
+        # from a prior Retry.
+        start(context)       unless started?(context) || waiting?(context)
         return Errno::EAGAIN unless ready?(context)
 
         finish(context)
@@ -95,7 +97,7 @@ module Floe
       end
 
       def ready?(context)
-        !started?(context) || !running?(context)
+        !waiting?(context) && (!started?(context) || !running?(context))
       end
 
       def running?(context)

@@ -175,7 +175,7 @@ module Floe
 
       # if rerunning due to an error (and we are using Retry)
       if context.state_name == context.next_state && context.failed? && context.state.key?("Retrier")
-        next_state.merge!(context.state.slice("RetryCount", "Input", "Retrier"))
+        next_state.merge!(context.state.slice("RetryCount", "Input", "Retrier", "WaitUntil"))
       else
         next_state["Input"] = context.output
       end
