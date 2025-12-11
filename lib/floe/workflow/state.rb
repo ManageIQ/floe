@@ -97,7 +97,7 @@ module Floe
       end
 
       def ready?(context)
-        !waiting?(context) && (!started?(context) || !running?(context))
+        (started?(context) && !running?(context)) || !waiting?(context)
       end
 
       def running?(context)

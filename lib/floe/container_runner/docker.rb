@@ -105,10 +105,14 @@ module Floe
       end
 
       def running?(runner_context)
+        return false if runner_context.key?("Error")
+
         !!runner_context.dig("container_state", "Running")
       end
 
       def success?(runner_context)
+        return false if runner_context.key?("Error")
+
         runner_context.dig("container_state", "ExitCode") == 0
       end
 
@@ -186,8 +190,11 @@ module Floe
         raise Floe::ExecutionError, "Failed to get status for container #{container_id}: #{err}"
       end
 
-      def delete_container(container_id)
-        docker!("rm", container_id)
+      def delete_container(container_id, force: true)
+        params = ["rm", container_id]
+        params << "--force" if force
+
+        docker!(*params)
       rescue
         nil
       end

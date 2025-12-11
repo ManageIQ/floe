@@ -99,20 +99,20 @@ RSpec.describe Floe::ContainerRunner::Podman do
   describe "#cleanup" do
     it "deletes the container and secret" do
       stub_good_run!("podman", :params => ["secret", "rm", "my-secret"])
-      stub_good_run!("podman", :params => ["rm", container_id])
+      stub_good_run!("podman", :params => ["rm", container_id, "--force"])
 
       subject.cleanup({"container_ref" => container_id, "secrets_ref" => "my-secret"})
     end
 
     it "doesn't delete the secret if one isn't passed in" do
-      stub_good_run!("podman", :params => ["rm", container_id])
+      stub_good_run!("podman", :params => ["rm", container_id, "--force"])
 
       subject.cleanup({"container_ref" => container_id})
     end
 
     it "deletes the secret if deleting the pod fails" do
       stub_good_run!("podman", :params => ["secret", "rm", "my-secret"])
-      stub_bad_run!("podman", :params => ["rm", container_id])
+      stub_bad_run!("podman", :params => ["rm", container_id, "--force"])
 
       subject.cleanup({"container_ref" => container_id, "secrets_ref" => "my-secret"})
     end
