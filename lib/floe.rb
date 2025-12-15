@@ -65,6 +65,12 @@ module Floe
   class PathError < ExecutionError
   end
 
+  class TimeoutError < ExecutionError
+    def initialize(message = nil)
+      super(message, "States.Timeout")
+    end
+  end
+
   def self.logger
     @logger ||= NullLogger.new
   end
