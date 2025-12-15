@@ -57,9 +57,9 @@ module Floe
             output = parse_output(output)
             context.output = process_output(context, output)
           else
-            error = parse_error(output)
-            retry_state!(context, error) || catch_error!(context, error) || fail_workflow!(context, error)
+            raise Floe::ExecutionError.new(*parse_error(output).values_at("Cause", "Error"))
           end
+
           super
         ensure
           runner.cleanup(context.state["RunnerContext"])
@@ -70,6 +70,15 @@ module Floe
 
           runner.status!(context.state["RunnerContext"])
           runner.running?(context.state["RunnerContext"])
+        end
+
+        def mark_error(context, exception)
+          error = {"Error" => exception.floe_error}
+          # If there is no "Cause" then ::Exception will use the exception class name
+          error["Cause"] = exception.message if exception.message != exception.class.to_s
+
+          retry_state!(context, error) || catch_error!(context, error) || fail_workflow!(context, error)
+          mark_finished(context)
         end
 
         def end?
