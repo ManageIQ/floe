@@ -91,7 +91,7 @@ module Floe
       def mark_error(context, exception)
         # InputPath or OutputPath were bad.
         context.next_state = nil
-        context.output     = {"Error" => exception.floe_error, "Cause" => exception.message}
+        context.output     = exception.to_output
         # Since finish threw an exception, super was never called. Calling that now.
         mark_finished(context)
       end

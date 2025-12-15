@@ -57,7 +57,7 @@ module Floe
             output = parse_output(output)
             context.output = process_output(context, output)
           else
-            raise Floe::ExecutionError.new(*parse_error(output).values_at("Cause", "Error"))
+            raise Floe::ExecutionError.from_output(parse_error(output))
           end
 
           super
@@ -73,9 +73,7 @@ module Floe
         end
 
         def mark_error(context, exception)
-          error = {"Error" => exception.floe_error}
-          # If there is no "Cause" then ::Exception will use the exception class name
-          error["Cause"] = exception.message if exception.message != exception.class.to_s
+          error = exception.to_output
 
           retry_state!(context, error) || catch_error!(context, error) || fail_workflow!(context, error)
           mark_finished(context)
