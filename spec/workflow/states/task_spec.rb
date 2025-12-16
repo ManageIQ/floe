@@ -577,7 +577,6 @@ RSpec.describe Floe::Workflow::States::Task do
 
       it "raises States.Timeout error" do
         expect_run_async(input, :running => true)
-        expect(mock_runner).to receive(:output).and_return({"Error" => "States.Timeout"})
 
         Timecop.travel(Time.now.utc - 2 * timeout_seconds) do
           workflow.run_nonblock
@@ -586,7 +585,7 @@ RSpec.describe Floe::Workflow::States::Task do
         workflow.run_nonblock
         expect(ctx.next_state).to be_nil
         expect(ctx.status).to     eq("failure")
-        expect(ctx.output).to     eq({"Error" => "States.Timeout"})
+        expect(ctx.output).to     eq("Error" => "States.Timeout")
       end
 
       it "state finishes before timeout" do

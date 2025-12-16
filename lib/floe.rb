@@ -54,15 +54,34 @@ module Floe
   class InvalidExecutionInput < Error; end
 
   class ExecutionError < Error
+    def self.from_output(output)
+      raise ArgumentError unless output.kind_of?(Hash) && output.key?("Error")
+
+      new(output["Cause"], output["Error"])
+    end
+
     attr_reader :floe_error
 
     def initialize(message, floe_error = "States.Runtime")
       super(message)
       @floe_error = floe_error
     end
+
+    def to_output
+      {"Error" => floe_error}.tap do |output|
+        # If there is no "Cause" then ::Exception will use the exception class name
+        output["Cause"] = message if message != self.class.name.to_s
+      end
+    end
   end
 
   class PathError < ExecutionError
+  end
+
+  class TimeoutError < ExecutionError
+    def initialize(message = nil)
+      super(message, "States.Timeout")
+    end
   end
 
   def self.logger

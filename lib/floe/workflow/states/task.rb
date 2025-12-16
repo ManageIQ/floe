@@ -50,26 +50,30 @@ module Floe
         end
 
         def finish(context)
-          task_timed_out!(context) if timed_out?(context)
           output = runner.output(context.state["RunnerContext"])
+          raise Floe::ExecutionError.from_output(parse_error(output)) unless success?(context)
 
-          if success?(context)
-            output = parse_output(output)
-            context.output = process_output(context, output)
-          else
-            error = parse_error(output)
-            retry_state!(context, error) || catch_error!(context, error) || fail_workflow!(context, error)
-          end
+          output = parse_output(output)
+          context.output = process_output(context, output)
+
           super
         ensure
           runner.cleanup(context.state["RunnerContext"])
         end
 
         def running?(context)
-          return false if timed_out?(context) || finished?(context)
+          raise Floe::TimeoutError if timed_out?(context)
+          return false if finished?(context)
 
           runner.status!(context.state["RunnerContext"])
           runner.running?(context.state["RunnerContext"])
+        end
+
+        def mark_error(context, exception)
+          error = exception.to_output
+
+          retry_state!(context, error) || catch_error!(context, error) || fail_workflow!(context, error)
+          mark_finished(context)
         end
 
         def end?
