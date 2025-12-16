@@ -4,6 +4,18 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.19.0] - 2025-12-16
+### Fixed
+- Fix builtin_runner/runner spec file name ([#329](https://github.com/ManageIQ/floe/pull/329))
+- Check WaitUntil before starting a State ([#336](https://github.com/ManageIQ/floe/pull/336))
+- Task TimeoutSeconds and TimeoutSecondsPath not implemented ([#330](https://github.com/ManageIQ/floe/pull/330))
+
+### Added
+- Add floe://log builtin method ([#328](https://github.com/ManageIQ/floe/pull/328))
+
+### Changed
+- Raise `States.Timeout` in `running?` and remove duplicate `timed_out?` check in `finished?` ([#337](https://github.com/ManageIQ/floe/pull/337))
+
 ## [0.18.0] - 2025-10-24
 ### Added
 - Declare active support dependency ([#316](https://github.com/ManageIQ/floe/pull/316))
@@ -317,7 +329,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Initial release
 
-[Unreleased]: https://github.com/ManageIQ/floe/compare/v0.18.0...HEAD
+[Unreleased]: https://github.com/ManageIQ/floe/compare/v0.19.0...HEAD
+[0.19.0]: https://github.com/ManageIQ/floe/compare/v0.18.0...v0.19.0
 [0.18.0]: https://github.com/ManageIQ/floe/compare/v0.17.1...v0.18.0
 [0.17.1]: https://github.com/ManageIQ/floe/compare/v0.17.0...v0.17.1
 [0.17.0]: https://github.com/ManageIQ/floe/compare/v0.16.0...v0.17.0
