@@ -97,7 +97,10 @@ module Floe
       end
 
       def ready?(context)
-        (started?(context) && !running?(context)) || !waiting?(context)
+        return false if !started?(context)
+        return true  if !running?(context)
+        return true  if wait_until(context) && !waiting?(context)
+        false
       end
 
       def running?(context)
