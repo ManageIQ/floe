@@ -35,7 +35,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "awesome_spawn", "~>1.6"
   spec.add_dependency "faraday"
   spec.add_dependency "faraday-follow_redirects"
-  spec.add_dependency "io-wait"
+  spec.add_dependency "io-wait", "~> 0.3.6"
   spec.add_dependency "json", "~>2.10"
   spec.add_dependency "jsonpath", "~>1.1"
   spec.add_dependency "kubeclient", "~>4.7"
