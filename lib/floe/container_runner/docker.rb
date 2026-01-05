@@ -65,7 +65,7 @@ module Floe
 
           # Get all events while the pipe is readable
           notices = []
-          while r.ready?
+          while r.wait_readable(0)
             notice = r.gets
 
             # If the process has exited `r.gets` returns `nil` and the pipe is
