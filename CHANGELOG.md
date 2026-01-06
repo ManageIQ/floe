@@ -4,6 +4,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.19.2] - 2026-01-06
+### Fixed
+- Lockdown io-wait to v0.3.* for `IO#ready?` ([#339](https://github.com/ManageIQ/floe/pull/339))
+
 ## [0.19.1] - 2025-12-17
 ### Fixed
 - Fix `State#ready?` when a task is running with no `WaitUntil` ([#338](https://github.com/ManageIQ/floe/pull/338))
@@ -333,7 +337,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Initial release
 
-[Unreleased]: https://github.com/ManageIQ/floe/compare/v0.19.1...HEAD
+[Unreleased]: https://github.com/ManageIQ/floe/compare/v0.19.2...HEAD
+[0.19.2]: https://github.com/ManageIQ/floe/compare/v0.19.1...v0.19.2
 [0.19.1]: https://github.com/ManageIQ/floe/compare/v0.19.0...v0.19.1
 [0.19.0]: https://github.com/ManageIQ/floe/compare/v0.18.0...v0.19.0
 [0.18.0]: https://github.com/ManageIQ/floe/compare/v0.17.1...v0.18.0
