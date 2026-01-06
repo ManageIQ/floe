@@ -16,12 +16,12 @@ module Floe
     def run(args = ARGV)
       workflows_inputs, opts = parse_options!(args)
 
-      show_execution_id = workflows_inputs.size > 2 && !opts[:segment_output]
+      show_execution_id = workflows_inputs.size > 1 && !opts[:segment_output]
 
       credentials = create_credentials(opts)
 
       workflows =
-        workflows_inputs.each_slice(2).map do |workflow, input|
+        workflows_inputs.map do |workflow, input|
           wf_logger = create_logger(opts[:segment_output], show_execution_id)
           create_workflow(workflow, opts[:context], input, credentials, wf_logger)
         end
@@ -71,20 +71,20 @@ module Floe
         banner("General options:")
       end
 
-      # Create workflow/input pairs from the various combinations of paramaters
+      # Create workflow/input pairs from the various combinations of parameters
       workflows_inputs =
         if opts[:workflow_given]
           Optimist.die("cannot specify both --workflow and bare workflows") if args.any?
 
-          [opts[:workflow], opts.fetch(:input, "{}")]
+          [[opts[:workflow], opts.fetch(:input, "{}")]]
         elsif opts[:input_given]
           Optimist.die("workflow(s) must be specified") if args.empty?
 
-          args.flat_map { |w| [w, opts[:input].dup] }
+          args.map { |w| [w, opts[:input].dup] }
         else
           Optimist.die("workflow/input pairs must be specified") if args.empty? || (args.size > 1 && args.size.odd?)
 
-          args
+          args.each_slice(2).to_a
         end
 
       Floe::ContainerRunner.resolve_cli_options!(opts)
