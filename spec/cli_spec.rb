@@ -91,12 +91,12 @@ RSpec.describe Floe::CLI do
 
       lines = output.lines(:chomp => true)
       expect(lines.first).to include("Checking 2 workflows...")
-      expect(lines.last(7).map { |line| line.gsub(/^.* INFO -- : /, "") }.join("\n")).to eq(<<~OUTPUT.chomp)
-        workflow
+      expect(lines.last(7).map { |line| line.gsub(/^.* INFO -- : /, "") }.join("\n")).to match(<<~OUTPUT.chomp)
+        workflow \\[\\h{8}-\\h{4}-\\h{4}-\\h{4}-\\h{12}\\]
         ===
         {"foo":1}
 
-        workflow
+        workflow \\[\\h{8}-\\h{4}-\\h{4}-\\h{4}-\\h{12}\\]
         ===
         {"foo":2}
       OUTPUT
@@ -108,12 +108,12 @@ RSpec.describe Floe::CLI do
 
       lines = output.lines(:chomp => true)
       expect(lines.first).to include("Checking 2 workflows...")
-      expect(lines.last(7).map { |line| line.gsub(/^.* INFO -- : /, "") }.join("\n")).to eq(<<~OUTPUT.chomp)
-        workflow
+      expect(lines.last(7).map { |line| line.gsub(/^.* INFO -- : /, "") }.join("\n")).to match(<<~OUTPUT.chomp)
+        workflow \\[\\h{8}-\\h{4}-\\h{4}-\\h{4}-\\h{12}\\]
         ===
         {"foo":1}
 
-        workflow
+        workflow \\[\\h{8}-\\h{4}-\\h{4}-\\h{4}-\\h{12}\\]
         ===
         {"foo":1}
       OUTPUT

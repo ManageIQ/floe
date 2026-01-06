@@ -1,29 +1,30 @@
 require "floe"
+require "floe/cli/logger"
 require "floe/container_runner"
+require "optimist"
+require "stringio"
 
 module Floe
   class CLI
     include Logging
 
     def initialize
-      require "optimist"
-      require "logger"
-
-      Floe.logger = Logger.new($stdout)
+      Floe.logger = ::Logger.new($stdout)
       Floe.logger.level = 0 if ENV["DEBUG"]
     end
 
     def run(args = ARGV)
       workflows_inputs, opts = parse_options!(args)
 
+      show_execution_id = workflows_inputs.size > 2 && !opts[:segment_output]
+
       credentials = create_credentials(opts)
 
       workflows =
         workflows_inputs.each_slice(2).map do |workflow, input|
-          create_workflow(workflow, opts[:context], input, credentials)
+          wf_logger = create_logger(opts[:segment_output], show_execution_id)
+          create_workflow(workflow, opts[:context], input, credentials, wf_logger)
         end
-
-      output_streams = create_loggers(workflows, opts[:segment_output])
 
       logger.info("Checking #{workflows.count} workflows...")
       ready = Floe::Workflow.wait(workflows, &:run_nonblock)
@@ -31,13 +32,13 @@ module Floe
 
       # Display status
       workflows.each do |workflow|
-        if workflows.size > 1
+        if workflows.size > 1 || opts[:segment_output]
           logger.info("")
-          logger.info("#{workflow.name}#{" (#{workflow.status})" unless workflow.context.success?}")
+          logger.info("#{workflow.name} [#{workflow.context.execution_id}]#{" (#{workflow.status})" unless workflow.context.success?}")
           logger.info("===")
         end
 
-        logger.info(output_streams[workflow].string) if output_streams[workflow]
+        logger.info("\n#{fetch_log_segment(workflow.context.logger)}") if opts[:segment_output]
         logger.info(workflow.output)
       end
 
@@ -102,21 +103,21 @@ module Floe
       JSON.parse(credentials_str)
     end
 
-    def create_workflow(workflow, context_payload, input, credentials)
-      context = Floe::Workflow::Context.new(context_payload, :input => input, :credentials => credentials)
+    def create_workflow(workflow, context_payload, input, credentials, logger)
+      context = Floe::Workflow::Context.new(context_payload, :input => input, :credentials => credentials, :logger => logger)
       Floe::Workflow.load(workflow, context)
     end
 
-    def create_loggers(workflows, segment_output)
-      if workflows.size == 1 || !segment_output
-        # no extra work necessary
-        {}
-      else
-        workflows.each_with_object({}) do |workflow, h|
-          workflow.context.logger = Logger.new(output = StringIO.new)
-          h[workflow] = output
-        end
+    def create_logger(segment_output, show_execution_id)
+      logger_class = show_execution_id ? Floe::CLI::Logger : ::Logger
+      logdev = segment_output ? StringIO.new : $stdout
+      logger_class.new(logdev).tap do |logger|
+        logger.level = 0 if ENV["DEBUG"]
       end
+    end
+
+    def fetch_log_segment(logger)
+      logger.instance_variable_get(:@logdev).dev.string.chomp
     end
   end
 end
