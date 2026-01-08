@@ -36,10 +36,18 @@ module Floe
 
         execution["Id"]      ||= SecureRandom.uuid
         execution["StartTime"] = Time.now.utc.iso8601
+
+        if logger.respond_to?(:execution_id=)
+          logger.execution_id = execution["Id"]
+        end
       end
 
       def execution
         @context["Execution"]
+      end
+
+      def execution_id
+        execution["Id"]
       end
 
       def credentials
