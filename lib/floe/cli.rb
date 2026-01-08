@@ -16,13 +16,13 @@ module Floe
     def run(args = ARGV)
       workflows_inputs, opts = parse_options!(args)
 
-      show_execution_id = workflows_inputs.size > 1 && !opts[:segment_output]
+      show_execution_id = workflows_inputs.size > 1
 
       credentials = create_credentials(opts)
 
       workflows =
         workflows_inputs.map do |workflow, input|
-          wf_logger = create_logger(opts[:segment_output], show_execution_id)
+          wf_logger = create_logger(show_execution_id)
           create_workflow(workflow, opts[:context], input, credentials, wf_logger)
         end
 
@@ -32,13 +32,11 @@ module Floe
 
       # Display status
       workflows.each do |workflow|
-        if workflows.size > 1 || opts[:segment_output]
+        if workflows.size > 1
           logger.info("")
           logger.info("#{workflow.name} [#{workflow.context.execution_id}]#{" (#{workflow.status})" unless workflow.context.success?}")
           logger.info("===")
         end
-
-        logger.info("\n#{fetch_log_segment(workflow.context.logger)}") if opts[:segment_output]
         logger.info(workflow.output)
       end
 
@@ -63,7 +61,6 @@ module Floe
         opt :context, "JSON payload of the Context",              :type => :string
         opt :credentials, "JSON payload with Credentials",        :type => :string
         opt :credentials_file, "Path to a file with Credentials", :type => :string
-        opt :segment_output, "Segment output by each worker",     :default => false
 
         Floe::ContainerRunner.cli_options(self)
 
@@ -108,16 +105,11 @@ module Floe
       Floe::Workflow.load(workflow, context)
     end
 
-    def create_logger(segment_output, show_execution_id)
+    def create_logger(show_execution_id)
       logger_class = show_execution_id ? Floe::CLI::Logger : ::Logger
-      logdev = segment_output ? StringIO.new : $stdout
-      logger_class.new(logdev).tap do |logger|
+      logger_class.new($stdout).tap do |logger|
         logger.level = 0 if ENV["DEBUG"]
       end
-    end
-
-    def fetch_log_segment(logger)
-      logger.instance_variable_get(:@logdev).dev.string.chomp
     end
   end
 end
