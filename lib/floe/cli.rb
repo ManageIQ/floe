@@ -32,12 +32,7 @@ module Floe
 
       # Display status
       workflows.each do |workflow|
-        if workflows.size > 1
-          logger.info("")
-          logger.info("#{workflow.name} [#{workflow.context.execution_id}]#{" (#{workflow.status})" unless workflow.context.success?}")
-          logger.info("===")
-        end
-        logger.info(workflow.output)
+        logger.info("[#{workflow.context.execution_id}] #{workflow.name} (#{workflow.status}) - output: #{workflow.output}")
       end
 
       workflows.all? { |workflow| workflow.context.success? }

@@ -24,13 +24,21 @@ RSpec.describe Floe::CLI do
       expect(lines.first).to eq("Error: workflow/input pairs must be specified.")
     end
 
+    it "displays the execution id and output" do
+      output, _error, result = run_cli(workflow, '{"foo":1}')
+      expect(result).to be true
+
+      lines = output.lines(:chomp => true)
+      expect(lines[-1]).to match(/\[\h{8}-\h{4}-\h{4}-\h{4}-\h{12}\] workflow \(success\) - output: {"foo":1}$/)
+    end
+
     it "with a bare workflow and no input" do
       output, _error, result = run_cli(workflow)
       expect(result).to be true
 
       lines = output.lines(:chomp => true)
-      expect(lines.first).to include("Checking 1 workflows...")
-      expect(lines.last).to include("{}")
+      expect(lines.first).to end_with("Checking 1 workflows...")
+      expect(lines.last).to end_with("{}")
     end
 
     it "with a bare workflow and input" do
@@ -38,8 +46,8 @@ RSpec.describe Floe::CLI do
       expect(result).to be true
 
       lines = output.lines(:chomp => true)
-      expect(lines.first).to include("Checking 1 workflows...")
-      expect(lines.last).to include('{"foo":1}')
+      expect(lines.first).to end_with("Checking 1 workflows...")
+      expect(lines.last).to end_with('{"foo":1}')
     end
 
     it "with a bare workflow and --input" do
@@ -47,8 +55,8 @@ RSpec.describe Floe::CLI do
       expect(result).to be true
 
       lines = output.lines(:chomp => true)
-      expect(lines.first).to include("Checking 1 workflows...")
-      expect(lines.last).to include('{"foo":1}')
+      expect(lines.first).to end_with("Checking 1 workflows...")
+      expect(lines.last).to end_with('{"foo":1}')
     end
 
     it "with --workflow and no input" do
@@ -56,8 +64,8 @@ RSpec.describe Floe::CLI do
       expect(result).to be true
 
       lines = output.lines(:chomp => true)
-      expect(lines.first).to include("Checking 1 workflows...")
-      expect(lines.last).to include("{}")
+      expect(lines.first).to end_with("Checking 1 workflows...")
+      expect(lines.last).to end_with("{}")
     end
 
     it "with --workflow and --input" do
@@ -65,8 +73,8 @@ RSpec.describe Floe::CLI do
       expect(result).to be true
 
       lines = output.lines(:chomp => true)
-      expect(lines.first).to include("Checking 1 workflows...")
-      expect(lines.last).to include('{"foo":1}')
+      expect(lines.first).to end_with("Checking 1 workflows...")
+      expect(lines.last).to end_with('{"foo":1}')
     end
 
     it "with a bare workflow and --workflow" do
@@ -90,16 +98,9 @@ RSpec.describe Floe::CLI do
       expect(result).to be true
 
       lines = output.lines(:chomp => true)
-      expect(lines.first).to include("Checking 2 workflows...")
-      expect(lines.last(7).map { |line| line.gsub(/^.* INFO -- : /, "") }.join("\n")).to match(<<~OUTPUT.chomp)
-        workflow \\[\\h{8}-\\h{4}-\\h{4}-\\h{4}-\\h{12}\\]
-        ===
-        {"foo":1}
-
-        workflow \\[\\h{8}-\\h{4}-\\h{4}-\\h{4}-\\h{12}\\]
-        ===
-        {"foo":2}
-      OUTPUT
+      expect(lines.first).to end_with("Checking 2 workflows...")
+      expect(lines[-2]).to end_with('workflow (success) - output: {"foo":1}')
+      expect(lines[-1]).to end_with('workflow (success) - output: {"foo":2}')
     end
 
     it "with multiple bare workflows and --input" do
@@ -107,16 +108,9 @@ RSpec.describe Floe::CLI do
       expect(result).to be true
 
       lines = output.lines(:chomp => true)
-      expect(lines.first).to include("Checking 2 workflows...")
-      expect(lines.last(7).map { |line| line.gsub(/^.* INFO -- : /, "") }.join("\n")).to match(<<~OUTPUT.chomp)
-        workflow \\[\\h{8}-\\h{4}-\\h{4}-\\h{4}-\\h{12}\\]
-        ===
-        {"foo":1}
-
-        workflow \\[\\h{8}-\\h{4}-\\h{4}-\\h{4}-\\h{12}\\]
-        ===
-        {"foo":1}
-      OUTPUT
+      expect(lines.first).to end_with("Checking 2 workflows...")
+      expect(lines[-2]).to end_with('workflow (success) - output: {"foo":1}')
+      expect(lines[-1]).to end_with('workflow (success) - output: {"foo":1}')
     end
 
     it "with mismatched workflow/input pairs" do
