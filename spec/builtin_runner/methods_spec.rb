@@ -170,7 +170,7 @@ RSpec.describe Floe::BuiltinRunner::Methods do
           .to include(
             "running" => false,
             "success" => false,
-            "output"  => {"Error" => "States.TaskFailed", "Cause" => "Not Found", "Details" => {"code" => 404, "details" => "Page Not Found"}}
+            "output"  => {"Error" => "States.Http.StatusCode.404", "Cause" => "Not Found", "Details" => {"code" => 404, "details" => "Page Not Found"}}
           )
       end
 

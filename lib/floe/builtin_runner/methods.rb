@@ -96,7 +96,7 @@ module Floe
           output = {"Status" => response.status, "Body" => response.body, "Headers" => response.headers}
           BuiltinRunner.success!({}, :output => output)
         else
-          output = {"Error" => "States.TaskFailed", "Cause" => response.reason_phrase, "Details" => response.body}
+          output = {"Error" => "States.Http.StatusCode.#{response.status}", "Cause" => response.reason_phrase, "Details" => response.body}
 
           BuiltinRunner.error!({}, :output => output)
         end
