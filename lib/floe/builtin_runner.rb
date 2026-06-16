@@ -7,8 +7,8 @@ module Floe
     SCHEME_PREFIX = "#{SCHEME}://".freeze
 
     class << self
-      def error!(runner_context = {}, cause: nil, error: "States.TaskFailed", output: nil)
-        output ||= {"Error" => error, "Cause" => cause}
+      def error!(runner_context = {}, cause: nil, error: "States.TaskFailed", details: nil)
+        output = {"Error" => error, "Cause" => cause, "Details" => details}.compact
 
         runner_context.merge!(
           "running" => false, "success" => false, "output" => output

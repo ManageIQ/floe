@@ -92,13 +92,12 @@ module Floe
           faraday_request.body = body if body
         end
 
+        output = {"Status" => response.status, "Body" => response.body, "Headers" => response.headers}
+
         if response.success?
-          output = {"Status" => response.status, "Body" => response.body, "Headers" => response.headers}
           BuiltinRunner.success!({}, :output => output)
         else
-          output = {"Error" => "States.Http.StatusCode.#{response.status}", "Cause" => response.reason_phrase, "Details" => response.body}
-
-          BuiltinRunner.error!({}, :output => output)
+          BuiltinRunner.error!({}, :error => "States.Http.StatusCode.#{response.status}", :cause => response.reason_phrase, :details => output)
         end
       rescue ::Faraday::ConnectionFailed => err
         BuiltinRunner.error!({}, :cause => err.to_s)

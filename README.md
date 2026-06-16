@@ -246,6 +246,27 @@ HTTP Parameters:
   * `User` - String - User for the proxy.
   * `Password` - String - Pasword for the proxy
 
+Output:
+A successful HTTP request will return the response Status, Body, and Headers. For example,
+```json
+{
+  "Status": 200,
+  "Body": {"result": {"foo": "bar"}},
+  "Headers": {"content-type": "application/json"}
+}
+```
+
+Errors:
+If an HTTP request fails, the `floe://http` builtin method will return an error payload that includes
+the error code, the reason, and the response Status, Body, and Headers. For example,
+```json
+{
+  "Error": "States.Http.StatusCode.404",
+  "Cause": "Not Found",
+  "Details": {"Status": 404, "Body": {"code": 404, "reason": "Page not found"}, "Headers": {"content-type": "application/json"}}
+}
+```
+
 #### Docker resource
 
 The docker resource runner takes a docker image URI, including the registry, name, and tag.
