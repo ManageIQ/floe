@@ -148,6 +148,32 @@ RSpec.describe Floe::BuiltinRunner::Methods do
           )
       end
 
+      it "returns an error when the connection is refused" do
+        expect(faraday_stub).to receive(:get).and_raise(Faraday::ConnectionFailed, "Failed to open TCP connection to http://localhost")
+
+        params = {"Method" => "GET", "Url" => "http://localhost"}
+        runner_context = described_class.http(params, secrets, ctx)
+        expect(runner_context)
+          .to include(
+            "running" => false,
+            "success" => false,
+            "output"  => {"Cause" => "Failed to open TCP connection to http://localhost", "Error" => "States.TaskFailed"}
+          )
+      end
+
+      it "returns an error for a non 200 status" do
+        expect(faraday_stub).to receive(:get).and_return(Faraday::Response.new(:status => 404, :body => "{}", :reason_phrase => "Not Found"))
+
+        params = {"Method" => "GET", "Url" => "http://localhost"}
+        runner_context = described_class.http(params, secrets, ctx)
+        expect(runner_context)
+          .to include(
+            "running" => false,
+            "success" => false,
+            "output"  => {"Error" => "States.TaskFailed", "Cause" => "Not Found", "Status" => 404, "Body" => "{}", "Headers" => nil}
+          )
+      end
+
       it "with query parameters" do
         expect(Faraday)
           .to receive(:new)

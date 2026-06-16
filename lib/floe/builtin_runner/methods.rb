@@ -94,7 +94,15 @@ module Floe
 
         output = {"Status" => response.status, "Body" => response.body, "Headers" => response.headers}
 
-        BuiltinRunner.success!({}, :output => output)
+        if response.success?
+          BuiltinRunner.success!({}, :output => output)
+        else
+          output["Error"] = "States.TaskFailed"
+          output["Cause"] = response.reason_phrase
+          BuiltinRunner.error!({}, :output => output)
+        end
+      rescue ::Faraday::ConnectionFailed => err
+        BuiltinRunner.error!({}, :cause => err.to_s)
       end
 
       private_class_method def self.http_verify_params(params)
