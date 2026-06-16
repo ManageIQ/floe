@@ -162,7 +162,7 @@ RSpec.describe Floe::BuiltinRunner::Methods do
       end
 
       it "returns an error for a non 200 status" do
-        expect(faraday_stub).to receive(:get).and_return(Faraday::Response.new(:status => 404, :body => "{}", :reason_phrase => "Not Found"))
+        expect(faraday_stub).to receive(:get).and_return(Faraday::Response.new(:status => 404, :body => {"code" => 404, "details" => "Page Not Found"}, :reason_phrase => "Not Found"))
 
         params = {"Method" => "GET", "Url" => "http://localhost"}
         runner_context = described_class.http(params, secrets, ctx)
@@ -170,7 +170,7 @@ RSpec.describe Floe::BuiltinRunner::Methods do
           .to include(
             "running" => false,
             "success" => false,
-            "output"  => {"Error" => "States.TaskFailed", "Cause" => "Not Found", "Status" => 404, "Body" => "{}", "Headers" => nil}
+            "output"  => {"Error" => "States.TaskFailed", "Cause" => "Not Found", "Details" => {"code" => 404, "details" => "Page Not Found"}}
           )
       end
 
