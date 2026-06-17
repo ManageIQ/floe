@@ -92,10 +92,12 @@ module Floe
           Process.kill(0, pid)
         rescue Errno::ESRCH
           # Break out of the loop if the `docker events` process has exited
+          pid = nil
           break
         end
       ensure
         r.close
+        sigterm(pid) if pid
       end
 
       def status!(runner_context)
