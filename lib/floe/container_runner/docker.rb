@@ -46,13 +46,12 @@ module Floe
       end
 
       def wait(timeout: nil, events: %i[create update delete], &block)
-        until_timestamp = Time.now.utc + timeout if timeout
+        until_timestamp = (Time.now.utc + timeout).to_i if timeout
 
         r, w = IO.pipe
 
-        pid = AwesomeSpawn.run_detached(
-          self.class::DOCKER_COMMAND, :err => :out, :out => w, :params => wait_params(until_timestamp)
-        )
+        pid = Kernel.spawn({}, self.class::DOCKER_COMMAND, *wait_params(until_timestamp), :err => :out, :out => w)
+        Process.detach(pid)
 
         w.close
 
@@ -152,8 +151,10 @@ module Floe
       end
 
       def wait_params(until_timestamp)
-        params = ["events", [:format, "{{json .}}"], [:filter, "type=container"], [:since, Time.now.utc.to_i]]
-        params << [:until, until_timestamp.to_i] if until_timestamp
+        since_timestamp = Time.now.utc.to_i
+
+        params  = ["events", "--format", "{{json .}}", "--filter", "type=container", "--since", since_timestamp.to_s]
+        params += ["--until", until_timestamp.to_s] if until_timestamp
         params
       end
 
