@@ -4,6 +4,16 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.20.0] - 2026-07-08
+### Fixed
+- Update to support io-wait v0.4 which drops the `IO#ready?` method ([#340](https://github.com/ManageIQ/floe/pull/340))
+- Return States.TaskFailed for failed http request ([#343](https://github.com/ManageIQ/floe/pull/343))
+- `kill -TERM` the docker wait process before exiting ([#344](https://github.com/ManageIQ/floe/pull/344))
+- Use Kernel.spawn directly to ensure no `/bin/sh -c` shell is created ([#345](https://github.com/ManageIQ/floe/pull/345))
+
+### Added
+- Add logging of the execution_id to exe/floe ([#341](https://github.com/ManageIQ/floe/pull/341))
+
 ## [0.19.2] - 2026-01-06
 ### Fixed
 - Lockdown io-wait to v0.3.* for `IO#ready?` ([#339](https://github.com/ManageIQ/floe/pull/339))
@@ -337,7 +347,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Initial release
 
-[Unreleased]: https://github.com/ManageIQ/floe/compare/v0.19.2...HEAD
+[Unreleased]: https://github.com/ManageIQ/floe/compare/v0.20.0...HEAD
+[0.20.0]: https://github.com/ManageIQ/floe/compare/v0.19.2...v0.20.0
 [0.19.2]: https://github.com/ManageIQ/floe/compare/v0.19.1...v0.19.2
 [0.19.1]: https://github.com/ManageIQ/floe/compare/v0.19.0...v0.19.1
 [0.19.0]: https://github.com/ManageIQ/floe/compare/v0.18.0...v0.19.0
