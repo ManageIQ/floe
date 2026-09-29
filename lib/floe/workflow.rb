@@ -179,7 +179,9 @@ module Floe
 
     def validate_workflow!
       super
-      invalid_field_error!("TimeoutSeconds", timeout_seconds, "must be a positive, non-zero integer") if timeout_seconds && (!timeout_seconds.kind_of?(Integer) || timeout_seconds <= 0)
+      return unless timeout_seconds
+
+      invalid_field_error!("TimeoutSeconds", timeout_seconds, "must be a positive, non-zero integer") unless timeout_seconds.kind_of?(Integer) && timeout_seconds.positive?
     end
 
     def step!
